@@ -43,22 +43,33 @@
     <!-- VENDER -->
     <div id="sell" class="page hidden">
       <h2>Vender productos</h2>
-      <input type="text" id="barcodeInput" placeholder="Escanee o escriba código de barras">
-      <button onclick="addProduct()">Agregar</button>
+      <div id="venderSection">
+        <input type="text" id="barcodeInput" placeholder="Escanee o escriba código de barras">
+        <input type="number" id="quantityInput" placeholder="Cantidad" value="1" min="1">
+        <button onclick="addProduct()">Agregar</button>
 
-      <table id="cartTable">
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Código</th>
-            <th>Precio</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+        <table id="cartTable">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Código</th>
+              <th>Precio</th>
+              <th>Cantidad</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
 
-      <p>Total: $<span id="total">0</span></p>
-      <button onclick="checkout()">Cobrar</button>
+        <p>Total: $<span id="total">0</span></p>
+        <button onclick="checkout()">Cobrar e Imprimir Ticket</button>
+      </div>
+
+      <div id="dailyReportSection">
+        <h3>Informe diario</h3>
+        <button onclick="printDailyReport()">TIRAR Z</button>
+        <div id="dailyReport"></div>
+      </div>
     </div>
 
     <!-- CONTROL DE STOCK -->
@@ -80,7 +91,6 @@
     </div>
   </section>
 
-  <!-- App JS -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
