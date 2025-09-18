@@ -1,6 +1,5 @@
-// Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
@@ -14,229 +13,115 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Variables globales
 let carrito = [];
-let metodoPagoSeleccionado = "";
-const PASSWORD_MAESTRA = "123456789";
+let ventas = [];
+let ventasEliminadas = [];
 
-// Mostrar sección
-function mostrarSeccion(id) {
-  document.querySelectorAll(".seccion").forEach(sec => sec.style.display = "none");
-  document.getElementById(id).style.display = "block";
-  if(id === "modificar") cargarProductosModificar();
-  if(id === "controlStock") actualizarStockLista();
-  if(id === "tirarZ") actualizarTirarZ();
-  if(id === "controlVentas") cargarVentasHoy();
+function mostrarSeccion(seccion) {
+  document.querySelectorAll('.seccion').forEach(div => div.style.display = 'none');
+  document.getElementById(seccion).style.display = 'block';
 }
 
-// Cargar stock
+// --- Cargar Stock ---
 async function cargarStock() {
-  const codigo = document.getElementById("productoCodigo").value;
-  const nombre = document.getElementById("productoNombre").value.toUpperCase();
-  const cantidad = parseFloat(document.getElementById("productoCantidad").value);
-  const precio = parseFloat(document.getElementById("productoPrecio").value);
-  if(!codigo || !nombre || isNaN(cantidad) || isNaN(precio)) { alert("Complete todos los campos"); return; }
+  const codigo = document.getElementById('productoCodigo').value;
+  const nombre = document.getElementById('productoNombre').value.toUpperCase();
+  const cantidad = parseInt(document.getElementById('productoCantidad').value);
+  const precio = parseFloat(document.getElementById('productoPrecio').value);
+  if(!codigo || !nombre || !cantidad || !precio) return alert('Completa todos los campos');
+  try {
+    await addDoc(collection(db,'productos'), {codigo,nombre,cantidad,precio});
+    alert('Producto agregado');
+    actualizarStock();
+    document.getElementById('productoCodigo').value='';
+    document.getElementById('productoNombre').value='';
+    document.getElementById('productoCantidad').value='';
+    document.getElementById('productoPrecio').value='';
+  } catch(e){console.log(e);}
+}
 
-  const productosRef = collection(db, "productos");
-  const productosSnap = await getDocs(productosRef);
-  let encontrado = false;
-  productosSnap.forEach(p => {
-    if(p.data().codigo === codigo){
-      updateDoc(doc(db,"productos",p.id),{ cantidad: p.data().cantidad + cantidad, precio: precio });
-      encontrado = true;
-    }
+// --- Actualizar Stock ---
+async function actualizarStock() {
+  const stockDiv = document.getElementById('stockLista');
+  stockDiv.innerHTML='';
+  const querySnap = await getDocs(collection(db,'productos'));
+  querySnap.forEach(docu=>{
+    const d = docu.data();
+    stockDiv.innerHTML += `<p>${d.nombre} [${d.cantidad}] ($${d.precio})</p>`;
   });
-  if(!encontrado){
-    await addDoc(productosRef,{ codigo, nombre, cantidad, precio });
-  }
-  alert("Producto cargado correctamente");
-  document.getElementById("productoCodigo").value="";
-  document.getElementById("productoNombre").value="";
-  document.getElementById("productoCantidad").value="";
-  document.getElementById("productoPrecio").value="";
 }
 
-// Vender
-async function agregarAlCarrito() {
-  const codigo = document.getElementById("venderCodigo").value;
-  let cantidad = parseFloat(document.getElementById("venderCantidad").value);
-  if(!codigo || isNaN(cantidad) || cantidad <=0) { alert("Ingrese código y cantidad válida"); return; }
+// --- Agregar al carrito ---
+function agregarAlCarrito(){
+  const codigo = document.getElementById('venderCodigo').value;
+  const cantidad = parseInt(document.getElementById('venderCantidad').value);
+  if(!codigo || !cantidad) return alert('Completa los campos');
+  const item = carrito.find(i=>i.codigo===codigo);
+  if(item){item.cantidad+=cantidad;} 
+  else {carrito.push({codigo,cantidad});}
+  mostrarCarrito();
+  document.getElementById('venderCodigo').value='';
+  document.getElementById('venderCantidad').value='';
+  document.getElementById('metodoPagoDiv').style.display='block';
+}
 
-  // Buscar producto en Firestore
-  const productosRef = collection(db,"productos");
-  const productosSnap = await getDocs(productosRef);
-  let producto = null;
-  productosSnap.forEach(p => {
-    if(p.data().codigo === codigo || p.data().nombre.toUpperCase() === codigo.toUpperCase()){
-      producto = {id:p.id, ...p.data()};
-    }
+// --- Mostrar carrito ---
+function mostrarCarrito(){
+  const lista = document.getElementById('ventaLista');
+  lista.innerHTML='';
+  carrito.forEach(i=>{
+    lista.innerHTML += `<p>${i.codigo} [${i.cantidad}]</p>`;
   });
-  if(!producto){ alert("Producto no encontrado"); return; }
-  if(cantidad > producto.cantidad){ alert("No hay suficiente stock"); return; }
-
-  // Agregar o sumar en carrito
-  let index = carrito.findIndex(p=>p.codigo===producto.codigo);
-  if(index>=0){
-    carrito[index].cantidad += cantidad;
-  } else {
-    carrito.push({codigo:producto.codigo, nombre:producto.nombre, cantidad, precio:producto.precio});
-  }
-  renderCarrito();
-  document.getElementById("venderCodigo").value="";
-  document.getElementById("venderCantidad").value="";
 }
 
-// Render carrito
-function renderCarrito(){
-  const lista = document.getElementById("ventaLista");
-  lista.innerHTML="";
-  carrito.forEach((p,i)=>{
-    const pEl = document.createElement("p");
-    pEl.innerHTML = `${p.nombre} [${p.cantidad}] (${p.precio}) 
-      <button onclick="sumar(${i})">+</button>
-      <button onclick="restar(${i})">-</button>`;
-    lista.appendChild(pEl);
-  });
-  document.getElementById("metodoPagoDiv").style.display = carrito.length>0 ? "block":"none";
-}
-
-function sumar(i){
-  carrito[i].cantidad +=1;
-  renderCarrito();
-}
-function restar(i){
-  carrito[i].cantidad = Math.max(1,carrito[i].cantidad-1);
-  renderCarrito();
-}
-
-// Finalizar venta
+// --- Finalizar venta ---
 async function finalizarVenta(metodo){
-  metodoPagoSeleccionado = metodo;
-  await cobrarTicket();
-}
-
-// Cobrar ticket
-async function cobrarTicket(){
-  if(carrito.length===0){ alert("Carrito vacío"); return; }
-  const total = carrito.reduce((sum,p)=>sum + p.cantidad*p.precio,0);
-
-  // Registrar venta en Firestore
-  const ventasRef = collection(db,"ventas");
-  const idVenta = Math.floor(Math.random()*9999)+1;
-  await addDoc(ventasRef,{
-    productos: carrito,
-    total,
-    metodoPago: metodoPagoSeleccionado,
-    fecha: new Date(),
-    idVenta
-  });
-
-  // Actualizar stock
-  for(const p of carrito){
-    const productosRef = collection(db,"productos");
-    const productosSnap = await getDocs(productosRef);
-    productosSnap.forEach(prod=>{
-      if(prod.data().codigo===p.codigo){
-        updateDoc(doc(db,"productos",prod.id),{ cantidad: prod.data().cantidad - p.cantidad });
-      }
-    });
+  for(const item of carrito){
+    const idVenta = Math.floor(Math.random()*9999)+1;
+    ventas.push({...item, metodo,id:idVenta});
   }
-
-  // Mostrar ticket para imprimir
-  const ticketWindow = window.open('','Ticket','width=300,height=600');
-  ticketWindow.document.write(`<div class="ticketWindow"><h2>SUPERMERCADO X</h2><hr>`);
-  carrito.forEach(p=>{
-    ticketWindow.document.write(`<p>${p.nombre} [${p.cantidad}] (${p.precio})</p>`);
-  });
-  ticketWindow.document.write(`<hr><p>Total: $${total.toFixed(2)}</p>`);
-  ticketWindow.document.write(`<p>Metodo de pago: ${metodoPagoSeleccionado}</p></div>`);
-  ticketWindow.document.close();
-  ticketWindow.print();
-
-  carrito=[];
-  renderCarrito();
+  alert('Ticket generado, método: '+metodo);
+  carrito = [];
+  document.getElementById('ventaLista').innerHTML='';
+  document.getElementById('metodoPagoDiv').style.display='none';
+  actualizarStock();
+  actualizarTirarZ();
 }
 
-// Control stock
-async function actualizarStockLista(){
-  const lista = document.getElementById("stockLista");
-  lista.innerHTML="";
-  const productosRef = collection(db,"productos");
-  const productosSnap = await getDocs(productosRef);
-  productosSnap.forEach(p=>{
-    lista.innerHTML += `<p>${p.data().nombre} [${p.data().cantidad}] (${p.data().precio})</p>`;
+// --- Actualizar Tirar Z ---
+function actualizarTirarZ(){
+  const lista = document.getElementById('tirarZLista');
+  lista.innerHTML='';
+  let totalE=0, totalT=0;
+  ventas.forEach(v=>{
+    lista.innerHTML += `<p>ID:${v.id} ${v.codigo} [${v.cantidad}] ($${v.cantidad*1}) - ${v.metodo}</p><hr>`;
+    if(v.metodo==='Efectivo') totalE += v.cantidad*1;
+    else totalT += v.cantidad*1;
   });
+  ventasEliminadas.forEach(v=>{
+    lista.innerHTML += `<p>ID:${v.id} ELIMINADO ${v.codigo} [${v.cantidad}] ($${v.cantidad*1}) - ${v.metodo} Motivo: ${v.motivo}</p><hr>`;
+  });
+  document.getElementById('totalEfectivo').innerText = totalE;
+  document.getElementById('totalTarjeta').innerText = totalT;
 }
 
-// Modificar productos
-async function cargarProductosModificar(){
-  const select = document.getElementById("productoModificarSelect");
-  select.innerHTML="";
-  const productosRef = collection(db,"productos");
-  const productosSnap = await getDocs(productosRef);
-  productosSnap.forEach(p=>{
-    select.innerHTML += `<option value="${p.id}">${p.data().nombre}</option>`;
-  });
-}
-
+// --- Modificar Producto ---
 async function modificarProducto(){
-  const password = document.getElementById("passwordMaestra").value;
-  if(password!==PASSWORD_MAESTRA){ alert("Contraseña incorrecta"); return; }
-  const id = document.getElementById("productoModificarSelect").value;
-  const cantidad = parseFloat(document.getElementById("productoModificarCantidad").value);
-  const precio = parseFloat(document.getElementById("productoModificarPrecio").value);
-  if(isNaN(cantidad) || isNaN(precio)){ alert("Valores inválidos"); return; }
-  await updateDoc(doc(db,"productos",id),{ cantidad, precio });
-  alert("Producto modificado");
-  document.getElementById("productoModificarCantidad").value="";
-  document.getElementById("productoModificarPrecio").value="";
-}
-
-// Tirar Z
-async function actualizarTirarZ(){
-  const listaDiv = document.getElementById("tirarZLista");
-  const ventasElimDiv = document.getElementById("ventasEliminadasLista");
-  listaDiv.innerHTML="";
-  ventasElimDiv.innerHTML="";
-  const ventasRef = collection(db,"ventas");
-  const ventasSnap = await getDocs(ventasRef);
-  let totalEfectivo = 0;
-  let totalTarjeta = 0;
-
-  ventasSnap.forEach(v=>{
-    const data = v.data();
-    if(!data.eliminada){
-      data.metodoPago==="Efectivo"? totalEfectivo+=data.total : totalTarjeta+=data.total;
-      listaDiv.innerHTML += `<p>ID: ${data.idVenta} - ${data.productos.map(p=>`${p.nombre}[${p.cantidad}](${p.precio})`).join(', ')} - $${data.total.toFixed(2)} - ${data.metodoPago}</p><hr>`;
-    } else {
-      ventasElimDiv.innerHTML += `<p>ID: ${data.idVenta} - ${data.productos.map(p=>`${p.nombre}[${p.cantidad}](${p.precio})`).join(', ')} - $${data.total.toFixed(2)} - ${data.metodoPago} - Motivo: ${data.motivo}</p><hr>`;
+  const sel = document.getElementById('productoModificarSelect').value;
+  const cantidad = parseInt(document.getElementById('productoModificarCantidad').value);
+  const precio = parseFloat(document.getElementById('productoModificarPrecio').value);
+  const pass = document.getElementById('passwordMaestra').value;
+  if(pass!=='123456789') return alert('Contraseña incorrecta');
+  const querySnap = await getDocs(collection(db,'productos'));
+  querySnap.forEach(async docu=>{
+    if(docu.data().codigo===sel){
+      await updateDoc(doc(db,'productos',docu.id),{cantidad,precio});
     }
   });
-  document.getElementById("totalEfectivo").innerText = totalEfectivo.toFixed(2);
-  document.getElementById("totalTarjeta").innerText = totalTarjeta.toFixed(2);
+  alert('Producto modificado');
+  actualizarStock();
 }
 
-// Control de ventas
-async function cargarVentasHoy(){
-  const ventasHoyDiv = document.getElementById("ventasHoy");
-  ventasHoyDiv.innerHTML="";
-  const ventasRef = collection(db,"ventas");
-  const ventasSnap = await getDocs(ventasRef);
-  ventasSnap.forEach(v=>{
-    const data = v.data();
-    const p = document.createElement("p");
-    p.innerHTML = `${data.productos.map(prod=>prod.nombre+"["+prod.cantidad+"]("+prod.precio+")").join(", ")} - $${data.total.toFixed(2)} - ${data.metodoPago} <button onclick="eliminarVenta('${v.id}')">ELIMINAR VENTA</button>`;
-    ventasHoyDiv.appendChild(p);
-  });
-}
-
-// Eliminar venta
-async function eliminarVenta(id){
-  const password = prompt("Ingrese contraseña maestra:");
-  if(password!==PASSWORD_MAESTRA){ alert("Contraseña incorrecta"); return; }
-  const motivo = prompt("MOTIVO DE ELIMINACION:");
-  if(!motivo){ alert("Debe ingresar un motivo"); return; }
-  await updateDoc(doc(db,"ventas",id),{eliminada:true,motivo});
-  actualizarTirarZ();
-  cargarVentasHoy();
-}
+// --- Inicialización ---
+mostrarSeccion('cargarStock');
+actualizarStock();
