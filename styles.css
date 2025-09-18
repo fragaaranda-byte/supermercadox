@@ -1,60 +1,181 @@
-body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    color: #333;
+/* Reset básico */
+* {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
 }
 
+/* Cuerpo */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Header */
 header {
-    background: #1f2634;
+    background-color: #1f2634;
     color: #f4cf19;
     text-align: center;
-    padding: 20px;
+    padding: 20px 0;
 }
 
 header h1 {
-    margin: 0;
-    font-size: 2em;
+    font-size: 2.2em;
+    font-weight: bold;
 }
 
+/* Menú principal */
 .menu {
     display: flex;
-    justify-content: center;
     flex-wrap: wrap;
-    margin: 20px 0;
+    justify-content: center;
     gap: 10px;
+    margin: 20px 0;
 }
 
 .menu button {
+    background-color: #f4cf19;
+    border: none;
     padding: 10px 15px;
     font-size: 1em;
-    cursor: pointer;
-    background: #f4cf19;
-    border: none;
     border-radius: 5px;
+    cursor: pointer;
     transition: 0.3s;
 }
 
 .menu button:hover {
-    background: #e0b815;
+    background-color: #e0b815;
 }
 
+/* Secciones */
 .seccion {
     display: none;
-    max-width: 600px;
+    max-width: 650px;
     margin: 20px auto;
-    background: #fff;
     padding: 20px;
-    border-radius: 5px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
-.seccion input, .seccion select, .seccion button {
+.seccion h2 {
+    margin-bottom: 15px;
+    color: #1f2634;
+    font-size: 1.5em;
+    text-align: center;
+}
+
+.seccion input, 
+.seccion select, 
+.seccion button {
+    width: 100%;
     margin: 5px 0;
     padding: 8px;
     font-size: 1em;
+    border-radius: 5px;
+    border: 1px solid #ccc;
 }
 
+.seccion button {
+    background-color: #1f2634;
+    color: #f4cf19;
+    border: none;
+    cursor: pointer;
+}
+
+.seccion button:hover {
+    background-color: #333745;
+}
+
+/* Venta lista con botones + / - */
+#ventaLista p {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+
+#ventaLista button {
+    width: 30px;
+    padding: 2px;
+    margin-left: 5px;
+    font-weight: bold;
+    background-color: #f4cf19;
+    color: #1f2634;
+    border-radius: 3px;
+}
+
+#ventaLista button:hover {
+    background-color: #e0b815;
+}
+
+/* Ticket Window */
 .ticketWindow {
-    font-size: 12px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    width: 20%; /* 20% de A4 vertical */
+    margin: 0 auto;
+}
+
+.ticketWindow h2 {
+    text-align: center;
+    font-size: 1em;
+    margin-bottom: 5px;
+}
+
+.ticketWindow h3 {
+    font-size: 0.9em;
+    margin: 5px 0;
+}
+
+.ticketWindow p {
+    font-size: 0.85em;
+    margin: 3px 0;
+}
+
+.ticketWindow hr {
+    border: 0;
+    border-top: 1px dashed #333;
+    margin: 5px 0;
+}
+
+/* Método de pago botones */
+#metodoPagoDiv button {
+    width: 48%;
+    display: inline-block;
+    margin-right: 2%;
+    background-color: #1f2634;
+    color: #f4cf19;
+    border: none;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#metodoPagoDiv button:hover {
+    background-color: #333745;
+}
+
+/* Control ventas lista */
+#ventasHoy p {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0;
+}
+
+#ventasHoy button {
+    padding: 5px 8px;
+    border: none;
+    border-radius: 3px;
+    background-color: red;
+    color: white;
+    cursor: pointer;
+}
+
+#ventasHoy button:hover {
+    background-color: darkred;
 }
