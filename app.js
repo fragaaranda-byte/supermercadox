@@ -22,7 +22,7 @@ function mostrarSeccion(seccion) {
   document.getElementById(seccion).style.display = 'block';
 }
 
-// --- Cargar Stock ---
+// Cargar Stock
 async function cargarStock() {
   const codigo = document.getElementById('productoCodigo').value;
   const nombre = document.getElementById('productoNombre').value.toUpperCase();
@@ -40,7 +40,7 @@ async function cargarStock() {
   } catch(e){console.log(e);}
 }
 
-// --- Actualizar Stock ---
+// Actualizar Stock
 async function actualizarStock() {
   const stockDiv = document.getElementById('stockLista');
   stockDiv.innerHTML='';
@@ -51,7 +51,7 @@ async function actualizarStock() {
   });
 }
 
-// --- Agregar al carrito ---
+// Agregar al carrito
 function agregarAlCarrito(){
   const codigo = document.getElementById('venderCodigo').value;
   const cantidad = parseInt(document.getElementById('venderCantidad').value);
@@ -65,7 +65,7 @@ function agregarAlCarrito(){
   document.getElementById('metodoPagoDiv').style.display='block';
 }
 
-// --- Mostrar carrito ---
+// Mostrar carrito
 function mostrarCarrito(){
   const lista = document.getElementById('ventaLista');
   lista.innerHTML='';
@@ -74,7 +74,7 @@ function mostrarCarrito(){
   });
 }
 
-// --- Finalizar venta ---
+// Finalizar venta
 async function finalizarVenta(metodo){
   for(const item of carrito){
     const idVenta = Math.floor(Math.random()*9999)+1;
@@ -88,7 +88,7 @@ async function finalizarVenta(metodo){
   actualizarTirarZ();
 }
 
-// --- Actualizar Tirar Z ---
+// Actualizar Tirar Z
 function actualizarTirarZ(){
   const lista = document.getElementById('tirarZLista');
   lista.innerHTML='';
@@ -105,7 +105,7 @@ function actualizarTirarZ(){
   document.getElementById('totalTarjeta').innerText = totalT;
 }
 
-// --- Modificar Producto ---
+// Modificar Producto
 async function modificarProducto(){
   const sel = document.getElementById('productoModificarSelect').value;
   const cantidad = parseInt(document.getElementById('productoModificarCantidad').value);
@@ -119,9 +119,4 @@ async function modificarProducto(){
     }
   });
   alert('Producto modificado');
-  actualizarStock();
-}
-
-// --- Inicialización ---
-mostrarSeccion('cargarStock');
-actualizarStock();
+  actualizar
