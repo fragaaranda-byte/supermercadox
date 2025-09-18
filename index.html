@@ -10,13 +10,13 @@
 </head>
 <body>
   <div id="inicio" class="header-container">
-    <img src="logo.png" alt="Logo" width="100" height="100" class="logo">
     <h1>SUPERMERCADO X</h1>
     <div class="menu">
       <button onclick="showSection('cargar')">Cargar Stock</button>
       <button onclick="showSection('vender')">Vender</button>
       <button onclick="showSection('control')">Controlar Stock</button>
       <button onclick="showSection('modify')">Modificar Producto</button>
+      <button onclick="showSection('controlVentas')">Control de Ventas</button>
     </div>
   </div>
 
@@ -76,6 +76,17 @@
     <input type="date" id="modExpiry" placeholder="Nueva fecha de vencimiento">
     <input type="password" id="masterPassword" placeholder="Contraseña maestra">
     <button id="btnModificar">Modificar Producto</button>
+  </div>
+
+  <!-- Control de Ventas -->
+  <div id="controlVentas" class="section">
+    <h2>Control de Ventas</h2>
+    <table id="salesTable">
+      <thead>
+        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <script type="module" src="app.js"></script>
