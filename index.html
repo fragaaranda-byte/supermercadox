@@ -5,72 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUPERMERCADO X</title>
     <link rel="stylesheet" href="style.css">
-    <script type="module" src="app.js" defer></script>
+    <!-- Firebase SDK -->
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
     <header>
         <h1>SUPERMERCADO X</h1>
     </header>
 
-    <main>
-        <div class="menu">
-            <button id="btnCargarStock">Cargar Stock</button>
-            <button id="btnVender">Vender</button>
-            <button id="btnControlStock">Controlar Stock</button>
-            <button id="btnModificar">Modificar Producto</button>
-            <button id="btnTirarZ">TIRAR Z</button>
-            <button id="btnControlVentas">Control de Ventas</button>
+    <div class="menu">
+        <button onclick="mostrarSeccion('cargarStock')">Cargar Stock</button>
+        <button onclick="mostrarSeccion('vender')">Vender</button>
+        <button onclick="mostrarSeccion('controlStock')">Controlar Stock</button>
+        <button onclick="mostrarSeccion('modificar')">Modificar</button>
+        <button onclick="mostrarSeccion('tirarZ')">TIRAR Z</button>
+        <button onclick="mostrarSeccion('controlVentas')">Control de Ventas</button>
+    </div>
+
+    <!-- Secciones -->
+    <div id="cargarStock" class="seccion">
+        <h2>Cargar Stock</h2>
+        <input type="text" id="productoCodigo" placeholder="Código de Barras">
+        <input type="text" id="productoNombre" placeholder="Nombre del producto">
+        <input type="number" id="productoCantidad" placeholder="Cantidad">
+        <input type="number" id="productoPrecio" placeholder="Precio">
+        <button onclick="cargarStock()">Cargar Stock</button>
+    </div>
+
+    <div id="vender" class="seccion">
+        <h2>Vender</h2>
+        <input type="text" id="venderCodigo" placeholder="Código de Barras o Nombre">
+        <input type="number" id="venderCantidad" placeholder="Cantidad" min="1">
+        <button onclick="agregarAlCarrito()">Agregar al Carrito</button>
+        <div id="ventaLista"></div>
+        <div id="metodoPagoDiv" style="display:none;">
+            <p>¿Cómo se cobró?</p>
+            <button onclick="finalizarVenta('Efectivo')">Efectivo</button>
+            <button onclick="finalizarVenta('Tarjeta')">Tarjeta</button>
         </div>
+        <button onclick="cobrarTicket()">Imprimir Ticket y Cobrar</button>
+    </div>
 
-        <!-- Cargar Stock -->
-        <div id="cargarStockDiv" class="seccion">
-            <h2>Cargar Stock</h2>
-            <input type="text" id="stockCodigo" placeholder="Código de barras">
-            <input type="text" id="stockNombre" placeholder="Nombre del producto">
-            <input type="number" id="stockCantidad" placeholder="Cantidad">
-            <input type="number" id="stockPrecio" placeholder="Precio">
-            <button id="agregarStockBtn">Agregar al Stock</button>
+    <div id="controlStock" class="seccion">
+        <h2>Control de Stock</h2>
+        <div id="stockLista"></div>
+    </div>
+
+    <div id="modificar" class="seccion">
+        <h2>Modificar Producto</h2>
+        <input type="password" id="passwordMaestra" placeholder="Contraseña Maestra">
+        <select id="productoModificarSelect"></select>
+        <input type="number" id="productoModificarCantidad" placeholder="Nueva Cantidad">
+        <input type="number" id="productoModificarPrecio" placeholder="Nuevo Precio">
+        <button onclick="modificarProducto()">Confirmar Cambio</button>
+    </div>
+
+    <div id="tirarZ" class="seccion">
+        <h2>TIRAR Z</h2>
+        <div id="tirarZLista"></div>
+        <p>Total efectivo: $<span id="totalEfectivo">0</span></p>
+        <p>Total tarjeta: $<span id="totalTarjeta">0</span></p>
+        <div id="ventasEliminadasDiv">
+            <h3>Ventas Eliminadas</h3>
+            <div id="ventasEliminadasLista"></div>
         </div>
+    </div>
 
-        <!-- Vender -->
-        <div id="venderDiv" class="seccion">
-            <h2>Vender</h2>
-            <input type="text" id="ventaCodigo" placeholder="Código de barras">
-            <input type="number" id="ventaCantidad" value="1" min="1">
-            <button id="agregarVentaBtn">Agregar Producto</button>
+    <div id="controlVentas" class="seccion">
+        <h2>Control de Ventas</h2>
+        <div id="ventasHoy"></div>
+    </div>
 
-            <div id="ventaLista"></div>
-
-            <div id="metodoPagoDiv" style="display:none;">
-                <p>¿Cómo se cobró?</p>
-                <button id="pagoEfectivoBtn">Efectivo</button>
-                <button id="pagoTarjetaBtn">Tarjeta</button>
-            </div>
-
-            <button id="cobrarImprimirBtn">Cobrar e Imprimir Ticket</button>
-        </div>
-
-        <!-- Control Stock -->
-        <div id="controlStockDiv" class="seccion">
-            <h2>Control de Stock</h2>
-            <div id="stockTabla"></div>
-        </div>
-
-        <!-- Modificar -->
-        <div id="modificarDiv" class="seccion">
-            <h2>Modificar Producto</h2>
-            <input type="password" id="passMaestra" placeholder="Contraseña maestra">
-            <select id="modProductoSelect"></select>
-            <input type="number" id="modCantidad" placeholder="Nueva cantidad">
-            <input type="number" id="modPrecio" placeholder="Nuevo precio">
-            <button id="modProductoBtn">Modificar</button>
-        </div>
-
-        <!-- Control de Ventas -->
-        <div id="controlVentasDiv" class="seccion">
-            <h2>Control de Ventas</h2>
-            <div id="ventasHoy"></div>
-        </div>
-    </main>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
