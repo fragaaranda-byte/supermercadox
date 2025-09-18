@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="styles.css">
 <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
 <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
   <div id="inicio" class="header-container">
@@ -45,7 +44,12 @@
       <tbody></tbody>
     </table>
     <p>Total: $<span id="total">0</span></p>
-    <button onclick="checkout()">Cobrar e Imprimir Ticket</button>
+    <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
+    <div id="paymentMethodDiv" style="display:none;">
+      <p>¿Cómo se cobró?</p>
+      <button onclick="checkout('Efectivo')">Efectivo</button>
+      <button onclick="checkout('Tarjeta')">Tarjeta</button>
+    </div>
     <button onclick="printDailyReport()">TIRAR Z</button>
   </div>
 
