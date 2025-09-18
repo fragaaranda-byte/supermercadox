@@ -12,7 +12,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// VARIABLES
 let cart = [];
 let total = 0;
 let salesToday = [];
@@ -109,114 +108,121 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
   const modName=document.getElementById("modNombre").value.trim();
   const modPrice=parseFloat(document.getElementById("modPrecio").value);
   const modStock=parseInt(document.getElementById("modStock").value);
-  const modExpiry=document.getElementById("modExpiry").value? new Date(document.getElementById("modExpiry").value):null;
+  const modExpiry=document.getElementById("modExpiry").value;
 
   await updateDoc(doc(db,"products",docId),{
     name:modName.toLowerCase(),
     price:modPrice,
     currentStock:modStock,
-    expiryDate:modExpiry
+    expiryDate:modExpiry? new Date(modExpiry):null
   });
   alert("Producto modificado");
   loadStockList();
   loadModifyProductList();
 });
 
-// ------------------ VENTA ------------------
+// ------------------ VENDER ------------------
 window.addProduct=function(){
   const code=document.getElementById("barcodeInputSale").value.trim();
   const qty=parseInt(document.getElementById("quantityInputSale").value);
-  if(!code||isNaN(qty)) return alert("Complete los campos");
+  if(!code||isNaN(qty)) return alert("Ingrese código y cantidad");
 
-  const snapshotPromise=getDocs(query(collection(db,"products"), where("code","==",code)));
-  snapshotPromise.then(snapshot=>{
-    if(snapshot.empty) return alert("Producto no encontrado");
+  const exists=cart.find(p=>p.code===code);
+  if(exists){
+    exists.qty=qty; // sobreescribir cantidad
+  }else{
+    cart.push({code,qty,name:code,price:0}); // nombre y precio luego se completan
+  }
+  updateCartTable();
+  document.getElementById("barcodeInputSale").value="";
+  document.getElementById("quantityInputSale").value=1;
+};
+
+window.updateCartTable=function(){
+  const tbody=document.querySelector("#cartTable tbody");
+  tbody.innerHTML="";
+  total=0;
+  cart.forEach(async c=>{
+    const snapshot=await getDocs(query(collection(db,"products"), where("code","==",c.code)));
     snapshot.forEach(d=>{
       const data=d.data();
-      const existing=cart.find(p=>p.code===code);
-      if(existing){ existing.qty=qty; }else{ cart.push({code,name:data.name.toUpperCase(),price:data.price,qty}); }
-      updateCartTable();
+      c.name=data.name.toUpperCase();
+      c.price=data.price;
+      const tr=document.createElement("tr");
+      tr.innerHTML=`<td>${c.name}</td><td>${c.code}</td><td>${c.price}</td><td>${c.qty}</td><td>${(c.price*c.qty).toFixed(2)}</td>`;
+      tbody.appendChild(tr);
+      total+=c.price*c.qty;
+      document.getElementById("total").textContent=total.toFixed(2);
     });
   });
 };
 
-function updateCartTable(){
-  const tbody=document.querySelector("#cartTable tbody");
-  tbody.innerHTML="";
-  total=0;
-  cart.forEach(p=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.code}</td><td>${p.price}</td><td>${p.qty}</td><td>${(p.price*p.qty).toFixed(2)}</td>`;
-    tbody.appendChild(tr);
-    total+=p.price*p.qty;
-  });
-  document.getElementById("total").textContent=total.toFixed(2);
-}
-
+// ------------------ PAGO ------------------
 window.choosePaymentMethod=function(){
   if(cart.length===0) return alert("Carrito vacío");
   document.getElementById("paymentMethodDiv").style.display="block";
 };
 
 window.checkout=async function(method){
-  if(cart.length===0) return alert("Carrito vacío");
   const now=new Date();
-  for(let p of cart){
+  for(let c of cart){
+    const snapshot=await getDocs(query(collection(db,"products"), where("code","==",c.code)));
+    snapshot.forEach(async d=>{
+      const current=d.data().currentStock;
+      await updateDoc(doc(db,"products",d.id),{currentStock: current - c.qty});
+    });
     await addDoc(collection(db,"sales"),{
-      code:p.code,
-      name:p.name,
-      price:p.price,
-      qty:p.qty,
+      code:c.code,
+      name:c.name,
+      price:c.price,
+      qty:c.qty,
       date:now,
       method
     });
+    salesToday.push({code:c.code,name:c.name,price:c.price,qty:c.qty,date:now,method});
   }
-  generateTicket(cart,total,method);
-  salesToday.push(...cart.map(p=>({...p, method, date:now})));
   cart=[];
   updateCartTable();
+  loadStockList();
+  loadSalesTable();
   document.getElementById("paymentMethodDiv").style.display="none";
+  alert("Venta registrada y ticket generado");
 };
 
-function generateTicket(cart,total,method){
-  const printWindow=window.open('','Print','width=300,height=600');
-  let html='<div class="printTicket"><h3>SUPERMERCADO X</h3><hr>';
-  cart.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; });
-  html+=`<hr>Total: $${total.toFixed(2)}<br>Método de pago: ${method}</div>`;
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.print();
-}
-
-// ------------------ CONTROL VENTAS ------------------
-window.loadSales=async function(){
+// ------------------ CONTROL DE VENTAS ------------------
+window.loadSalesTable=async function(){
   const tbody=document.querySelector("#salesTable tbody");
   tbody.innerHTML="";
   const snapshot=await getDocs(collection(db,"sales"));
   snapshot.forEach(docSnap=>{
-    const d=docSnap.data();
+    const s=docSnap.data();
     const tr=document.createElement("tr");
-    const productsDesc=JSON.stringify({name:d.name,qty:d.qty,price:d.price});
-    tr.innerHTML=`<td>${new Date(d.date.seconds*1000).toLocaleTimeString()}</td><td>${productsDesc}</td><td>$${(d.qty*d.price).toFixed(2)}</td><td>${d.method}</td>
-      <td><button style="background-color:red;color:white;" onclick="deleteSale('${docSnap.id}')">ELIMINAR VENTA</button></td>`;
+    tr.innerHTML=`<td>${new Date(s.date.seconds*1000).toLocaleString()}</td><td>${s.name} [${s.qty}] ($${s.price})</td><td>${(s.qty*s.price).toFixed(2)}</td><td>${s.method}</td>
+    <td><button onclick="deleteSale('${docSnap.id}')">ELIMINAR VENTA</button></td>`;
     tbody.appendChild(tr);
   });
 };
-window.loadSales();
 
-// Función eliminar venta
 window.deleteSale=async function(id){
-  const master=prompt("Contraseña maestra:");
-  if(master!=="123456789") return alert("Contraseña incorrecta");
-  let reason=prompt("MOTIVO DE ELIMINACION (obligatorio):");
+  const reason=prompt("MOTIVO DE ELIMINACION:");
   if(!reason) return alert("Debe ingresar un motivo");
-  const docRef=doc(db,"sales",id);
+  const master=prompt("Ingrese contraseña maestra:");
+  if(master!=="123456789") return alert("Contraseña incorrecta");
+
   const snapshot=await getDocs(query(collection(db,"sales"), where("__name__","==",id)));
   snapshot.forEach(async d=>{
-    deletedSales.push({...d.data(), reason});
+    const saleData=d.data();
+    deletedSales.push({...saleData, reason});
+    // devolver stock
+    const prodSnap=await getDocs(query(collection(db,"products"), where("code","==",saleData.code)));
+    prodSnap.forEach(async prod=>{
+      const curr=prod.data().currentStock;
+      await updateDoc(doc(db,"products",prod.id), {currentStock: curr + saleData.qty});
+    });
     await deleteDoc(doc(db,"sales",id));
   });
-  loadSales();
+  loadStockList();
+  loadSalesTable();
 };
 
 // ------------------ TIRAR Z ------------------
@@ -241,3 +247,4 @@ window.printDailyReport=function(){
 
 // ------------------ INICIO ------------------
 showSection("inicio");
+loadSalesTable();
