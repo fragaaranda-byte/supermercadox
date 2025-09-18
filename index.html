@@ -27,7 +27,6 @@
     <input type="text" id="nameInput" placeholder="Nombre producto">
     <input type="number" id="priceInput" placeholder="Precio">
     <input type="number" id="quantityInput" placeholder="Cantidad">
-    <input type="date" id="expiryInput">
     <button onclick="addStock()">Agregar al Stock</button>
   </div>
 
@@ -58,7 +57,7 @@
     <h2>Stock Actual</h2>
     <table id="stockTable">
       <thead>
-        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th><th>Vencimiento</th></tr>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -73,7 +72,6 @@
     <input type="text" id="modNombre" placeholder="Nuevo nombre">
     <input type="number" id="modPrecio" placeholder="Nuevo precio">
     <input type="number" id="modStock" placeholder="Nueva cantidad">
-    <input type="date" id="modExpiry" placeholder="Nueva fecha de vencimiento">
     <input type="password" id="masterPassword" placeholder="Contraseña maestra">
     <button id="btnModificar">Modificar Producto</button>
   </div>
@@ -83,7 +81,7 @@
     <h2>Control de Ventas</h2>
     <table id="salesTable">
       <thead>
-        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+        <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
