@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUPERMERCADO X</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>SUPERMERCADO X</h1>
+    <img src="img/logo.png" alt="Logo Supermercado" width="500" height="500">
+  </header>
+
+  <!-- LOGIN -->
+  <section id="login-section">
+    <h2>Iniciar sesión</h2>
+    <input type="email" id="email" placeholder="Correo">
+    <input type="password" id="password" placeholder="Contraseña">
+    <button onclick="login()">Ingresar</button>
+  </section>
+
+  <!-- APP PRINCIPAL -->
+  <section id="app-section" class="hidden">
+    <nav>
+      <button onclick="showPage('stock')">Cargar Stock</button>
+      <button onclick="showPage('sell')">Vender</button>
+      <button onclick="showPage('control')">Controlar Stock</button>
+      <button onclick="showPage('modify')">Modificar</button>
+    </nav>
+
+    <!-- CARGAR STOCK -->
+    <div id="stock" class="page hidden">
+      <h2>Cargar Stock</h2>
+      <input type="text" id="codigo" placeholder="Código de barras">
+      <input type="text" id="nombre" placeholder="Nombre del producto">
+      <input type="number" id="precio" placeholder="Precio">
+      <input type="number" id="stockCantidad" placeholder="Cantidad disponible">
+      <input type="date" id="expiryDate" placeholder="Fecha de vencimiento">
+      <button id="btnGuardarProducto">Guardar Producto</button>
+    </div>
+
+    <!-- VENDER -->
+    <div id="sell" class="page hidden">
+      <h2>Vender productos</h2>
+      <input type="text" id="barcodeInput" placeholder="Escanee o escriba código de barras">
+      <button onclick="addProduct()">Agregar</button>
+
+      <table id="cartTable">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Código</th>
+            <th>Precio</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <p>Total: $<span id="total">0</span></p>
+      <button onclick="checkout()">Cobrar</button>
+    </div>
+
+    <!-- CONTROL DE STOCK -->
+    <div id="control" class="page hidden">
+      <h2>Control de Stock y Vencimientos</h2>
+      <div id="stockList"></div>
+    </div>
+
+    <!-- MODIFICAR -->
+    <div id="modify" class="page hidden">
+      <h2>Modificar Productos (requiere contraseña maestra)</h2>
+      <input type="password" id="masterPassword" placeholder="Contraseña maestra">
+      <input type="text" id="modCodigo" placeholder="Código del producto a modificar">
+      <input type="text" id="modNombre" placeholder="Nuevo nombre">
+      <input type="number" id="modPrecio" placeholder="Nuevo precio">
+      <input type="number" id="modStock" placeholder="Nueva cantidad">
+      <input type="date" id="modExpiry" placeholder="Nueva fecha de vencimiento">
+      <button id="btnModificar">Modificar Producto</button>
+    </div>
+  </section>
+
+  <!-- App JS -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
