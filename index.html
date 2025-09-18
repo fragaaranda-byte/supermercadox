@@ -17,6 +17,7 @@
       <button onclick="showSection('control')">Controlar Stock</button>
       <button onclick="showSection('modify')">Modificar Producto</button>
       <button onclick="showSection('controlVentas')">Control de Ventas</button>
+      <button onclick="printDailyReport()">TIRAR Z</button>
     </div>
   </div>
 
@@ -27,19 +28,20 @@
     <input type="text" id="nameInput" placeholder="Nombre producto">
     <input type="number" id="priceInput" placeholder="Precio">
     <input type="number" id="quantityInput" placeholder="Cantidad">
-    <input type="date" id="expiryInput">
     <button onclick="addStock()">Agregar al Stock</button>
   </div>
 
   <!-- Vender -->
   <div id="vender" class="section">
     <h2>Vender Productos</h2>
-    <input type="text" id="barcodeInputSale" placeholder="Código de barras">
-    <input type="number" id="quantityInputSale" value="1">
-    <button onclick="addProduct()">Agregar al Carrito</button>
+    <div class="sale-inputs">
+      <input type="text" id="barcodeInputSale" placeholder="Código de barras">
+      <input type="number" id="quantityInputSale" value="1" readonly>
+      <button onclick="addProduct()">Agregar al Carrito</button>
+    </div>
     <table id="cartTable">
       <thead>
-        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th></tr>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -50,7 +52,6 @@
       <button onclick="checkout('Efectivo')">Efectivo</button>
       <button onclick="checkout('Tarjeta')">Tarjeta</button>
     </div>
-    <button onclick="printDailyReport()">TIRAR Z</button>
   </div>
 
   <!-- Controlar Stock -->
@@ -58,7 +59,7 @@
     <h2>Stock Actual</h2>
     <table id="stockTable">
       <thead>
-        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th><th>Vencimiento</th></tr>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -70,11 +71,12 @@
     <select id="modProductSelect" onchange="loadProductToModify()">
       <option value="">-- Seleccione producto --</option>
     </select>
-    <input type="text" id="modNombre" placeholder="Nuevo nombre">
-    <input type="number" id="modPrecio" placeholder="Nuevo precio">
-    <input type="number" id="modStock" placeholder="Nueva cantidad">
-    <input type="date" id="modExpiry" placeholder="Nueva fecha de vencimiento">
-    <input type="password" id="masterPassword" placeholder="Contraseña maestra">
+    <div class="modify-inputs">
+      <input type="text" id="modNombre" placeholder="Nuevo nombre">
+      <input type="number" id="modPrecio" placeholder="Nuevo precio">
+      <input type="number" id="modStock" placeholder="Nueva cantidad">
+      <input type="password" id="masterPassword" placeholder="Contraseña maestra">
+    </div>
     <button id="btnModificar">Modificar Producto</button>
   </div>
 
@@ -83,7 +85,7 @@
     <h2>Control de Ventas</h2>
     <table id="salesTable">
       <thead>
-        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+        <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
