@@ -89,3 +89,9 @@ table th, table td {
 #stockList table {
   width: 100%;
 }
+
+#dailyReport {
+  width: 90%;
+  margin: 10px auto;
+  text-align: left;
+}
