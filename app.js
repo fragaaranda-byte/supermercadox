@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
   authDomain: "supermercadox-107f6.firebaseapp.com",
@@ -13,28 +12,29 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ------------------ VARIABLES ------------------
+// VARIABLES
 let cart = [];
 let total = 0;
 let salesToday = [];
+let deletedSales = [];
 
-// ------------------ FUNCIONES UI ------------------
+// ------------------ UI ------------------
 window.showSection = function(id){
   document.querySelectorAll(".section").forEach(s=>s.style.display="none");
   document.getElementById(id).style.display="block";
 };
 
-// ------------------ CARGAR STOCK ------------------
+// ------------------ STOCK ------------------
 window.addStock = async function(){
-  const code = document.getElementById("barcodeInput").value.trim();
-  const name = document.getElementById("nameInput").value.trim();
-  const price = parseFloat(document.getElementById("priceInput").value);
-  const qty = parseInt(document.getElementById("quantityInput").value);
-  const expiry = document.getElementById("expiryInput").value;
-  if(!code || !name || isNaN(price) || isNaN(qty)) return alert("Complete todos los campos");
+  const code=document.getElementById("barcodeInput").value.trim();
+  const name=document.getElementById("nameInput").value.trim();
+  const price=parseFloat(document.getElementById("priceInput").value);
+  const qty=parseInt(document.getElementById("quantityInput").value);
+  const expiry=document.getElementById("expiryInput").value;
+  if(!code||!name||isNaN(price)||isNaN(qty)) return alert("Complete todos los campos");
 
-  const q = query(collection(db,"products"), where("code","==",code));
-  const snapshot = await getDocs(q);
+  const q=query(collection(db,"products"), where("code","==",code));
+  const snapshot=await getDocs(q);
   if(!snapshot.empty){
     snapshot.forEach(async d=>{
       await updateDoc(doc(db,"products",d.id),{
@@ -44,12 +44,12 @@ window.addStock = async function(){
         expiryDate: expiry? new Date(expiry) : null
       });
     });
-    alert("Producto actualizado en stock");
+    alert("Producto actualizado");
   }else{
     await addDoc(collection(db,"products"),{
-      code,name:name.toLowerCase(),price,currentStock:qty,expiryDate:expiry? new Date(expiry) : null
+      code,name:name.toLowerCase(),price,currentStock:qty,expiryDate:expiry? new Date(expiry):null
     });
-    alert("Producto agregado al stock");
+    alert("Producto agregado");
   }
   document.getElementById("barcodeInput").value="";
   document.getElementById("nameInput").value="";
@@ -60,21 +60,21 @@ window.addStock = async function(){
   loadModifyProductList();
 };
 
-// ------------------ CARGAR LISTAS ------------------
-window.loadStockList = async function(){
-  const tbody = document.querySelector("#stockTable tbody");
+window.loadStockList=async function(){
+  const tbody=document.querySelector("#stockTable tbody");
   tbody.innerHTML="";
-  const snapshot = await getDocs(collection(db,"products"));
+  const snapshot=await getDocs(collection(db,"products"));
   snapshot.forEach(docSnap=>{
-    const d = docSnap.data();
-    const tr = document.createElement("tr");
+    const d=docSnap.data();
+    const tr=document.createElement("tr");
     tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td><td>${d.expiryDate? new Date(d.expiryDate.seconds*1000).toLocaleDateString() : ''}</td>`;
     tbody.appendChild(tr);
   });
 };
 loadStockList();
 
-window.loadModifyProductList = async function(){
+// ------------------ MODIFICAR ------------------
+window.loadModifyProductList=async function(){
   const select=document.getElementById("modProductSelect");
   select.innerHTML='<option value="">-- Seleccione producto --</option>';
   const snapshot=await getDocs(collection(db,"products"));
@@ -87,7 +87,6 @@ window.loadModifyProductList = async function(){
 };
 loadModifyProductList();
 
-// ------------------ MODIFICAR ------------------
 window.loadProductToModify= async function(){
   const id=document.getElementById("modProductSelect").value;
   if(!id) return;
@@ -97,7 +96,7 @@ window.loadProductToModify= async function(){
     document.getElementById("modNombre").value=data.name;
     document.getElementById("modPrecio").value=data.price;
     document.getElementById("modStock").value=data.currentStock;
-    document.getElementById("modExpiry").value=data.expiryDate? new Date(data.expiryDate.seconds*1000).toISOString().slice(0,10) : "";
+    document.getElementById("modExpiry").value=data.expiryDate? new Date(data.expiryDate.seconds*1000).toISOString().slice(0,10):"";
   });
 };
 
@@ -105,12 +104,12 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
   const master=document.getElementById("masterPassword").value;
   if(master!=="123456789") return alert("Contraseña maestra incorrecta");
   const docId=document.getElementById("modProductSelect").value;
-  if(!docId) return alert("Seleccione un producto");
+  if(!docId) return alert("Seleccione producto");
 
   const modName=document.getElementById("modNombre").value.trim();
   const modPrice=parseFloat(document.getElementById("modPrecio").value);
   const modStock=parseInt(document.getElementById("modStock").value);
-  const modExpiry=document.getElementById("modExpiry").value? new Date(document.getElementById("modExpiry").value) : null;
+  const modExpiry=document.getElementById("modExpiry").value? new Date(document.getElementById("modExpiry").value):null;
 
   await updateDoc(doc(db,"products",docId),{
     name:modName.toLowerCase(),
@@ -123,7 +122,7 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
   loadModifyProductList();
 });
 
-// ------------------ VENDER ------------------
+// ------------------ VENTA ------------------
 window.addProduct=function(){
   const code=document.getElementById("barcodeInputSale").value.trim();
   const qty=parseInt(document.getElementById("quantityInputSale").value);
@@ -135,11 +134,7 @@ window.addProduct=function(){
     snapshot.forEach(d=>{
       const data=d.data();
       const existing=cart.find(p=>p.code===code);
-      if(existing){
-        existing.qty=qty; // sobrescribir cantidad
-      }else{
-        cart.push({code, name:data.name.toUpperCase(), price:data.price, qty});
-      }
+      if(existing){ existing.qty=qty; }else{ cart.push({code,name:data.name.toUpperCase(),price:data.price,qty}); }
       updateCartTable();
     });
   });
@@ -158,7 +153,6 @@ function updateCartTable(){
   document.getElementById("total").textContent=total.toFixed(2);
 }
 
-// ------------------ MÉTODO DE PAGO ------------------
 window.choosePaymentMethod=function(){
   if(cart.length===0) return alert("Carrito vacío");
   document.getElementById("paymentMethodDiv").style.display="block";
@@ -178,46 +172,68 @@ window.checkout=async function(method){
     });
   }
   generateTicket(cart,total,method);
-  salesToday.push(...cart.map(p=>({...p, method})));
+  salesToday.push(...cart.map(p=>({...p, method, date:now})));
   cart=[];
   updateCartTable();
   document.getElementById("paymentMethodDiv").style.display="none";
 };
 
-// ------------------ TICKET CLIENTE ------------------
 function generateTicket(cart,total,method){
-  const printWindow=window.open('','Print','width=400,height=600');
-  let html='<h2>SUPERMERCADO X</h2><hr>';
-  cart.forEach(p=>{
-    html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
-  });
-  html+=`<hr>Total: $${total.toFixed(2)}<br>`;
-  html+=`Método de pago: ${method}`;
+  const printWindow=window.open('','Print','width=300,height=600');
+  let html='<div class="printTicket"><h3>SUPERMERCADO X</h3><hr>';
+  cart.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; });
+  html+=`<hr>Total: $${total.toFixed(2)}<br>Método de pago: ${method}</div>`;
   printWindow.document.write(html);
   printWindow.document.close();
   printWindow.print();
 }
+
+// ------------------ CONTROL VENTAS ------------------
+window.loadSales=async function(){
+  const tbody=document.querySelector("#salesTable tbody");
+  tbody.innerHTML="";
+  const snapshot=await getDocs(collection(db,"sales"));
+  snapshot.forEach(docSnap=>{
+    const d=docSnap.data();
+    const tr=document.createElement("tr");
+    const productsDesc=JSON.stringify({name:d.name,qty:d.qty,price:d.price});
+    tr.innerHTML=`<td>${new Date(d.date.seconds*1000).toLocaleTimeString()}</td><td>${productsDesc}</td><td>$${(d.qty*d.price).toFixed(2)}</td><td>${d.method}</td>
+      <td><button style="background-color:red;color:white;" onclick="deleteSale('${docSnap.id}')">ELIMINAR VENTA</button></td>`;
+    tbody.appendChild(tr);
+  });
+};
+window.loadSales();
+
+// Función eliminar venta
+window.deleteSale=async function(id){
+  const master=prompt("Contraseña maestra:");
+  if(master!=="123456789") return alert("Contraseña incorrecta");
+  let reason=prompt("MOTIVO DE ELIMINACION (obligatorio):");
+  if(!reason) return alert("Debe ingresar un motivo");
+  const docRef=doc(db,"sales",id);
+  const snapshot=await getDocs(query(collection(db,"sales"), where("__name__","==",id)));
+  snapshot.forEach(async d=>{
+    deletedSales.push({...d.data(), reason});
+    await deleteDoc(doc(db,"sales",id));
+  });
+  loadSales();
+};
 
 // ------------------ TIRAR Z ------------------
 window.printDailyReport=function(){
   const master=prompt("Ingrese contraseña maestra para TIRAR Z:");
   if(master!=="123456789") return alert("Contraseña incorrecta");
   const printWindow=window.open('','Print','width=800,height=600');
-  let efectivoTotal=0;
-  let tarjetaTotal=0;
+  let efectivoTotal=0, tarjetaTotal=0;
   let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
   html+='<h3>Ventas en efectivo</h3>';
-  salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{
-    html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
-    efectivoTotal+=p.price*p.qty;
-  });
+  salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; efectivoTotal+=p.price*p.qty; });
   html+=`Total efectivo: $${efectivoTotal.toFixed(2)}<hr>`;
   html+='<h3>Ventas con tarjeta</h3>';
-  salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{
-    html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
-    tarjetaTotal+=p.price*p.qty;
-  });
+  salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; tarjetaTotal+=p.price*p.qty; });
   html+=`Total tarjeta: $${tarjetaTotal.toFixed(2)}<hr>`;
+  html+='<h3>Ventas Eliminadas</h3>';
+  deletedSales.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - Motivo: ${p.reason}<br>`; });
   printWindow.document.write(html);
   printWindow.document.close();
   printWindow.print();
