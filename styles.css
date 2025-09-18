@@ -1,97 +1,59 @@
-body {
+body{
   font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background: #f4f4f9;
-  color: #333;
-  text-align: center;
+  background-color:#f0f2f5;
+  margin:0;
+  padding:0;
 }
-
-header {
-  background: #1f2634;
-  color: #fff;
-  padding: 20px;
+h1,h2{
+  text-align:center;
 }
-
-header h1 {
-  margin: 0;
-  font-size: 2em;
+.menu{
+  display:flex;
+  justify-content:center;
+  gap:15px;
+  margin:20px 0;
 }
-
-header img {
-  margin-top: 10px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+button{
+  padding:10px 20px;
+  background-color:#f4cf19;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-weight:bold;
 }
-
-section {
-  margin: 20px;
+button:hover{
+  background-color:#e6b800;
 }
-
-input, select {
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+.section{
+  display:none;
+  max-width:800px;
+  margin:0 auto;
+  padding:20px;
+  background-color:#fff;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+  border-radius:10px;
 }
-
-button {
-  padding: 10px 20px;
-  margin: 5px;
-  border: none;
-  border-radius: 6px;
-  background: #f4cf19;
-  color: #1f2634;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+input{
+  display:block;
+  margin:10px 0;
+  padding:10px;
+  width:100%;
+  box-sizing:border-box;
 }
-
-button:hover {
-  background: #e0bb15;
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
 }
-
-nav {
-  margin: 20px;
+th,td{
+  border:1px solid #ccc;
+  padding:8px;
+  text-align:left;
 }
-
-nav button {
-  margin: 10px;
+#cartTable th, #stockTable th{
+  background-color:#1f2634;
+  color:#fff;
 }
-
-table {
-  width: 80%;
-  margin: 20px auto;
-  border-collapse: collapse;
-  background: white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-table th, table td {
-  padding: 10px;
-  border: 1px solid #ccc;
-}
-
-.hidden {
-  display: none;
-}
-
-.page {
-  margin-top: 20px;
-}
-
-#stockList {
-  width: 90%;
-  margin: 0 auto;
-  text-align: left;
-}
-
-#stockList table {
-  width: 100%;
-}
-
-#dailyReport {
-  width: 90%;
-  margin: 10px auto;
-  text-align: left;
+#cartTable td, #stockTable td{
+  background-color:#f9f9f9;
 }
