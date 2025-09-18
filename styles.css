@@ -1,81 +1,66 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
+  margin: 0; padding: 0;
+  background: #f4f4f4;
   color: #333;
-  margin: 0;
-  padding: 0;
 }
 
 header {
-  background-color: #1f2634;
+  background: #1f2634;
   color: #f4cf19;
+  padding: 10px;
   text-align: center;
-  padding: 1rem 0;
-  font-size: 2rem;
-  font-weight: bold;
 }
 
 nav {
-  background-color: #fff;
-  padding: 0.5rem;
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  gap: 10px;
+  padding: 10px;
+  background: #ddd;
 }
 
 nav button {
-  background-color: #f4cf19;
+  padding: 10px 15px;
   border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
+  background: #1f2634;
+  color: #f4cf19;
   cursor: pointer;
   border-radius: 5px;
-  transition: background 0.3s;
 }
 
 nav button:hover {
-  background-color: #e0b800;
+  background: #333;
 }
 
 main {
-  padding: 1rem;
+  padding: 20px;
 }
 
-.seccion {
+.section {
   display: none;
-  background-color: #fff;
-  padding: 1rem;
-  margin: 1rem auto;
-  border-radius: 8px;
-  max-width: 800px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.seccion h2 {
-  text-align: center;
-  margin-bottom: 1rem;
+  margin-top: 20px;
 }
 
 input, select, button {
-  display: block;
-  width: 90%;
-  max-width: 300px;
-  margin: 0.5rem auto;
-  padding: 0.5rem;
-  font-size: 1rem;
+  margin: 5px;
+  padding: 5px;
 }
 
-#ventaLista p, #stockLista p, #tirarZLista p, #ventasEliminadasLista p {
-  margin: 0.3rem 0;
-  padding: 0.3rem;
-  border-bottom: 1px solid #ddd;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #aaa;
+  padding: 5px;
+  text-align: center;
 }
 
 .ticketWindow {
-  font-family: 'Arial', sans-serif;
-  font-size: 0.8rem;
-  width: 28%;
-  margin: auto;
+  width: 20%;
+  font-size: 12px;
+  font-family: monospace;
 }
