@@ -107,7 +107,31 @@ td{
   margin-top:10px;
 }
 
-#paymentMethodDiv{
-  margin-top:15px;
-  text-align:center;
+.sale-inputs{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.modify-inputs{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+}
+
+/* Botones + y - dentro del carrito */
+.cart-btn{
+  padding:3px 8px;
+  margin:0 3px;
+  background-color:#f4cf19;
+  border:none;
+  border-radius:5px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.cart-btn:hover{
+  background-color:#e6b800;
 }
