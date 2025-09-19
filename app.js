@@ -1,53 +1,48 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { v4 as uuidv4 } from "https://cdn.skypack.dev/uuid";
-
+// Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
-  authDomain: "supermercadox-107f6.firebaseapp.com",
-  projectId: "supermercadox-107f6",
-  storageBucket: "supermercadox-107f6.firebasestorage.app",
-  messagingSenderId: "504958637825",
-  appId: "1:504958637825:web:6ae5e2cde43206b3052d00"
+  apiKey: "TU_API_KEY",
+  authDomain: "TU_AUTH_DOMAIN",
+  projectId: "TU_PROJECT_ID",
+  storageBucket: "TU_BUCKET",
+  messagingSenderId: "TU_MESSAGING_ID",
+  appId: "TU_APP_ID"
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 let cart = [];
+let total = 0;
 let salesToday = [];
 let deletedSales = [];
 
-// ------------------ UI ------------------
-window.showSection = function(id){
+// UI
+function showSection(id){
   document.querySelectorAll(".section").forEach(s=>s.style.display="none");
   document.getElementById(id).style.display="block";
-};
+}
+showSection("cargar");
 
-// ------------------ STOCK ------------------
-window.addStock = async function(){
-  const code = document.getElementById("barcodeInput").value.trim();
-  const name = document.getElementById("nameInput").value.trim();
-  const price = parseFloat(document.getElementById("priceInput").value);
-  const qty = parseInt(document.getElementById("quantityInput").value);
+// ---------------- STOCK ----------------
+async function addStock(){
+  const code=document.getElementById("barcodeInput").value.trim();
+  const name=document.getElementById("nameInput").value.trim();
+  const price=parseFloat(document.getElementById("priceInput").value);
+  const qty=parseInt(document.getElementById("quantityInput").value);
+  if(!code||!name||isNaN(price)||isNaN(qty)) return alert("Complete todos los campos");
 
-  if(!code || !name || isNaN(price) || isNaN(qty)) return alert("Complete todos los campos");
-
-  const q = query(collection(db,"products"), where("code","==",code));
-  const snapshot = await getDocs(q);
-
+  const snapshot = await db.collection("products").where("code","==",code).get();
   if(!snapshot.empty){
-    snapshot.forEach(async d=>{
-      await updateDoc(doc(db,"products",d.id),{
+    snapshot.forEach(async docSnap=>{
+      await db.collection("products").doc(docSnap.id).update({
         currentStock: qty,
         price,
-        name: name.toLowerCase()
+        name:name.toLowerCase()
       });
     });
     alert("Producto actualizado");
-  } else {
-    await addDoc(collection(db,"products"),{
-      code, name: name.toLowerCase(), price, currentStock: qty
+  } else{
+    await db.collection("products").add({
+      code, name:name.toLowerCase(), price, currentStock:qty
     });
     alert("Producto agregado");
   }
@@ -58,215 +53,193 @@ window.addStock = async function(){
   document.getElementById("quantityInput").value="";
   loadStockList();
   loadModifyProductList();
-};
+}
 
-window.loadStockList = async function(){
-  const tbody = document.querySelector("#stockTable tbody");
-  tbody.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"products"));
+async function loadStockList(){
+  const tbody=document.querySelector("#stockTable tbody");
+  tbody.innerHTML="";
+  const snapshot=await db.collection("products").get();
   snapshot.forEach(docSnap=>{
-    const d = docSnap.data();
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
+    const d=docSnap.data();
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
     tbody.appendChild(tr);
   });
-};
+}
 loadStockList();
 
-// ------------------ MODIFICAR ------------------
-window.loadModifyProductList = async function(){
-  const select = document.getElementById("modProductSelect");
-  select.innerHTML = '<option value="">-- Seleccione producto --</option>';
-  const snapshot = await getDocs(collection(db,"products"));
+// ---------------- MODIFICAR ----------------
+async function loadModifyProductList(){
+  const select=document.getElementById("modProductSelect");
+  select.innerHTML='<option value="">-- Seleccione producto --</option>';
+  const snapshot=await db.collection("products").get();
   snapshot.forEach(d=>{
-    const opt = document.createElement("option");
-    opt.value = d.id;
-    opt.textContent = d.data().name.toUpperCase();
+    const opt=document.createElement("option");
+    opt.value=d.id;
+    opt.textContent=d.data().name.toUpperCase();
     select.appendChild(opt);
   });
-};
+}
 loadModifyProductList();
 
-window.loadProductToModify = async function(){
-  const id = document.getElementById("modProductSelect").value;
+async function loadProductToModify(){
+  const id=document.getElementById("modProductSelect").value;
   if(!id) return;
-  const snapshot = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
-  snapshot.forEach(d=>{
-    const data = d.data();
-    document.getElementById("modNombre").value = data.name;
-    document.getElementById("modPrecio").value = data.price;
-    document.getElementById("modStock").value = data.currentStock;
-  });
-};
+  const docSnap=await db.collection("products").doc(id).get();
+  const data=docSnap.data();
+  document.getElementById("modNombre").value=data.name;
+  document.getElementById("modPrecio").value=data.price;
+  document.getElementById("modStock").value=data.currentStock;
+}
 
 document.getElementById("btnModificar").addEventListener("click", async ()=>{
-  const master = document.getElementById("masterPassword").value;
+  const master=document.getElementById("masterPassword").value;
   if(master!=="123456789") return alert("Contraseña maestra incorrecta");
-  const docId = document.getElementById("modProductSelect").value;
+  const docId=document.getElementById("modProductSelect").value;
   if(!docId) return alert("Seleccione producto");
+  const modName=document.getElementById("modNombre").value.trim();
+  const modPrice=parseFloat(document.getElementById("modPrecio").value);
+  const modStock=parseInt(document.getElementById("modStock").value);
 
-  const modName = document.getElementById("modNombre").value.trim();
-  const modPrice = parseFloat(document.getElementById("modPrecio").value);
-  const modStock = parseInt(document.getElementById("modStock").value);
-
-  await updateDoc(doc(db,"products",docId),{
-    name: modName.toLowerCase(),
-    price: modPrice,
-    currentStock: modStock
+  await db.collection("products").doc(docId).update({
+    name:modName.toLowerCase(),
+    price:modPrice,
+    currentStock:modStock
   });
   alert("Producto modificado");
   loadStockList();
   loadModifyProductList();
 });
 
-// ------------------ VENDER ------------------
-window.addProduct = async function(){
-  const code = document.getElementById("barcodeInputSale").value.trim();
+// ---------------- VENDER ----------------
+function addProduct(){
+  const code=document.getElementById("barcodeInputSale").value.trim();
   if(!code) return alert("Ingrese código");
 
-  const snapshot = await getDocs(query(collection(db,"products"), where("code","==",code)));
-  if(snapshot.empty) return alert("Producto no existe");
-
-  snapshot.forEach(d=>{
-    const data = d.data();
-    const exists = cart.find(p=>p.code===code);
-    if(exists){
-      exists.qty += 1;
-    } else {
-      cart.push({code, qty:1, name:data.name.toUpperCase(), price:data.price});
-    }
-  });
-  updateCartTable();
-  document.getElementById("barcodeInputSale").value = "";
-};
-
-window.updateCartTable = function(){
-  const tbody = document.querySelector("#cartTable tbody");
-  tbody.innerHTML = "";
-  let total = 0;
-  cart.forEach(c=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${c.name}</td>
-      <td>${c.code}</td>
-      <td>${c.price}</td>
-      <td>
-        <button onclick="changeQty('${c.code}',-1)">-</button>
-        ${c.qty}
-        <button onclick="changeQty('${c.code}',1)">+</button>
-      </td>
-      <td>${(c.price*c.qty).toFixed(2)}</td>`;
-    tbody.appendChild(tr);
-    total += c.price * c.qty;
-  });
-  document.getElementById("total").textContent = total.toFixed(2);
-};
-
-window.changeQty = function(code, delta){
-  const product = cart.find(p=>p.code===code);
-  if(!product) return;
-  product.qty += delta;
-  if(product.qty < 1) cart = cart.filter(p=>p.code!==code);
-  updateCartTable();
-};
-
-window.checkout = async function(){
-  const now = new Date();
-  const method = prompt("Método de pago (Efectivo/Tarjeta):");
-  if(!method) return alert("Debe ingresar un método");
-
-  for(let c of cart){
-    const snapshot = await getDocs(query(collection(db,"products"), where("code","==",c.code)));
-    snapshot.forEach(async d=>{
-      const current = d.data().currentStock;
-      await updateDoc(doc(db,"products",d.id), {currentStock: current - c.qty});
-    });
-    const saleId = uuidv4();
-    await addDoc(collection(db,"sales"),{
-      id: saleId,
-      code: c.code,
-      name: c.name,
-      price: c.price,
-      qty: c.qty,
-      date: now,
-      method
-    });
-    salesToday.push({id: saleId, code: c.code, name:c.name, price:c.price, qty:c.qty, date:now, method});
+  const exists=cart.find(p=>p.code===code);
+  if(exists){
+    exists.qty++;
+  } else{
+    cart.push({code, qty:1, name:code, price:0});
   }
+  updateCartTable();
+  document.getElementById("barcodeInputSale").value="";
+}
 
-  // Imprimir ticket
-  const printWindow = window.open('', 'Print', 'width=800,height=600');
-  let html = '<h2>SUPERMERCADO X - TICKET</h2><hr>';
-  cart.forEach(p=>{ html += `${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; });
-  html += `<hr>Total: $${cart.reduce((a,p)=>a+p.price*p.qty,0).toFixed(2)}`;
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.print();
+async function updateCartTable(){
+  const tbody=document.querySelector("#cartTable tbody");
+  tbody.innerHTML="";
+  total=0;
+  for(const c of cart){
+    const snapshot=await db.collection("products").where("code","==",c.code).get();
+    snapshot.forEach(d=>{
+      const data=d.data();
+      c.name=data.name.toUpperCase();
+      c.price=data.price;
+    });
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${c.name}</td><td>${c.code}</td><td>${c.price}</td>
+    <td>${c.qty}</td>
+    <td>${(c.qty*c.price).toFixed(2)}</td>
+    <td class="cart-actions">
+      <button onclick="changeQty('${c.code}',1)">+</button>
+      <button onclick="changeQty('${c.code}',-1)">-</button>
+    </td>`;
+    tbody.appendChild(tr);
+    total+=c.price*c.qty;
+  }
+  document.getElementById("total").textContent=total.toFixed(2);
+}
 
-  cart = [];
+function changeQty(code,delta){
+  const item=cart.find(p=>p.code===code);
+  if(!item) return;
+  item.qty+=delta;
+  if(item.qty<1) cart=cart.filter(p=>p.code!==code);
+  updateCartTable();
+}
+
+// ---------------- CHECKOUT ----------------
+async function checkout(){
+  if(cart.length===0) return alert("Carrito vacío");
+  const method = prompt("Método de pago (Efectivo/Tarjeta):","Efectivo");
+  const now=new Date();
+  for(const c of cart){
+    const snapshot=await db.collection("products").where("code","==",c.code).get();
+    snapshot.forEach(async d=>{
+      await db.collection("products").doc(d.id).update({currentStock:d.data().currentStock-c.qty});
+    });
+    const id='V'+Date.now()+'-'+Math.floor(Math.random()*1000);
+    await db.collection("sales").add({
+      id, code:c.code, name:c.name, price:c.price, qty:c.qty, date:now, method
+    });
+    salesToday.push({id, code:c.code, name:c.name, price:c.price, qty:c.qty, date:now, method});
+  }
+  cart=[];
   updateCartTable();
   loadStockList();
   loadSalesTable();
-};
+  printTicket(salesToday);
+}
 
-// ------------------ CONTROL DE VENTAS ------------------
-window.loadSalesTable = async function(){
-  const tbody = document.querySelector("#salesTable tbody");
-  tbody.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"sales"));
+function printTicket(items){
+  const win=window.open('','Print','width=600,height=800');
+  let html='<h2>SUPERMERCADO X - TICKET</h2><hr>';
+  let totalTicket=0;
+  items.forEach(p=>{
+    html+=`<b>${p.name}</b> [${p.qty}] ($${p.price})<br>`;
+    totalTicket+=p.price*p.qty;
+  });
+  html+=`<hr>Total: $${totalTicket.toFixed(2)}`;
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+
+// ---------------- CONTROL VENTAS ----------------
+async function loadSalesTable(){
+  const tbody=document.querySelector("#salesTable tbody");
+  tbody.innerHTML="";
+  const snapshot=await db.collection("sales").get();
   snapshot.forEach(docSnap=>{
-    const s = docSnap.data();
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${new Date(s.date.seconds*1000).toLocaleString()}</td>
-      <td>${s.name} [${s.qty}] ($${s.price})</td>
-      <td>${(s.qty*s.price).toFixed(2)}</td>
-      <td>${s.method}</td>
-      <td>${s.id}</td>
-      <td><button onclick="deleteSale('${docSnap.id}')">ELIMINAR VENTA</button></td>`;
+    const s=docSnap.data();
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${s.id}</td><td>${new Date(s.date.seconds*1000).toLocaleString()}</td>
+    <td>${s.name} [${s.qty}] ($${s.price})</td>
+    <td>${(s.qty*s.price).toFixed(2)}</td>
+    <td>${s.method}</td>
+    <td><button onclick="deleteSale('${docSnap.id}')">Eliminar</button></td>`;
     tbody.appendChild(tr);
   });
-};
+}
 
-window.deleteSale = async function(id){
-  const reason = prompt("MOTIVO DE ELIMINACION:");
-  if(!reason) return alert("Debe ingresar un motivo");
-  const master = prompt("Ingrese contraseña maestra:");
+// ---------------- ELIMINAR VENTA ----------------
+async function deleteSale(id){
+  const reason=prompt("Motivo de eliminación:");
+  if(!reason) return alert("Debe ingresar motivo");
+  const master=prompt("Contraseña maestra:");
   if(master!=="123456789") return alert("Contraseña incorrecta");
 
-  const snapshot = await getDocs(query(collection(db,"sales"), where("__name__","==",id)));
-  snapshot.forEach(async d=>{
-    const saleData = d.data();
-    deletedSales.push({...saleData, reason, id: saleData.id});
-    const prodSnap = await getDocs(query(collection(db,"products"), where("code","==",saleData.code)));
-    prodSnap.forEach(async prod=>{
-      const curr = prod.data().currentStock;
-      await updateDoc(doc(db,"products",prod.id), {currentStock: curr + saleData.qty});
-    });
-    await deleteDoc(doc(db,"sales",id));
-  });
+  const docSnap=await db.collection("sales").doc(id).get();
+  const s=docSnap.data();
+  deletedSales.push({...s, reason});
+  const prodSnap=await db.collection("products").where("code","==",s.code).get();
+  prodSnap.forEach(async p=>await db.collection("products").doc(p.id).update({currentStock:p.data().currentStock+s.qty}));
+  await db.collection("sales").doc(id).delete();
   loadStockList();
   loadSalesTable();
-};
+}
 
-// ------------------ TIRAR Z ------------------
-window.printDailyReport = function(){
-  const master = prompt("Ingrese contraseña maestra para TIRAR Z:");
+// ---------------- TIRAR Z ----------------
+function printDailyReport(){
+  const master=prompt("Contraseña maestra para TIRAR Z:");
   if(master!=="123456789") return alert("Contraseña incorrecta");
-  const printWindow = window.open('','Print','width=800,height=600');
-  let efectivoTotal = 0, tarjetaTotal = 0;
+  const win=window.open('','Print','width=600,height=800');
   let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
-  salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - ID: ${p.id}<br>`; efectivoTotal+=p.price*p.qty; });
-  html+=`Total efectivo: $${efectivoTotal.toFixed(2)}<hr>`;
-  salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - ID: ${p.id}<br>`; tarjetaTotal+=p.price*p.qty; });
-  html+=`Total tarjeta: $${tarjetaTotal.toFixed(2)}<hr>`;
-  html+='<h3>Ventas Eliminadas</h3>';
-  deletedSales.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - Motivo: ${p.reason} - ID: ${p.id}<br>`; });
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.print();
-};
-
-// ------------------ INICIO ------------------
-showSection("inicio");
-loadSalesTable();
+  salesToday.forEach(p=>html+=`${p.id} - ${p.name} [${p.qty}] ($${p.price}) - ${p.method}<br>`);
+  html+='<h3>Ventas eliminadas</h3>';
+  deletedSales.forEach(p=>html+=`${p.id} - ${p.name} [${p.qty}] ($${p.price}) - Motivo: ${p.reason}<br>`);
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
