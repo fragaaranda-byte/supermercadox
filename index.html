@@ -9,91 +9,86 @@
 <script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
-
-<div class="header-container">
+  <div id="inicio" class="header-container">
     <h1>SUPERMERCADO X</h1>
     <div class="menu">
-        <button onclick="showSection('cargar')">Cargar Stock</button>
-        <button onclick="showSection('vender')">Vender</button>
-        <button onclick="showSection('control')">Controlar Stock</button>
-        <button onclick="showSection('modify')">Modificar Producto</button>
-        <button onclick="showSection('controlVentas')">Control de Ventas</button>
-        <button onclick="printDailyReport()">TIRAR Z</button>
+      <button onclick="showSection('cargar')">Cargar Stock</button>
+      <button onclick="showSection('vender')">Vender</button>
+      <button onclick="showSection('control')">Controlar Stock</button>
+      <button onclick="showSection('modify')">Modificar Producto</button>
+      <button onclick="showSection('controlVentas')">Control de Ventas</button>
     </div>
-</div>
+  </div>
 
-<!-- Cargar Stock -->
-<div id="cargar" class="section">
+  <!-- Cargar Stock -->
+  <div id="cargar" class="section">
     <h2>Cargar Stock</h2>
     <input type="text" id="barcodeInput" placeholder="Código de barras">
-    <input type="text" id="nameInput" placeholder="Nombre del producto">
+    <input type="text" id="nameInput" placeholder="Nombre producto">
     <input type="number" id="priceInput" placeholder="Precio">
     <input type="number" id="quantityInput" placeholder="Cantidad">
+    <input type="date" id="expiryInput">
     <button onclick="addStock()">Agregar al Stock</button>
-</div>
+  </div>
 
-<!-- Vender -->
-<div id="vender" class="section">
+  <!-- Vender -->
+  <div id="vender" class="section">
     <h2>Vender Productos</h2>
     <input type="text" id="barcodeInputSale" placeholder="Código de barras">
-    <div class="quantity-row">
-        <button onclick="adjustQty(-1)">-</button>
-        <input type="number" id="quantityInputSale" value="1">
-        <button onclick="adjustQty(1)">+</button>
-    </div>
+    <input type="number" id="quantityInputSale" value="1">
     <button onclick="addProduct()">Agregar al Carrito</button>
-
     <table id="cartTable">
-        <thead>
-            <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th></tr>
-        </thead>
-        <tbody></tbody>
+      <thead>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th></tr>
+      </thead>
+      <tbody></tbody>
     </table>
-
     <p>Total: $<span id="total">0</span></p>
-    <button onclick="choosePaymentMethod()">Cobrar</button>
+    <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
     <div id="paymentMethodDiv" style="display:none;">
-        <p>¿Cómo pagó el cliente?</p>
-        <button onclick="checkout('Efectivo')">Efectivo</button>
-        <button onclick="checkout('Tarjeta')">Tarjeta</button>
+      <p>¿Cómo se cobró?</p>
+      <button onclick="checkout('Efectivo')">Efectivo</button>
+      <button onclick="checkout('Tarjeta')">Tarjeta</button>
     </div>
-</div>
+    <button onclick="printDailyReport()">TIRAR Z</button>
+  </div>
 
-<!-- Controlar Stock -->
-<div id="control" class="section">
+  <!-- Controlar Stock -->
+  <div id="control" class="section">
     <h2>Stock Actual</h2>
     <table id="stockTable">
-        <thead>
-            <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
-        </thead>
-        <tbody></tbody>
+      <thead>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th><th>Vencimiento</th></tr>
+      </thead>
+      <tbody></tbody>
     </table>
-</div>
+  </div>
 
-<!-- Modificar Producto -->
-<div id="modify" class="section">
+  <!-- Modificar -->
+  <div id="modify" class="section">
     <h2>Modificar Producto</h2>
     <select id="modProductSelect" onchange="loadProductToModify()">
-        <option value="">-- Seleccione producto --</option>
+      <option value="">-- Seleccione producto --</option>
     </select>
     <input type="text" id="modNombre" placeholder="Nuevo nombre">
     <input type="number" id="modPrecio" placeholder="Nuevo precio">
     <input type="number" id="modStock" placeholder="Nueva cantidad">
+    <input type="date" id="modExpiry" placeholder="Nueva fecha de vencimiento">
     <input type="password" id="masterPassword" placeholder="Contraseña maestra">
     <button id="btnModificar">Modificar Producto</button>
-</div>
+  </div>
 
-<!-- Control de Ventas -->
-<div id="controlVentas" class="section">
+  <!-- Control de Ventas -->
+  <div id="controlVentas" class="section">
     <h2>Control de Ventas</h2>
     <table id="salesTable">
-        <thead>
-            <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th></tr>
-        </thead>
-        <tbody></tbody>
+      <thead>
+        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+      </thead>
+      <tbody></tbody>
     </table>
-</div>
+  </div>
 
-<script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
