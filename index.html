@@ -5,11 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUPERMERCADO X</title>
 <link rel="stylesheet" href="styles.css">
-<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 </head>
 <body>
-  <div id="inicio" class="header-container">
+  <div class="header-container">
     <h1>SUPERMERCADO X</h1>
     <div class="menu">
       <button onclick="showSection('cargar')">Cargar Stock</button>
@@ -38,12 +41,12 @@
     <button onclick="addProduct()">Agregar al Carrito</button>
     <table id="cartTable">
       <thead>
-        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th></tr>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
     <p>Total: $<span id="total">0</span></p>
-    <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
+    <button onclick="checkout()">Cobrar e Imprimir Ticket</button>
   </div>
 
   <!-- Controlar Stock -->
@@ -57,7 +60,7 @@
     </table>
   </div>
 
-  <!-- Modificar -->
+  <!-- Modificar Producto -->
   <div id="modify" class="section">
     <h2>Modificar Producto</h2>
     <select id="modProductSelect" onchange="loadProductToModify()">
@@ -75,12 +78,12 @@
     <h2>Control de Ventas</h2>
     <table id="salesTable">
       <thead>
-        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>ID</th><th>Acción</th></tr>
+        <tr><th>ID</th><th>Hora</th><th>Producto</th><th>Total</th><th>Método</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
