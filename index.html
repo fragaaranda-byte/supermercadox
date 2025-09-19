@@ -5,94 +5,94 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUPERMERCADO X</title>
 <link rel="stylesheet" href="styles.css">
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
-<div id="inicio" class="header-container">
-  <h1>SUPERMERCADO X</h1>
-  <div class="menu">
-    <button onclick="showSection('cargar')">Cargar Stock</button>
-    <button onclick="showSection('vender')">Vender</button>
-    <button onclick="showSection('control')">Controlar Stock</button>
-    <button onclick="showSection('modify')">Modificar Producto</button>
-    <button onclick="showSection('controlVentas')">Control de Ventas</button>
+  <div id="inicio" class="header-container">
+    <h1>SUPERMERCADO X</h1>
+    <div class="menu">
+      <button onclick="showSection('cargar')">Cargar Stock</button>
+      <button onclick="showSection('vender')">Vender</button>
+      <button onclick="showSection('control')">Controlar Stock</button>
+      <button onclick="showSection('modify')">Modificar Producto</button>
+      <button onclick="showSection('controlVentas')">Control de Ventas</button>
+      <button onclick="printDailyReport()">TIRAR Z</button>
+    </div>
   </div>
-</div>
 
-<!-- Cargar Stock -->
-<div id="cargar" class="section">
-  <h2>Cargar Stock</h2>
-  <input type="text" id="barcodeInput" placeholder="Código de barras">
-  <input type="text" id="nameInput" placeholder="Nombre producto">
-  <div class="price-container">
-    <input type="number" id="priceInput" placeholder="Precio" min="0">
-    <input type="number" id="centsInput" placeholder="Centavos" min="0" max="99">
+  <!-- Cargar Stock -->
+  <div id="cargar" class="section">
+    <h2>Cargar Stock</h2>
+    <input type="text" id="barcodeInput" placeholder="Código de barras">
+    <input type="text" id="nameInput" placeholder="Nombre producto">
+    <div class="price-inputs">
+      <input type="number" id="priceInput" placeholder="Precio $" min="0">
+      <input type="number" id="centsInput" placeholder="Centavos" min="0" max="99">
+    </div>
+    <input type="number" id="quantityInput" placeholder="Cantidad" min="1">
+    <button onclick="addStock()">Agregar al Stock</button>
   </div>
-  <input type="number" id="quantityInput" placeholder="Cantidad">
-  <button onclick="addStock()">Agregar al Stock</button>
-</div>
 
-<!-- Vender -->
-<div id="vender" class="section">
-  <h2>Vender Productos</h2>
-  <input type="text" id="barcodeInputSale" placeholder="Código de barras">
-  <input type="number" id="quantityInputSale" value="1">
-  <button onclick="addProduct()">Agregar al Carrito</button>
-  <table id="cartTable">
-    <thead>
-      <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <p>Total: $<span id="total">0.00</span></p>
-  <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
-  <div id="paymentMethodDiv" style="display:none;">
-    <p>¿Cómo se cobró?</p>
-    <button onclick="checkout('Efectivo')">Efectivo</button>
-    <button onclick="checkout('Tarjeta')">Tarjeta</button>
+  <!-- Vender -->
+  <div id="vender" class="section">
+    <h2>Vender Productos</h2>
+    <input type="text" id="barcodeInputSale" placeholder="Código de barras">
+    <input type="number" id="quantityInputSale" value="1" min="1">
+    <button onclick="addProduct()">Agregar al Carrito</button>
+    <table id="cartTable">
+      <thead>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p>Total: $<span id="total">0</span></p>
+    <div id="paymentMethodDiv" style="display:none;">
+      <p>¿Cómo se cobró?</p>
+      <button onclick="checkout('Efectivo')">Efectivo</button>
+      <button onclick="checkout('Tarjeta')">Tarjeta</button>
+    </div>
+    <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
   </div>
-  <button onclick="printDailyReport()">TIRAR Z</button>
-</div>
 
-<!-- Controlar Stock -->
-<div id="control" class="section">
-  <h2>Stock Actual</h2>
-  <table id="stockTable">
-    <thead>
-      <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- Modificar -->
-<div id="modify" class="section">
-  <h2>Modificar Producto</h2>
-  <select id="modProductSelect" onchange="loadProductToModify()">
-    <option value="">-- Seleccione producto --</option>
-  </select>
-  <input type="text" id="modNombre" placeholder="Nuevo nombre">
-  <div class="price-container">
-    <input type="number" id="modPrecio" placeholder="Nuevo precio" min="0">
-    <input type="number" id="modCentavos" placeholder="Centavos" min="0" max="99">
+  <!-- Controlar Stock -->
+  <div id="control" class="section">
+    <h2>Stock Actual</h2>
+    <table id="stockTable">
+      <thead>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
-  <input type="number" id="modStock" placeholder="Nueva cantidad">
-  <input type="password" id="masterPassword" placeholder="Contraseña maestra">
-  <button id="btnModificar">Modificar Producto</button>
-</div>
 
-<!-- Control de Ventas -->
-<div id="controlVentas" class="section">
-  <h2>Control de Ventas</h2>
-  <table id="salesTable">
-    <thead>
-      <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
+  <!-- Modificar -->
+  <div id="modify" class="section">
+    <h2>Modificar Producto</h2>
+    <select id="modProductSelect" onchange="loadProductToModify()">
+      <option value="">-- Seleccione producto --</option>
+    </select>
+    <input type="text" id="modNombre" placeholder="Nuevo nombre">
+    <div class="price-inputs">
+      <input type="number" id="modPrecio" placeholder="Nuevo precio $" min="0">
+      <input type="number" id="modCents" placeholder="Centavos" min="0" max="99">
+    </div>
+    <input type="number" id="modStock" placeholder="Nueva cantidad" min="1">
+    <input type="password" id="masterPassword" placeholder="Contraseña maestra">
+    <button id="btnModificar">Modificar Producto</button>
+  </div>
 
-<script src="app.js"></script>
+  <!-- Control de Ventas -->
+  <div id="controlVentas" class="section">
+    <h2>Control de Ventas</h2>
+    <table id="salesTable">
+      <thead>
+        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
