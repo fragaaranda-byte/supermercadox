@@ -21,8 +21,7 @@ body{
 .menu{
   display:flex;
   justify-content:center;
-  flex-wrap:wrap;
-  gap:10px;
+  gap:15px;
   margin:20px 0;
 }
 button{
@@ -32,7 +31,6 @@ button{
   border-radius:5px;
   cursor:pointer;
   font-weight:bold;
-  transition: 0.2s;
 }
 button:hover{
   background-color:#e6b800;
@@ -52,14 +50,6 @@ input{
   padding:8px;
   width:100%;
   box-sizing:border-box;
-  font-size:14px;
-}
-.price-inputs{
-  display:flex;
-  gap:10px;
-}
-.price-inputs input{
-  flex:1;
 }
 table{
   width:100%;
@@ -81,4 +71,8 @@ th,td{
 }
 #paymentMethodDiv{
   margin-top:10px;
+}
+.printTicket{
+  width:20%;
+  font-size:10px;
 }
