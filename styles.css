@@ -23,7 +23,6 @@ body{
   justify-content:center;
   gap:15px;
   margin:20px 0;
-  flex-wrap: wrap;
 }
 button{
   padding:8px 16px;
@@ -52,13 +51,6 @@ input{
   width:100%;
   box-sizing:border-box;
 }
-.price-container{
-  display:flex;
-  gap:10px;
-}
-.price-container input{
-  width:50%;
-}
 table{
   width:100%;
   border-collapse:collapse;
@@ -80,16 +72,10 @@ th,td{
 #paymentMethodDiv{
   margin-top:10px;
 }
-.action-btn{
-  padding:2px 6px;
-  margin:0 2px;
-  font-size:12px;
-  cursor:pointer;
-  border-radius:3px;
-  border:none;
-  background-color:#1f2634;
-  color:#fff;
+.price-container{
+  display:flex;
+  gap:10px;
 }
-.action-btn:hover{
-  background-color:#000;
+.price-container input{
+  width: calc(50% - 5px);
 }
