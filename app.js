@@ -2,12 +2,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_BUCKET",
-  messagingSenderId: "TU_MSG",
-  appId: "TU_APPID"
+  apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
+  authDomain: "supermercadox-107f6.firebaseapp.com",
+  projectId: "supermercadox-107f6",
+  storageBucket: "supermercadox-107f6.appspot.com",
+  messagingSenderId: "504958637825",
+  appId: "1:504958637825:web:6ae5e2cde43206b3052d00"
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -22,52 +22,55 @@ window.showSection = function(id){
   document.querySelectorAll(".section").forEach(s=>s.style.display="none");
   if(document.getElementById(id)) document.getElementById(id).style.display="block";
 };
-showSection('inicio');
 
 // ------------------ STOCK ------------------
 window.addStock = async function(){
-  const code=document.getElementById("barcodeInput").value.trim();
-  const name=document.getElementById("nameInput").value.trim();
-  const price=parseFloat(document.getElementById("priceInput").value);
-  const qty=parseInt(document.getElementById("quantityInput").value);
-  if(!code||!name||isNaN(price)||isNaN(qty)) return alert("Complete todos los campos");
+  const code = document.getElementById("barcodeInput").value.trim();
+  const name = document.getElementById("nameInput").value.trim();
+  const priceInt = parseInt(document.getElementById("priceInput").value);
+  const cents = parseInt(document.getElementById("centsInput").value) || 0;
+  const qty = parseInt(document.getElementById("quantityInput").value);
+
+  if(!code || !name || isNaN(priceInt) || isNaN(qty)) return alert("Complete todos los campos");
+
+  const price = priceInt + cents/100;
 
   const q=query(collection(db,"products"), where("code","==",code));
   const snapshot=await getDocs(q);
   if(!snapshot.empty){
     snapshot.forEach(async d=>{
       await updateDoc(doc(db,"products",d.id),{
-        name: name.toLowerCase(),
+        currentStock: qty,
         price,
-        currentStock: qty
+        name: name.toLowerCase()
       });
     });
     alert("Producto actualizado");
-  } else{
+  }else{
     await addDoc(collection(db,"products"),{
-      code,
-      name:name.toLowerCase(),
-      price,
-      currentStock:qty
+      code,name:name.toLowerCase(),price,currentStock:qty
     });
     alert("Producto agregado");
   }
+
   document.getElementById("barcodeInput").value="";
   document.getElementById("nameInput").value="";
   document.getElementById("priceInput").value="";
+  document.getElementById("centsInput").value="";
   document.getElementById("quantityInput").value="";
+
   loadStockList();
   loadModifyProductList();
 };
 
-window.loadStockList = async function(){
-  const tbody = document.querySelector("#stockTable tbody");
-  tbody.innerHTML = "";
-  const snapshot = await getDocs(collection(db,"products"));
+window.loadStockList=async function(){
+  const tbody=document.querySelector("#stockTable tbody");
+  tbody.innerHTML="";
+  const snapshot=await getDocs(collection(db,"products"));
   snapshot.forEach(docSnap=>{
     const d=docSnap.data();
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
+    tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price.toFixed(2)}</td><td>${d.currentStock}</td>`;
     tbody.appendChild(tr);
   });
 };
@@ -90,12 +93,13 @@ loadModifyProductList();
 window.loadProductToModify= async function(){
   const id=document.getElementById("modProductSelect").value;
   if(!id) return;
-  const docRef = doc(db,"products",id);
-  const snapshot = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
-  snapshot.forEach(d=>{
+  const docRef = doc(db, "products", id);
+  const docSnap = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
+  docSnap.forEach(d=>{
     const data=d.data();
     document.getElementById("modNombre").value=data.name;
-    document.getElementById("modPrecio").value=data.price;
+    document.getElementById("modPrecio").value=Math.floor(data.price);
+    document.getElementById("modCentavos").value=Math.round((data.price-Math.floor(data.price))*100);
     document.getElementById("modStock").value=data.currentStock;
   });
 };
@@ -107,12 +111,13 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
   if(!docId) return alert("Seleccione producto");
 
   const modName=document.getElementById("modNombre").value.trim();
-  const modPrice=parseFloat(document.getElementById("modPrecio").value);
+  const modPrice=parseInt(document.getElementById("modPrecio").value);
+  const modCents=parseInt(document.getElementById("modCentavos").value) || 0;
   const modStock=parseInt(document.getElementById("modStock").value);
 
   await updateDoc(doc(db,"products",docId),{
     name:modName.toLowerCase(),
-    price:modPrice,
+    price:modPrice + modCents/100,
     currentStock:modStock
   });
   alert("Producto modificado");
@@ -123,19 +128,25 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
 // ------------------ VENDER ------------------
 window.addProduct=async function(){
   const code=document.getElementById("barcodeInputSale").value.trim();
-  if(!code) return alert("Ingrese código");
+  const qty=parseInt(document.getElementById("quantityInputSale").value);
+  if(!code||isNaN(qty)) return alert("Ingrese código y cantidad");
 
-  const snapshot = await getDocs(query(collection(db,"products"), where("code","==",code)));
+  const snapshot=await getDocs(query(collection(db,"products"), where("code","==",code)));
   if(snapshot.empty) return alert("Producto no encontrado");
 
   snapshot.forEach(d=>{
     const data=d.data();
     const exists=cart.find(p=>p.code===code);
-    if(exists) exists.qty++;
-    else cart.push({code,name:data.name.toUpperCase(),price:data.price,qty:1});
+    if(exists){
+      exists.qty += qty;
+      if(exists.qty > data.currentStock) exists.qty = data.currentStock;
+    }else{
+      cart.push({code,dataName:data.name.toUpperCase(),name:data.name.toUpperCase(),price:data.price,qty: qty > data.currentStock ? data.currentStock : qty});
+    }
   });
   updateCartTable();
   document.getElementById("barcodeInputSale").value="";
+  document.getElementById("quantityInputSale").value=1;
 };
 
 window.updateCartTable=function(){
@@ -144,26 +155,33 @@ window.updateCartTable=function(){
   total=0;
   cart.forEach((c,i)=>{
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${c.name}</td><td>${c.code}</td><td>${c.price}</td><td>${c.qty}</td>
-    <td>${(c.price*c.qty).toFixed(2)}</td>
-    <td class="cart-actions">
-      <button onclick="changeQty(${i},-1)">-</button>
-      <button onclick="changeQty(${i},1)">+</button>
-      <button onclick="removeItem(${i})">X</button>
-    </td>`;
+    tr.innerHTML=`
+      <td>${c.name}</td>
+      <td>${c.code}</td>
+      <td>${c.price.toFixed(2)}</td>
+      <td>
+        <button class="action-btn" onclick="changeQty(${i},-1)">-</button>
+        ${c.qty}
+        <button class="action-btn" onclick="changeQty(${i},1)">+</button>
+      </td>
+      <td>${(c.price*c.qty).toFixed(2)}</td>
+      <td><button class="action-btn" onclick="removeFromCart(${i})">X</button></td>
+    `;
     tbody.appendChild(tr);
-    total+=c.price*c.qty;
+    total += c.price*c.qty;
   });
   document.getElementById("total").textContent=total.toFixed(2);
 };
 
 window.changeQty=(index,delta)=>{
-  cart[index].qty += delta;
-  if(cart[index].qty<=0) cart.splice(index,1);
+  const item=cart[index];
+  if(!item) return;
+  item.qty += delta;
+  if(item.qty<1) item.qty=1;
   updateCartTable();
 };
 
-window.removeItem=(index)=>{
+window.removeFromCart=(index)=>{
   cart.splice(index,1);
   updateCartTable();
 };
@@ -179,8 +197,8 @@ window.checkout=async function(method){
   for(let c of cart){
     const snapshot=await getDocs(query(collection(db,"products"), where("code","==",c.code)));
     snapshot.forEach(async d=>{
-      const curr=d.data().currentStock;
-      await updateDoc(doc(db,"products",d.id),{currentStock: curr - c.qty});
+      const current=d.data().currentStock;
+      await updateDoc(doc(db,"products",d.id),{currentStock: current - c.qty});
     });
     await addDoc(collection(db,"sales"),{
       code:c.code,
@@ -190,7 +208,7 @@ window.checkout=async function(method){
       date:now,
       method
     });
-    salesToday.push({...c,date:now,method});
+    salesToday.push({code:c.code,name:c.name,price:c.price,qty:c.qty,date:now,method});
   }
   cart=[];
   updateCartTable();
@@ -208,12 +226,17 @@ window.loadSalesTable=async function(){
   snapshot.forEach(docSnap=>{
     const s=docSnap.data();
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${docSnap.id}</td><td>${new Date(s.date.seconds*1000).toLocaleString()}</td><td>${s.name} [${s.qty}] ($${s.price})</td><td>${(s.qty*s.price).toFixed(2)}</td><td>${s.method}</td>
-    <td><button onclick="deleteSale('${docSnap.id}')">ELIMINAR</button></td>`;
+    tr.innerHTML=`
+      <td>${docSnap.id}</td>
+      <td>${new Date(s.date.seconds*1000).toLocaleString()}</td>
+      <td>${s.name} [${s.qty}] ($${s.price.toFixed(2)})</td>
+      <td>${(s.qty*s.price).toFixed(2)}</td>
+      <td>${s.method}</td>
+      <td><button onclick="deleteSale('${docSnap.id}')">ELIMINAR VENTA</button></td>
+    `;
     tbody.appendChild(tr);
   });
 };
-loadSalesTable();
 
 window.deleteSale=async function(id){
   const reason=prompt("MOTIVO DE ELIMINACION:");
@@ -223,12 +246,12 @@ window.deleteSale=async function(id){
 
   const snapshot=await getDocs(query(collection(db,"sales"), where("__name__","==",id)));
   snapshot.forEach(async d=>{
-    const sale=d.data();
-    deletedSales.push({...sale, reason});
-    const prodSnap=await getDocs(query(collection(db,"products"), where("code","==",sale.code)));
-    prodSnap.forEach(async p=>{
-      const curr=p.data().currentStock;
-      await updateDoc(doc(db,"products",p.id),{currentStock:curr+sale.qty});
+    const saleData=d.data();
+    deletedSales.push({...saleData, reason});
+    const prodSnap=await getDocs(query(collection(db,"products"), where("code","==",saleData.code)));
+    prodSnap.forEach(async prod=>{
+      const curr=prod.data().currentStock;
+      await updateDoc(doc(db,"products",prod.id), {currentStock: curr + saleData.qty});
     });
     await deleteDoc(doc(db,"sales",id));
   });
@@ -238,20 +261,13 @@ window.deleteSale=async function(id){
 
 // ------------------ TIRAR Z ------------------
 window.printDailyReport=function(){
-  const master=prompt("Ingrese contraseña maestra para TIRAR Z:");
-  if(master!=="123456789") return alert("Contraseña incorrecta");
-  const printWindow=window.open('','Print','width=800,height=600');
-  let efectivoTotal=0, tarjetaTotal=0;
-  let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
-  html+='<h3>Ventas en efectivo</h3>';
-  salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; efectivoTotal+=p.price*p.qty; });
-  html+=`Total efectivo: $${efectivoTotal.toFixed(2)}<hr>`;
-  html+='<h3>Ventas con tarjeta</h3>';
-  salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; tarjetaTotal+=p.price*p.qty; });
-  html+=`Total tarjeta: $${tarjetaTotal.toFixed(2)}<hr>`;
-  html+='<h3>Ventas Eliminadas</h3>';
-  deletedSales.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - Motivo: ${p.reason}<br>`; });
-  printWindow.document.write(html);
-  printWindow.document.close();
-  printWindow.print();
+  let report="REPORTE DIARIO\n\n";
+  let totalDay=0;
+  salesToday.forEach(s=>{
+    report+=`${s.name} x${s.qty} $${s.price.toFixed(2)}\n`;
+    totalDay += s.price*s.qty;
+  });
+  report += `\nTOTAL DEL DIA: $${totalDay.toFixed(2)}`;
+  console.log(report);
+  alert("TIRAR Z generado en consola");
 };
