@@ -1,38 +1,41 @@
+/* Colores principales: negro y amarillo */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to right,#f0f2f5,#e2e8f0);
+    background: #1f2634;
+    color: #fff;
     margin:0; padding:0;
 }
 .header-container {
     display:flex; flex-direction:column; align-items:center; margin-top:20px;
 }
 .header-container h1 {
-    font-size:36px; color:#1f2634; text-shadow:2px 2px 4px rgba(0,0,0,0.2);
+    font-size:36px; color:#f4cf19; text-shadow:2px 2px 5px rgba(0,0,0,0.5);
 }
 .menu {
     display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:15px 0;
 }
 button {
-    padding:8px 16px; background-color:#f4cf19; border:none; border-radius:6px;
-    cursor:pointer; font-weight:bold; transition:0.3s;
+    padding:10px 20px; background-color:#f4cf19; border:none; border-radius:8px;
+    cursor:pointer; font-weight:bold; color:#1f2634; font-size:14px; transition:0.3s;
 }
 button:hover { background-color:#e6b800; }
 .section {
-    display:none; max-width:900px; margin:10px auto; padding:20px;
-    background:#fff; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    display:none; max-width:950px; margin:10px auto; padding:20px;
+    background:#2b2f3b; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.3);
 }
 input, select {
-    display:block; margin:10px 0; padding:10px; width:100%; border-radius:6px; border:1px solid #ccc;
-    font-size:14px;
+    display:block; margin:10px 0; padding:12px; width:100%; border-radius:8px; border:none;
+    font-size:14px; background:#1f2634; color:#fff;
 }
+input::placeholder { color:#ccc; }
 table {
     width:100%; border-collapse:collapse; margin-top:15px; font-size:14px;
 }
 th, td {
-    border:1px solid #ccc; padding:8px; text-align:left;
+    border:1px solid #444; padding:10px; text-align:left;
 }
-th { background-color:#1f2634; color:#fff; }
-td { background-color:#f9f9f9; }
-.quantity-row { display:flex; gap:5px; align-items:center; margin:10px 0; }
-.quantity-row button { width:30px; height:30px; font-size:18px; padding:0; }
-#paymentMethodDiv { margin-top:10px; }
+th { background-color:#f4cf19; color:#1f2634; }
+td { background-color:#2b2f3b; }
+.quantity-row { display:flex; gap:10px; align-items:center; margin:10px 0; }
+.quantity-row button { width:35px; height:35px; font-size:18px; padding:0; border-radius:5px; }
+#paymentMethodDiv { margin-top:15px; }
