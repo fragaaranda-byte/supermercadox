@@ -1,139 +1,219 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
+    authDomain: "supermercadox-107f6.firebaseapp.com",
+    projectId: "supermercadox-107f6",
+    storageBucket: "supermercadox-107f6.firebasestorage.app",
+    messagingSenderId: "504958637825",
+    appId: "1:504958637825:web:6ae5e2cde43206b3052d00"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 let cart = [];
-let total = 0;
-let stock = [];
 let salesToday = [];
 
-function showSection(id){
-  document.querySelectorAll(".section").forEach(s=>s.style.display="none");
-  document.getElementById(id).style.display="block";
-}
+// ------------------ UI ------------------
+window.showSection = function(id){
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+    document.getElementById(id).style.display="block";
+};
 
-// ----- STOCK -----
-function addStock(){
-  const code = document.getElementById("barcodeInput").value.trim();
-  const name = document.getElementById("nameInput").value.trim();
-  const price = parseFloat(document.getElementById("priceInput").value);
-  const qty = parseInt(document.getElementById("quantityInput").value);
+// ------------------ STOCK ------------------
+window.addStock = async function(){
+    const code = document.getElementById("barcodeInput").value.trim();
+    const name = document.getElementById("nameInput").value.trim();
+    const price = parseFloat(document.getElementById("priceInput").value);
+    const qty = parseInt(document.getElementById("quantityInput").value);
+    if(!code || !name || isNaN(price) || isNaN(qty)) return alert("Complete todos los campos");
 
-  if(!code || !name || isNaN(price) || isNaN(qty)){
-    return alert("Complete todos los campos");
-  }
+    const q = query(collection(db,"products"), where("code","==",code));
+    const snapshot = await getDocs(q);
+    if(!snapshot.empty){
+        snapshot.forEach(async d=>{
+            await updateDoc(doc(db,"products",d.id),{ currentStock: d.data().currentStock + qty, price, name: name.toLowerCase() });
+        });
+    } else {
+        await addDoc(collection(db,"products"),{ code, name:name.toLowerCase(), price, currentStock: qty });
+    }
 
-  const exist = stock.find(p=>p.code===code);
-  if(exist){
-    exist.name=name;
-    exist.price=price;
-    exist.qty=qty;
-  } else {
-    stock.push({code, name, price, qty});
-  }
+    document.getElementById("barcodeInput").value="";
+    document.getElementById("nameInput").value="";
+    document.getElementById("priceInput").value="";
+    document.getElementById("quantityInput").value="";
 
-  document.getElementById("barcodeInput").value="";
-  document.getElementById("nameInput").value="";
-  document.getElementById("priceInput").value="";
-  document.getElementById("quantityInput").value="";
-  loadStockList();
-  loadModifyProductList();
-}
+    loadStockList();
+    loadModifyProductList();
+};
 
-function loadStockList(){
-  const tbody = document.querySelector("#stockTable tbody");
-  tbody.innerHTML="";
-  stock.forEach(p=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.code}</td><td>${p.price}</td><td>${p.qty}</td>`;
-    tbody.appendChild(tr);
-  });
-}
+window.loadStockList=async function(){
+    const tbody=document.querySelector("#stockTable tbody");
+    tbody.innerHTML="";
+    const snapshot=await getDocs(collection(db,"products"));
+    snapshot.forEach(docSnap=>{
+        const d = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
+        tbody.appendChild(tr);
+    });
+};
+loadStockList();
 
-// ----- VENTAS -----
-function addProduct(){
-  const code=document.getElementById("barcodeInputSale").value.trim();
-  const qty=parseInt(document.getElementById("quantityInputSale").value);
+// ------------------ MODIFICAR ------------------
+window.loadModifyProductList=async function(){
+    const select=document.getElementById("modProductSelect");
+    select.innerHTML='<option value="">-- Seleccione producto --</option>';
+    const snapshot=await getDocs(collection(db,"products"));
+    snapshot.forEach(d=>{
+        const opt=document.createElement("option");
+        opt.value=d.id;
+        opt.textContent=d.data().name.toUpperCase();
+        select.appendChild(opt);
+    });
+};
+loadModifyProductList();
 
-  if(!code || isNaN(qty)) return alert("Ingrese código y cantidad");
+window.loadProductToModify= async function(){
+    const id=document.getElementById("modProductSelect").value;
+    if(!id) return;
+    const docSnap = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
+    docSnap.forEach(d=>{
+        const data=d.data();
+        document.getElementById("modNombre").value=data.name;
+        document.getElementById("modPrecio").value=data.price;
+        document.getElementById("modStock").value=data.currentStock;
+    });
+};
 
-  const product = stock.find(p=>p.code===code);
-  if(!product) return alert("Producto no encontrado");
+document.getElementById("btnModificar").addEventListener("click", async ()=>{
+    const master=document.getElementById("masterPassword").value;
+    if(master!=="123456789") return alert("Contraseña maestra incorrecta");
 
-  const exist = cart.find(p=>p.code===code);
-  if(exist){
-    exist.qty += qty;
-  } else {
-    cart.push({code, name:product.name, price:product.price, qty});
-  }
+    const docId=document.getElementById("modProductSelect").value;
+    if(!docId) return alert("Seleccione producto");
 
-  document.getElementById("barcodeInputSale").value="";
-  document.getElementById("quantityInputSale").value=1;
-  updateCartTable();
-}
+    const modName=document.getElementById("modNombre").value.trim();
+    const modPrice=parseFloat(document.getElementById("modPrecio").value);
+    const modStock=parseInt(document.getElementById("modStock").value);
 
-function updateCartTable(){
-  const tbody=document.querySelector("#cartTable tbody");
-  tbody.innerHTML="";
-  total=0;
-  cart.forEach(p=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${p.name}</td><td>${p.code}</td><td>${p.price}</td><td>${p.qty}</td><td>${(p.price*p.qty).toFixed(2)}</td>`;
-    tbody.appendChild(tr);
-    total+=p.price*p.qty;
-  });
-  document.getElementById("total").textContent=total.toFixed(2);
-}
+    await updateDoc(doc(db,"products",docId),{
+        name:modName.toLowerCase(),
+        price:modPrice,
+        currentStock:modStock
+    });
 
-function checkout(method){
-  if(cart.length===0) return alert("Carrito vacío");
-  printTicket(cart, method);
-  cart.forEach(c=>{
-    const product = stock.find(p=>p.code===c.code);
-    if(product) product.qty -= c.qty;
-  });
-  cart=[];
-  updateCartTable();
-  loadStockList();
-}
+    alert("Producto modificado");
+    loadStockList();
+    loadModifyProductList();
+});
 
-function printTicket(items, method){
-  const w=window.open('','Print','width=600,height=600');
-  let html="<h2>SUPERMERCADO X - TICKET</h2><hr>";
-  items.forEach(p=> html+=`${p.name} [${p.qty}] $${p.price} -> $${(p.qty*p.price).toFixed(2)}<br>`);
-  html+=`<hr>Total: $${items.reduce((a,b)=>a+b.price*b.qty,0).toFixed(2)}<br>`;
-  html+=`Método: ${method}`;
-  w.document.write(html);
-  w.document.close();
-  w.print();
-}
+// ------------------ VENDER ------------------
+window.addProduct=async function(){
+    const code=document.getElementById("barcodeInputSale").value.trim();
+    const qty=parseInt(document.getElementById("quantityInputSale").value);
+    if(!code || isNaN(qty)) return alert("Ingrese código y cantidad");
 
-// ----- MODIFICAR PRODUCTO -----
-function loadModifyProductList(){
-  const select=document.getElementById("modProductSelect");
-  select.innerHTML='<option value="">-- Seleccione producto --</option>';
-  stock.forEach((p,i)=>{
-    const opt=document.createElement("option");
-    opt.value=i;
-    opt.textContent=p.name;
-    select.appendChild(opt);
-  });
-}
+    const snapshot = await getDocs(query(collection(db,"products"), where("code","==",code)));
+    if(snapshot.empty) return alert("Producto no encontrado");
 
-function loadProductToModify(){
-  const index=parseInt(document.getElementById("modProductSelect").value);
-  if(isNaN(index)) return;
-  const p=stock[index];
-  document.getElementById("modNombre").value=p.name;
-  document.getElementById("modPrecio").value=p.price;
-  document.getElementById("modStock").value=p.qty;
-}
+    snapshot.forEach(d=>{
+        const data=d.data();
+        const exists = cart.find(p=>p.code===code);
+        if(exists){ exists.qty += qty; } 
+        else{ cart.push({code,dataName:data.name.toUpperCase(),name:data.name.toUpperCase(),price:data.price,qty}); }
+    });
 
-function modifyProduct(){
-  const master=document.getElementById("masterPassword").value;
-  if(master!=="123456") return alert("Contraseña incorrecta");
-  const index=parseInt(document.getElementById("modProductSelect").value);
-  if(isNaN(index)) return alert("Seleccione producto");
-  stock[index].name=document.getElementById("modNombre").value;
-  stock[index].price=parseFloat(document.getElementById("modPrecio").value);
-  stock[index].qty=parseInt(document.getElementById("modStock").value);
-  loadStockList();
-  loadModifyProductList();
-  alert("Producto modificado correctamente");
-}
+    updateCartTable();
+    document.getElementById("barcodeInputSale").value="";
+    document.getElementById("quantityInputSale").value=1;
+};
+
+window.modifyCartQuantity=function(change){
+    const code=document.getElementById("barcodeInputSale").value.trim();
+    const item=cart.find(c=>c.code===code);
+    if(item){
+        item.qty += change;
+        if(item.qty < 1) item.qty = 1;
+        updateCartTable();
+    }
+};
+
+window.updateCartTable=function(){
+    const tbody=document.querySelector("#cartTable tbody");
+    tbody.innerHTML="";
+    let total=0;
+    cart.forEach(c=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${c.name}</td><td>${c.code}</td><td>${c.price}</td><td>${c.qty}</td><td>${(c.price*c.qty).toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+        total+=c.price*c.qty;
+    });
+    document.getElementById("total").textContent=total.toFixed(2);
+};
+
+window.checkout=function(method){
+    if(cart.length===0) return alert("Carrito vacío");
+    const now = new Date();
+    const id = 'V'+now.getTime();
+    cart.forEach(c=>{
+        salesToday.push({id,date:now,code:c.code,name:c.name,qty:c.qty,price:c.price,method});
+    });
+    updateCartTable();
+    loadSalesTable();
+    document.getElementById("paymentMethodDiv").style.display="none";
+
+    // imprimir ticket
+    let printWindow = window.open('','Print','width=600,height=600');
+    let html = `<h2>SUPERMERCADO X - Ticket</h2>`;
+    cart.forEach(c=>{
+        html+=`${c.name} [${c.qty}] ($${c.price.toFixed(2)})<br>`;
+    });
+    html+=`<hr>Total: $${cart.reduce((a,b)=>a+b.price*b.qty,0).toFixed(2)}`;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+
+    cart = [];
+};
+
+// ------------------ CONTROL DE VENTAS ------------------
+window.loadSalesTable=function(){
+    const tbody=document.querySelector("#salesTable tbody");
+    tbody.innerHTML="";
+    salesToday.forEach(s=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${s.id}</td><td>${s.date.toLocaleString()}</td><td>${s.name} [${s.qty}] ($${s.price})</td><td>${(s.qty*s.price).toFixed(2)}</td><td>${s.method}</td>`;
+        tbody.appendChild(tr);
+    });
+};
+
+// ------------------ TIRAR Z ------------------
+window.printDailyReport=function(){
+    let printWindow = window.open('','Print','width=800,height=600');
+    let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
+    let total = 0;
+    salesToday.forEach(s=>{
+        html+=`ID: ${s.id} - ${s.name} [${s.qty}] ($${s.price.toFixed(2)}) - ${s.method}<br>`;
+        total+=s.price*s.qty;
+    });
+    html+=`<hr>Total del día: $${total.toFixed(2)}`;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+};
+
+// ------------------ REINICIO DIARIO ------------------
+setInterval(()=>{
+    const now = new Date();
+    if(now.getHours() === 6 && now.getMinutes() === 0){
+        salesToday = [];
+        loadSalesTable();
+    }
+},60000);
+
+// ------------------ INICIO ------------------
+showSection("inicio");
+loadSalesTable();
