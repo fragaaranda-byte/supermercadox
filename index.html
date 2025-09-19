@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SUPERMERCADO X</title>
 <link rel="stylesheet" href="styles.css">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script type="module" src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
-  <div class="header-container">
+  <div id="inicio" class="header-container">
     <h1>SUPERMERCADO X</h1>
     <div class="menu">
       <button onclick="showSection('cargar')">Cargar Stock</button>
@@ -46,7 +43,12 @@
       <tbody></tbody>
     </table>
     <p>Total: $<span id="total">0</span></p>
-    <button onclick="checkout()">Cobrar e Imprimir Ticket</button>
+    <div id="paymentMethodDiv" style="display:none;">
+      <p>¿Cómo se cobró?</p>
+      <button onclick="checkout('Efectivo')">Efectivo</button>
+      <button onclick="checkout('Tarjeta')">Tarjeta</button>
+    </div>
+    <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
   </div>
 
   <!-- Controlar Stock -->
@@ -60,7 +62,7 @@
     </table>
   </div>
 
-  <!-- Modificar Producto -->
+  <!-- Modificar -->
   <div id="modify" class="section">
     <h2>Modificar Producto</h2>
     <select id="modProductSelect" onchange="loadProductToModify()">
@@ -78,12 +80,12 @@
     <h2>Control de Ventas</h2>
     <table id="salesTable">
       <thead>
-        <tr><th>ID</th><th>Hora</th><th>Producto</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+        <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <script src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
