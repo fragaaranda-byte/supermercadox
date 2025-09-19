@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUPERMERCADO X</title>
+
+<!-- ================== CSS ================== -->
+<style>
+/* General */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: #111;
+    color: #fff;
+}
+
+h1, h2 {
+    text-align: center;
+}
+
+h1 {
+    color: #f4cf19;
+    margin: 20px 0;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+}
+
+button {
+    background-color: #f4cf19;
+    color: #111;
+    border: none;
+    padding: 8px 16px;
+    margin: 5px 0;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #e6b800;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.section {
+    display: none;
+    max-width: 900px;
+    margin: 0 auto 20px auto;
+    padding: 20px;
+    background-color: #222;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+input, select {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #111;
+    color: #fff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #444;
+    text-align: center;
+}
+
+th {
+    background-color: #f4cf19;
+    color: #111;
+}
+
+td {
+    background-color: #333;
+}
+
+/* Cart + / - buttons */
+.cart-btn {
+    background-color: #f4cf19;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    font-weight: bold;
+}
+
+.cart-btn:hover {
+    background-color: #e6b800;
+}
+
+#paymentMethodDiv {
+    margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<!-- ================== HTML ================== -->
+<div class="header-container">
+    <h1>SUPERMERCADO X</h1>
+    <div class="menu">
+        <button onclick="showSection('cargar')">Cargar Stock</button>
+        <button onclick="showSection('vender')">Vender</button>
+        <button onclick="showSection('control')">Controlar Stock</button>
+        <button onclick="showSection('modify')">Modificar Producto</button>
+        <button onclick="showSection('controlVentas')">Control de Ventas</button>
+        <button onclick="printDailyReport()">TIRAR Z</button>
+    </div>
+</div>
+
+<!-- Cargar Stock -->
+<div id="cargar" class="section">
+    <h2>Cargar Stock</h2>
+    <input type="text" id="barcodeInput" placeholder="Código de barras">
+    <input type="text" id="nameInput" placeholder="Nombre producto">
+    <input type="number" id="priceInput" placeholder="Precio">
+    <input type="number" id="quantityInput" placeholder="Cantidad">
+    <button onclick="addStock()">Agregar al Stock</button>
+</div>
+
+<!-- Vender -->
+<div id="vender" class="section">
+    <h2>Vender Productos</h2>
+    <input type="text" id="barcodeInputSale" placeholder="Código de barras">
+    <button onclick="addProduct()">Agregar al Carrito</button>
+    <table id="cartTable">
+        <thead>
+            <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>+</th><th>-</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <p>Total: $<span id="total">0</span></p>
+    <div id="paymentMethodDiv" style="display:none;">
+        <p>¿Cómo pagó el cliente?</p>
+        <button onclick="checkout('Efectivo')">Efectivo</button>
+        <button onclick="checkout('Tarjeta')">Tarjeta</button>
+    </div>
+</div>
+
+<!-- Controlar Stock -->
+<div id="control" class="section">
+    <h2>Stock Actual</h2>
+    <table id="stockTable">
+        <thead>
+            <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Stock</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Modificar -->
+<div id="modify" class="section">
+    <h2>Modificar Producto</h2>
+    <select id="modProductSelect" onchange="loadProductToModify()">
+        <option value="">-- Seleccione producto --</option>
+    </select>
+    <input type="text" id="modNombre" placeholder="Nuevo nombre">
+    <input type="number" id="modPrecio" placeholder="Nuevo precio">
+    <input type="number" id="modStock" placeholder="Nueva cantidad">
+    <input type="password" id="masterPassword" placeholder="Contraseña maestra">
+    <button id="btnModificar">Modificar Producto</button>
+</div>
+
+<!-- Control de Ventas -->
+<div id="controlVentas" class="section">
+    <h2>Control de Ventas</h2>
+    <table id="salesTable">
+        <thead>
+            <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- ================== JS ================== -->
+<script type="module">
+// Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyB8fQJsN0tqpuz48Om30m6u6jhEcSfKYEw",
+    authDomain: "supermercadox-107f6.firebaseapp.com",
+    projectId: "supermercadox-107f6",
+    storageBucket: "supermercadox-107f6.firebasestorage.app",
+    messagingSenderId: "504958637825",
+    appId: "1:504958637825:web:6ae5e2cde43206b3052d00"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let cart = [];
+let total = 0;
+let salesToday = [];
+let deletedSales = [];
+
+// ------------------ UI ------------------
+function showSection(id){
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+    if(document.getElementById(id)) document.getElementById(id).style.display="block";
+}
+
+// ------------------ STOCK ------------------
+async function addStock(){
+    const code=document.getElementById("barcodeInput").value.trim();
+    const name=document.getElementById("nameInput").value.trim();
+    const price=parseFloat(document.getElementById("priceInput").value);
+    const qty=parseInt(document.getElementById("quantityInput").value);
+    if(!code||!name||isNaN(price)||isNaN(qty)) return alert("Complete todos los campos");
+
+    const q=query(collection(db,"products"), where("code","==",code));
+    const snapshot=await getDocs(q);
+
+    if(!snapshot.empty){
+        snapshot.forEach(async d=>{
+            await updateDoc(doc(db,"products",d.id),{ currentStock: d.data().currentStock + qty, price, name: name.toLowerCase() });
+        });
+        alert("Producto actualizado");
+    }else{
+        await addDoc(collection(db,"products"),{ code,name:name.toLowerCase(),price,currentStock:qty });
+        alert("Producto agregado");
+    }
+
+    document.getElementById("barcodeInput").value="";
+    document.getElementById("nameInput").value="";
+    document.getElementById("priceInput").value="";
+    document.getElementById("quantityInput").value="";
+    loadStockList();
+    loadModifyProductList();
+}
+
+async function loadStockList(){
+    const tbody=document.querySelector("#stockTable tbody");
+    tbody.innerHTML="";
+    const snapshot=await getDocs(collection(db,"products"));
+    snapshot.forEach(docSnap=>{
+        const d=docSnap.data();
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+loadStockList();
+
+// ------------------ MODIFICAR ------------------
+async function loadModifyProductList(){
+    const select=document.getElementById("modProductSelect");
+    select.innerHTML='<option value="">-- Seleccione producto --</option>';
+    const snapshot=await getDocs(collection(db,"products"));
+    snapshot.forEach(d=>{
+        const opt=document.createElement("option");
+        opt.value=d.id;
+        opt.textContent=d.data().name.toUpperCase();
+        select.appendChild(opt);
+    });
+}
+loadModifyProductList();
+
+async function loadProductToModify(){
+    const id=document.getElementById("modProductSelect").value;
+    if(!id) return;
+    const docRef = doc(db, "products", id);
+    const docSnap = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
+    docSnap.forEach(d=>{
+        const data=d.data();
+        document.getElementById("modNombre").value=data.name;
+        document.getElementById("modPrecio").value=data.price;
+        document.getElementById("modStock").value=data.currentStock;
+    });
+}
+
+document.getElementById("btnModificar").addEventListener("click", async ()=>{
+    const master=document.getElementById("masterPassword").value;
+    if(master!=="123456789") return alert("Contraseña maestra incorrecta");
+    const docId=document.getElementById("modProductSelect").value;
+    if(!docId) return alert("Seleccione producto");
+    const modName=document.getElementById("modNombre").value.trim();
+    const modPrice=parseFloat(document.getElementById("modPrecio").value);
+    const modStock=parseInt(document.getElementById("modStock").value);
+
+    await updateDoc(doc(db,"products",docId),{ name:modName.toLowerCase(), price:modPrice, currentStock:modStock });
+    alert("Producto modificado");
+    loadStockList();
+    loadModifyProductList();
+});
+
+// ------------------ VENDER ------------------
+async function addProduct(){
+    const code=document.getElementById("barcodeInputSale").value.trim();
+    if(!code) return alert("Ingrese código");
+
+    const snapshot=await getDocs(query(collection(db,"products"), where("code","==",code)));
+    if(snapshot.empty) return alert("Producto no encontrado");
+
+    snapshot.forEach(d=>{
+        const data=d.data();
+        const exists=cart.find(p=>p.code===code);
+        if(exists){
+            exists.qty++;
+        }else{
+            cart.push({code,dataName:data.name.toUpperCase(),name:data.name.toUpperCase(),price:data.price,qty:1});
+        }
+    });
+    updateCartTable();
+    document.getElementById("barcodeInputSale").value="";
+}
+
+function updateCartTable(){
+    const tbody=document.querySelector("#cartTable tbody");
+    tbody.innerHTML="";
+    total=0;
+    cart.forEach((c,index)=>{
+        const tr=document.createElement("tr");
+        tr.innerHTML=`
+        <td>${c.name}</td>
+        <td>${c.code}</td>
+        <td>${c.price}</td>
+        <td>${c.qty}</td>
+        <td><button class="cart-btn" onclick="changeQty(${index},1)">+</button></td>
+        <td><button class="cart-btn" onclick="changeQty(${index},-1)">-</button></td>
+        <td>${(c.price*c.qty).toFixed(2)}</td>`;
+        tbody.appendChild(tr);
+        total+=c.price*c.qty;
+    });
+    document.getElementById("total").textContent=total.toFixed(2);
+}
+
+function changeQty(index,amount){
+    cart[index].qty += amount;
+    if(cart[index].qty <=0) cart.splice(index,1);
+    updateCartTable();
+}
+
+function choosePaymentMethod(){
+    if(cart.length===0) return alert("Carrito vacío");
+    document.getElementById("paymentMethodDiv").style.display="block";
+}
+
+async function checkout(method){
+    const now=new Date();
+    for(let c of cart){
+        const snapshot=await getDocs(query(collection(db,"products"), where("code","==",c.code)));
+        snapshot.forEach(async d=>{
+            const current=d.data().currentStock;
+            await updateDoc(doc(db,"products",d.id),{currentStock: current - c.qty});
+        });
+        const saleId="V"+Date.now();
+        await addDoc(collection(db,"sales"),{ id:saleId, code:c.code, name:c.name, price:c.price, qty:c.qty, date:now, method });
+        salesToday.push({id:saleId, code:c.code,name:c.name,price:c.price,qty:c.qty,date:now,method});
+    }
+    cart=[];
+    updateCartTable();
+    loadStockList();
+    loadSalesTable();
+    printTicket();
+    document.getElementById("paymentMethodDiv").style.display="none";
+}
+
+function printTicket(){
+    const printWindow=window.open('','Print','width=800,height=600');
+    let html='<h2>Ticket de Venta</h2><hr>';
+    salesToday.forEach(p=>{
+        html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
+    });
+    html+=`<hr>Total: $${total.toFixed(2)}`;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// ------------------ CONTROL DE VENTAS ------------------
+async function loadSalesTable(){
+    const tbody=document.querySelector("#salesTable tbody");
+    tbody.innerHTML="";
+    const snapshot=await getDocs(collection(db,"sales"));
+    snapshot.forEach(docSnap=>{
+        const s=docSnap.data();
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${s.id}</td><td>${new Date(s.date.seconds*1000).toLocaleString()}</td><td>${s.name} [${s.qty}] ($${s.price})</td><td>${(s.qty*s.price).toFixed(2)}</td><td>${s.method}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+loadSalesTable();
+
+// ------------------ TIRAR Z ------------------
+function printDailyReport(){
+    const master=prompt("Ingrese contraseña maestra para TIRAR Z:");
+    if(master!=="123456789") return alert("Contraseña incorrecta");
+    const printWindow=window.open('','Print','width=800,height=600');
+    let efectivoTotal=0, tarjetaTotal=0;
+    let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
+    salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{
+        html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
+        efectivoTotal+=p.price*p.qty;
+    });
+    html+=`Total efectivo: $${efectivoTotal.toFixed(2)}<hr>`;
+    salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{
+        html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`;
+        tarjetaTotal+=p.price*p.qty;
+    });
+    html+=`Total tarjeta: $${tarjetaTotal.toFixed(2)}<hr>`;
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+
+    // Limpiar ventas al día siguiente
+    salesToday = [];
+    loadSalesTable();
+}
+
+// ------------------ INICIO ------------------
+showSection("inicio");
+</script>
+
+</body>
+</html>
