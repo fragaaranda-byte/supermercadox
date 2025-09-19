@@ -1,41 +1,66 @@
-/* Colores principales: negro y amarillo */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #1f2634;
-    color: #fff;
-    margin:0; padding:0;
+  font-family: Arial, sans-serif;
+  margin: 0; padding: 0;
+  background: #f4f4f4;
+  color: #333;
 }
-.header-container {
-    display:flex; flex-direction:column; align-items:center; margin-top:20px;
+
+header {
+  background: #1f2634;
+  color: #f4cf19;
+  padding: 10px;
+  text-align: center;
 }
-.header-container h1 {
-    font-size:36px; color:#f4cf19; text-shadow:2px 2px 5px rgba(0,0,0,0.5);
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background: #ddd;
 }
-.menu {
-    display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:15px 0;
+
+nav button {
+  padding: 10px 15px;
+  border: none;
+  background: #1f2634;
+  color: #f4cf19;
+  cursor: pointer;
+  border-radius: 5px;
 }
-button {
-    padding:10px 20px; background-color:#f4cf19; border:none; border-radius:8px;
-    cursor:pointer; font-weight:bold; color:#1f2634; font-size:14px; transition:0.3s;
+
+nav button:hover {
+  background: #333;
 }
-button:hover { background-color:#e6b800; }
+
+main {
+  padding: 20px;
+}
+
 .section {
-    display:none; max-width:950px; margin:10px auto; padding:20px;
-    background:#2b2f3b; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  display: none;
+  margin-top: 20px;
 }
-input, select {
-    display:block; margin:10px 0; padding:12px; width:100%; border-radius:8px; border:none;
-    font-size:14px; background:#1f2634; color:#fff;
+
+input, select, button {
+  margin: 5px;
+  padding: 5px;
 }
-input::placeholder { color:#ccc; }
+
 table {
-    width:100%; border-collapse:collapse; margin-top:15px; font-size:14px;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
+
 th, td {
-    border:1px solid #444; padding:10px; text-align:left;
+  border: 1px solid #aaa;
+  padding: 5px;
+  text-align: center;
 }
-th { background-color:#f4cf19; color:#1f2634; }
-td { background-color:#2b2f3b; }
-.quantity-row { display:flex; gap:10px; align-items:center; margin:10px 0; }
-.quantity-row button { width:35px; height:35px; font-size:18px; padding:0; border-radius:5px; }
-#paymentMethodDiv { margin-top:15px; }
+
+.ticketWindow {
+  width: 20%;
+  font-size: 12px;
+  font-family: monospace;
+}
