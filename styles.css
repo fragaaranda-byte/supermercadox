@@ -1,99 +1,38 @@
-body{
-    font-family: Arial, sans-serif;
-    background-color:#f0f2f5;
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right,#f0f2f5,#e2e8f0);
     margin:0; padding:0;
 }
-
-.header-container{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    margin-top:20px;
+.header-container {
+    display:flex; flex-direction:column; align-items:center; margin-top:20px;
 }
-
-.header-container h1{
-    font-size:36px;
-    color:#1f2634;
-    margin:10px 0;
-    text-shadow:2px 2px 4px rgba(0,0,0,0.2);
-    text-align:center;
+.header-container h1 {
+    font-size:36px; color:#1f2634; text-shadow:2px 2px 4px rgba(0,0,0,0.2);
 }
-
-.menu{
-    display:flex;
-    justify-content:center;
-    gap:10px;
-    flex-wrap: wrap;
-    margin:20px 0;
+.menu {
+    display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin:15px 0;
 }
-
-button{
-    padding:8px 16px;
-    background-color:#f4cf19;
-    border:none;
-    border-radius:5px;
-    cursor:pointer;
-    font-weight:bold;
-    transition: 0.2s;
+button {
+    padding:8px 16px; background-color:#f4cf19; border:none; border-radius:6px;
+    cursor:pointer; font-weight:bold; transition:0.3s;
 }
-
-button:hover{
-    background-color:#e6b800;
+button:hover { background-color:#e6b800; }
+.section {
+    display:none; max-width:900px; margin:10px auto; padding:20px;
+    background:#fff; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
-
-.section{
-    display:none;
-    max-width:900px;
-    margin:0 auto 20px auto;
-    padding:20px;
-    background-color:#fff;
-    box-shadow:0 0 15px rgba(0,0,0,0.15);
-    border-radius:10px;
-}
-
-input{
-    display:block;
-    margin:10px 0;
-    padding:10px;
-    width:100%;
-    box-sizing:border-box;
-    border-radius:5px;
-    border:1px solid #ccc;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:15px;
-}
-
-th,td{
-    border:1px solid #ccc;
-    padding:8px;
+input, select {
+    display:block; margin:10px 0; padding:10px; width:100%; border-radius:6px; border:1px solid #ccc;
     font-size:14px;
-    text-align:left;
 }
-
-th{
-    background-color:#1f2634;
-    color:#fff;
+table {
+    width:100%; border-collapse:collapse; margin-top:15px; font-size:14px;
 }
-
-td{
-    background-color:#f9f9f9;
+th, td {
+    border:1px solid #ccc; padding:8px; text-align:left;
 }
-
-.quantity-control{
-    display:flex;
-    gap:5px;
-    margin:10px 0;
-    align-items:center;
-}
-
-.quantity-control button{
-    width:40px;
-}
-
-#paymentMethodDiv{
-    margin-top:10px;
-}
+th { background-color:#1f2634; color:#fff; }
+td { background-color:#f9f9f9; }
+.quantity-row { display:flex; gap:5px; align-items:center; margin:10px 0; }
+.quantity-row button { width:30px; height:30px; font-size:18px; padding:0; }
+#paymentMethodDiv { margin-top:10px; }
