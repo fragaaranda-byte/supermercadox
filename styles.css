@@ -1,78 +1,66 @@
-body{
+body {
   font-family: Arial, sans-serif;
-  background-color:#f0f2f5;
-  margin:0;
-  padding:0;
+  margin: 0; padding: 0;
+  background: #f4f4f4;
+  color: #333;
 }
-.header-container{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  margin-top:20px;
+
+header {
+  background: #1f2634;
+  color: #f4cf19;
+  padding: 10px;
+  text-align: center;
 }
-.header-container h1{
-  font-family:'Verdana', sans-serif;
-  font-size:36px;
-  color:#1f2634;
-  margin:10px 0;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-  text-align:center;
+
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background: #ddd;
 }
-.menu{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-  margin:20px 0;
+
+nav button {
+  padding: 10px 15px;
+  border: none;
+  background: #1f2634;
+  color: #f4cf19;
+  cursor: pointer;
+  border-radius: 5px;
 }
-button{
-  padding:8px 16px;
-  background-color:#f4cf19;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-  font-weight:bold;
+
+nav button:hover {
+  background: #333;
 }
-button:hover{
-  background-color:#e6b800;
+
+main {
+  padding: 20px;
 }
-.section{
-  display:none;
-  max-width:800px;
-  margin:0 auto 20px auto;
-  padding:20px;
-  background-color:#fff;
-  box-shadow:0 0 10px rgba(0,0,0,0.1);
-  border-radius:10px;
+
+.section {
+  display: none;
+  margin-top: 20px;
 }
-input{
-  display:block;
-  margin:10px 0;
-  padding:8px;
-  width:100%;
-  box-sizing:border-box;
+
+input, select, button {
+  margin: 5px;
+  padding: 5px;
 }
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
 }
-th,td{
-  border:1px solid #ccc;
-  padding:6px;
-  font-size:12px;
-  text-align:left;
+
+th, td {
+  border: 1px solid #aaa;
+  padding: 5px;
+  text-align: center;
 }
-#cartTable th, #stockTable th, #salesTable th{
-  background-color:#1f2634;
-  color:#fff;
-}
-#cartTable td, #stockTable td, #salesTable td{
-  background-color:#f9f9f9;
-}
-#paymentMethodDiv{
-  margin-top:10px;
-}
-.printTicket{
-  width:20%;
-  font-size:10px;
+
+.ticketWindow {
+  width: 20%;
+  font-size: 12px;
+  font-family: monospace;
 }
