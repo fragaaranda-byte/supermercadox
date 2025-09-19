@@ -29,6 +29,7 @@ window.addStock = async function(){
   const name=document.getElementById("nameInput").value.trim();
   const price=parseFloat(document.getElementById("priceInput").value);
   const qty=parseInt(document.getElementById("quantityInput").value);
+  const expiry=document.getElementById("expiryInput").value;
   if(!code||!name||isNaN(price)||isNaN(qty)) return alert("Complete todos los campos");
 
   const q=query(collection(db,"products"), where("code","==",code));
@@ -38,13 +39,14 @@ window.addStock = async function(){
       await updateDoc(doc(db,"products",d.id),{
         currentStock: qty,
         price,
-        name: name.toLowerCase()
+        name: name.toLowerCase(),
+        expiryDate: expiry? new Date(expiry) : null
       });
     });
     alert("Producto actualizado");
   }else{
     await addDoc(collection(db,"products"),{
-      code,name:name.toLowerCase(),price,currentStock:qty
+      code,name:name.toLowerCase(),price,currentStock:qty,expiryDate:expiry? new Date(expiry):null
     });
     alert("Producto agregado");
   }
@@ -52,6 +54,7 @@ window.addStock = async function(){
   document.getElementById("nameInput").value="";
   document.getElementById("priceInput").value="";
   document.getElementById("quantityInput").value="";
+  document.getElementById("expiryInput").value="";
   loadStockList();
   loadModifyProductList();
 };
@@ -63,7 +66,7 @@ window.loadStockList=async function(){
   snapshot.forEach(docSnap=>{
     const d=docSnap.data();
     const tr=document.createElement("tr");
-    tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td>`;
+    tr.innerHTML=`<td>${d.name.toUpperCase()}</td><td>${d.code}</td><td>${d.price}</td><td>${d.currentStock}</td><td>${d.expiryDate? new Date(d.expiryDate.seconds*1000).toLocaleDateString() : ''}</td>`;
     tbody.appendChild(tr);
   });
 };
@@ -86,12 +89,14 @@ loadModifyProductList();
 window.loadProductToModify= async function(){
   const id=document.getElementById("modProductSelect").value;
   if(!id) return;
+  const docRef = doc(db, "products", id);
   const docSnap = await getDocs(query(collection(db,"products"), where("__name__","==",id)));
   docSnap.forEach(d=>{
     const data=d.data();
     document.getElementById("modNombre").value=data.name;
     document.getElementById("modPrecio").value=data.price;
     document.getElementById("modStock").value=data.currentStock;
+    document.getElementById("modExpiry").value=data.expiryDate? new Date(data.expiryDate.seconds*1000).toISOString().slice(0,10):"";
   });
 };
 
@@ -104,11 +109,13 @@ document.getElementById("btnModificar").addEventListener("click", async ()=>{
   const modName=document.getElementById("modNombre").value.trim();
   const modPrice=parseFloat(document.getElementById("modPrecio").value);
   const modStock=parseInt(document.getElementById("modStock").value);
+  const modExpiry=document.getElementById("modExpiry").value;
 
   await updateDoc(doc(db,"products",docId),{
     name:modName.toLowerCase(),
     price:modPrice,
-    currentStock:modStock
+    currentStock:modStock,
+    expiryDate:modExpiry? new Date(modExpiry):null
   });
   alert("Producto modificado");
   loadStockList();
@@ -210,4 +217,34 @@ window.deleteSale=async function(id){
     const prodSnap=await getDocs(query(collection(db,"products"), where("code","==",saleData.code)));
     prodSnap.forEach(async prod=>{
       const curr=prod.data().currentStock;
-      await updateDoc(doc(db,"products",prod
+      await updateDoc(doc(db,"products",prod.id), {currentStock: curr + saleData.qty});
+    });
+    await deleteDoc(doc(db,"sales",id));
+  });
+  loadStockList();
+  loadSalesTable();
+};
+
+// ------------------ TIRAR Z ------------------
+window.printDailyReport=function(){
+  const master=prompt("Ingrese contraseña maestra para TIRAR Z:");
+  if(master!=="123456789") return alert("Contraseña incorrecta");
+  const printWindow=window.open('','Print','width=800,height=600');
+  let efectivoTotal=0, tarjetaTotal=0;
+  let html='<h2>SUPERMERCADO X - TIRAR Z</h2><hr>';
+  html+='<h3>Ventas en efectivo</h3>';
+  salesToday.filter(s=>s.method==="Efectivo").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; efectivoTotal+=p.price*p.qty; });
+  html+=`Total efectivo: $${efectivoTotal.toFixed(2)}<hr>`;
+  html+='<h3>Ventas con tarjeta</h3>';
+  salesToday.filter(s=>s.method==="Tarjeta").forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)})<br>`; tarjetaTotal+=p.price*p.qty; });
+  html+=`Total tarjeta: $${tarjetaTotal.toFixed(2)}<hr>`;
+  html+='<h3>Ventas Eliminadas</h3>';
+  deletedSales.forEach(p=>{ html+=`${p.name} [${p.qty}] ($${p.price.toFixed(2)}) - Motivo: ${p.reason}<br>`; });
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.print();
+};
+
+// ------------------ INICIO ------------------
+showSection("inicio");
+loadSalesTable();
