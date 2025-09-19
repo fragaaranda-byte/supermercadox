@@ -34,24 +34,16 @@
   <!-- Vender -->
   <div id="vender" class="section">
     <h2>Vender Productos</h2>
-    <div class="sale-inputs">
-      <input type="text" id="barcodeInputSale" placeholder="Código de barras">
-      <input type="number" id="quantityInputSale" value="1" readonly>
-      <button onclick="addProduct()">Agregar al Carrito</button>
-    </div>
+    <input type="text" id="barcodeInputSale" placeholder="Código de barras">
+    <button onclick="addProduct()">Agregar al Carrito</button>
     <table id="cartTable">
       <thead>
-        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th>Acción</th></tr>
+        <tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th></tr>
       </thead>
       <tbody></tbody>
     </table>
-    <p class="total-display">Total: $<span id="total">0</span></p>
+    <p>Total: $<span id="total">0</span></p>
     <button onclick="choosePaymentMethod()">Cobrar e Imprimir Ticket</button>
-    <div id="paymentMethodDiv" style="display:none;">
-      <p>¿Cómo se cobró?</p>
-      <button onclick="checkout('Efectivo')">Efectivo</button>
-      <button onclick="checkout('Tarjeta')">Tarjeta</button>
-    </div>
   </div>
 
   <!-- Controlar Stock -->
@@ -71,12 +63,10 @@
     <select id="modProductSelect" onchange="loadProductToModify()">
       <option value="">-- Seleccione producto --</option>
     </select>
-    <div class="modify-inputs">
-      <input type="text" id="modNombre" placeholder="Nuevo nombre">
-      <input type="number" id="modPrecio" placeholder="Nuevo precio">
-      <input type="number" id="modStock" placeholder="Nueva cantidad">
-      <input type="password" id="masterPassword" placeholder="Contraseña maestra">
-    </div>
+    <input type="text" id="modNombre" placeholder="Nuevo nombre">
+    <input type="number" id="modPrecio" placeholder="Nuevo precio">
+    <input type="number" id="modStock" placeholder="Nueva cantidad">
+    <input type="password" id="masterPassword" placeholder="Contraseña maestra">
     <button id="btnModificar">Modificar Producto</button>
   </div>
 
@@ -85,7 +75,7 @@
     <h2>Control de Ventas</h2>
     <table id="salesTable">
       <thead>
-        <tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Acción</th></tr>
+        <tr><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>ID</th><th>Acción</th></tr>
       </thead>
       <tbody></tbody>
     </table>
