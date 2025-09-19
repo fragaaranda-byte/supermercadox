@@ -51,6 +51,13 @@ input{
   width:100%;
   box-sizing:border-box;
 }
+.price-container{
+  display:flex;
+  gap:5px;
+}
+.price-container input{
+  flex:1;
+}
 table{
   width:100%;
   border-collapse:collapse;
@@ -71,9 +78,4 @@ th,td{
 }
 #paymentMethodDiv{
   margin-top:10px;
-}
-.cart-actions button{
-  width:30px;
-  padding:2px;
-  margin:0 2px;
 }
