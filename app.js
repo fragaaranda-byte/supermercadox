@@ -185,11 +185,11 @@ function encabezadoPie() {
   openModal("Encabezado y Pié", `
     <label>Encabezado:</label>
     <input id="encabezado" type="text" maxlength="40" value="${headerArea.innerText}">
-    <small id="encabezado-count">Quedan ${40 - headerArea.innerText.length} caracteres</small>
+    <small id="encabezado-count"> ${40 - headerArea.innerText.length} </small>
 
     <br><br><label>Pié:</label>
     <input id="pie" type="text" maxlength="40" value="${footerArea.innerText}">
-    <small id="pie-count">Quedan ${40 - footerArea.innerText.length} caracteres</small>
+    <small id="pie-count"> ${40 - footerArea.innerText.length}</small>
 
     <br><br><label>Fuente:</label>
     <select id="fontHeaderFooter">
@@ -206,25 +206,25 @@ function encabezadoPie() {
       }).join("")}
     </select>
 
-    <label>Color Encabezado:</label>
+    <br><br><label>Color Encabezado:</label>
     <input type="color" id="colorHeader">
 
-    <label>Color Pié:</label>
+    <br><br><label>Color Pié:</label>
     <input type="color" id="colorFooter">
 
-    <label>Alineación:</label>
+    <br><br><label>Alineación:</label>
     <select id="alignHeaderFooter">
       <option value="left">Izquierda</option>
       <option value="center">Centro</option>
       <option value="right">Derecha</option>
     </select>
 
-    <label>Estilo Encabezado:</label>
+    <br><br><label>Estilo Encabezado:</label>
     <button id="boldHeader"><b>N</b></button>
     <button id="italicHeader"><i>K</i></button>
     <button id="underlineHeader"><u>S</u></button>
 
-    <label>Estilo Pié:</label>
+    <br><br><label>Estilo Pié:</label>
     <button id="boldFooter"><b>N</b></button>
     <button id="italicFooter"><i>K</i></button>
     <button id="underlineFooter"><u>S</u></button>
@@ -241,13 +241,13 @@ function encabezadoPie() {
 
   encabezadoInput.addEventListener("input", () => {
     encabezadoInput.value = encabezadoInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
-    const remaining = 35 - encabezadoInput.value.length;
+    const remaining = 40 - encabezadoInput.value.length;
     encabezadoCount.textContent = `Quedan ${remaining} caracteres`;
   });
 
   pieInput.addEventListener("input", () => {
     pieInput.value = pieInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
-    const remaining = 35 - pieInput.value.length;
+    const remaining = 40 - pieInput.value.length;
     pieCount.textContent = `Quedan ${remaining} caracteres`;
   });
 
@@ -389,6 +389,7 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
 
 
 
