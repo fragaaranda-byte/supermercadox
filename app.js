@@ -229,7 +229,7 @@ document.querySelectorAll(".menu li").forEach(item => {
       case "Numerar Páginas": numerarPaginas(); break;
     }
   });
-});
+}
 
 // --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
@@ -246,23 +246,30 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (selection.rangeCount > 0) {
     const range = selection.getRangeAt(0);
     if (!range.collapsed) {
-      // Texto seleccionado → aplicar estilo directo
+      // Texto seleccionado → aplicar tamaño directo
       const span = document.createElement("span");
       span.style.fontSize = size + "px";
       span.appendChild(range.extractContents());
       range.insertNode(span);
+
+      // Mantener selección activa
       selection.removeAllRanges();
       const newRange = document.createRange();
       newRange.selectNodeContents(span);
       selection.addRange(newRange);
     } else {
-      // Solo cursor → usar execCommand como fallback
-      document.execCommand("fontSize", false, "7");
-      const fontElements = documentArea.querySelectorAll("font[size='7']");
-      fontElements.forEach(el => {
-        el.removeAttribute("size");
-        el.style.fontSize = size + "px";
-      });
+      // Solo cursor → aplicar a futuro
+      const span = document.createElement("span");
+      span.style.fontSize = size + "px";
+      span.appendChild(document.createTextNode("\u200B"));
+      range.insertNode(span);
+
+      // Colocar cursor dentro del nuevo span
+      const newRange = document.createRange();
+      newRange.setStart(span.firstChild, 1);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
     }
   }
 
