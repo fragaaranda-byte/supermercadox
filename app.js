@@ -111,24 +111,67 @@ function rehacer() {
 function configurarPaginado() {
   openModal("Configurar Paginado", `
     <label>Orientación:</label>
-    <select id="orientacion"><option>Vertical</option><option>Horizontal</option></select>
+    <select id="orientacion">
+      <option value="vertical">Vertical</option>
+      <option value="horizontal">Horizontal</option>
+    </select>
+
     <label>Papel:</label>
     <select id="papel">
-      <option>A4</option><option>A5</option><option>A3</option>
-      <option>Legal</option><option>Folio</option><option>Carta</option>
+      <option value="A4">A4</option>
+      <option value="A5">A5</option>
+      <option value="A3">A3</option>
+      <option value="Legal">Legal</option>
+      <option value="Folio">Folio</option>
+      <option value="Carta">Carta</option>
     </select>
+
     <label>Márgen Izq:</label><input id="margenIzq" type="number" step="0.1" value="1.5">
     <label>Márgen Der:</label><input id="margenDer" type="number" step="0.1" value="1.5">
     <label>Márgen Sup:</label><input id="margenSup" type="number" step="0.1" value="1.5">
     <label>Márgen Inf:</label><input id="margenInf" type="number" step="0.1" value="1.5">
+
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
   `);
 
   document.getElementById("aplicar").onclick = () => {
-    documentArea.style.padding = `${document.getElementById("margenSup").value}cm ${document.getElementById("margenDer").value}cm ${document.getElementById("margenInf").value}cm ${document.getElementById("margenIzq").value}cm`;
+    const orientacion = document.getElementById("orientacion").value;
+    const papel = document.getElementById("papel").value;
+
+    // Tamaños estándar en cm
+    const tamaños = {
+      "A4": {w: 21, h: 29.7},
+      "A5": {w: 14.8, h: 21},
+      "A3": {w: 29.7, h: 42},
+      "Legal": {w: 21.6, h: 35.6},
+      "Folio": {w: 21.6, h: 33},
+      "Carta": {w: 21.6, h: 27.9}
+    };
+
+    let ancho = tamaños[papel].w;
+    let alto = tamaños[papel].h;
+
+    // Cambiar orientación
+    if (orientacion === "horizontal") {
+      [ancho, alto] = [alto, ancho];
+    }
+
+    // Aplicar tamaño de hoja
+    documentArea.style.width = ancho + "cm";
+    documentArea.style.height = alto + "cm";
+
+    // Aplicar márgenes
+    const margenIzq = document.getElementById("margenIzq").value;
+    const margenDer = document.getElementById("margenDer").value;
+    const margenSup = document.getElementById("margenSup").value;
+    const margenInf = document.getElementById("margenInf").value;
+
+    documentArea.style.padding = `${margenSup}cm ${margenDer}cm ${margenInf}cm ${margenIzq}cm`;
+
     closeModal();
   };
+
   document.getElementById("cancel").onclick = () => closeModal();
 }
 
@@ -152,7 +195,10 @@ function encabezadoPie() {
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
-    <label>Tamaño:</label><input id="tamano" type="number" min="8" max="30">
+    <label>Tamaño:</label>
+    <select id="tamano">
+      ${Array.from({length: 13}, (_, i) => `<option>${i+8}</option>`).join("")}
+    </select>
     <label>Posición:</label>
     <select id="posicion">
       <option value="sup-izq">Superior Izquierda</option>
@@ -167,14 +213,11 @@ function numerarPaginas() {
   document.getElementById("aplicar").onclick = () => {
     const tamano = document.getElementById("tamano").value;
     const pos = document.getElementById("posicion").value;
-    if (!tamano || !pos) {
-      alert("Debe elegir tamaño y lugar de numeración");
-      return;
-    }
     pageNumberArea.style.fontSize = tamano + "px";
-    pageNumberArea.innerText = "1"; // por ahora solo ejemplo
-    pageNumberArea.style.textAlign = (pos.includes("der") ? "right" : "left");
+    pageNumberArea.innerText = "1"; // ejemplo
+    pageNumberArea.style.textAlign = pos.includes("der") ? "right" : "left";
     pageNumberArea.style.position = "absolute";
+    pageNumberArea.style.width = "100%";
     if (pos.includes("sup")) {
       pageNumberArea.style.top = "0";
     } else {
@@ -236,3 +279,4 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
