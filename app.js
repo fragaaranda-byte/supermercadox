@@ -172,6 +172,7 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
+
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -228,30 +229,62 @@ document.querySelectorAll(".menu li").forEach(item => {
   });
 });
 
-// --- Función para aplicar estilos al texto seleccionado ---
-function applyStyle(style, value = null) {
+// --- Función para aplicar/quitar estilos al texto seleccionado ---
+function toggleStyle(style, value = null) {
   const selection = window.getSelection();
   if (!selection.rangeCount) return;
   const range = selection.getRangeAt(0);
-  const span = document.createElement("span");
 
-  switch(style) {
-    case "bold": span.style.fontWeight = "bold"; break;
-    case "italic": span.style.fontStyle = "italic"; break;
-    case "underline": span.style.textDecoration = "underline"; break;
-    case "fontSize": span.style.fontSize = value + "px"; break;
-    case "color": span.style.color = value; break;
-    case "highlight": span.style.backgroundColor = value; break;
-    case "fontFamily": span.style.fontFamily = value; break;
-    case "align": span.style.display = "block"; span.style.textAlign = value; break;
+  // Si no hay texto seleccionado (cursor), aplicamos estilo a futuro
+  if (range.collapsed) {
+    const span = document.createElement("span");
+    switch(style) {
+      case "bold": span.style.fontWeight = "bold"; break;
+      case "italic": span.style.fontStyle = "italic"; break;
+      case "underline": span.style.textDecoration = "underline"; break;
+      case "fontSize": span.style.fontSize = value + "px"; break;
+      case "color": span.style.color = value; break;
+      case "highlight": span.style.backgroundColor = value; break;
+      case "fontFamily": span.style.fontFamily = value; break;
+      case "align": span.style.display = "block"; span.style.textAlign = value; break;
+    }
+    span.appendChild(document.createTextNode("\u200B")); // espacio invisible
+    range.insertNode(span);
+    range.setStart(span.firstChild, 1);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return;
   }
 
-  range.surroundContents(span);
+  // Si hay texto seleccionado
+  const contents = range.extractContents();
+  const wrapper = document.createElement("span");
+
+  switch(style) {
+    case "bold":
+      wrapper.style.fontWeight = "bold";
+      break;
+    case "italic":
+      wrapper.style.fontStyle = "italic";
+      break;
+    case "underline":
+      wrapper.style.textDecoration = "underline";
+      break;
+    case "fontSize": wrapper.style.fontSize = value + "px"; break;
+    case "color": wrapper.style.color = value; break;
+    case "highlight": wrapper.style.backgroundColor = value; break;
+    case "fontFamily": wrapper.style.fontFamily = value; break;
+    case "align": wrapper.style.display = "block"; wrapper.style.textAlign = value; break;
+  }
+
+  wrapper.appendChild(contents);
+  range.insertNode(wrapper);
 }
 
 // --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
-  applyStyle("fontFamily", e.target.value);
+  toggleStyle("fontFamily", e.target.value);
 });
 
 document.getElementById("font-size").addEventListener("change", e => {
@@ -259,7 +292,7 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (isNaN(size)) size = 8;
   if (size < 8) size = 8;
   if (size > 150) size = 150;
-  applyStyle("fontSize", size);
+  toggleStyle("fontSize", size);
   e.target.value = size;
 });
 
@@ -267,22 +300,22 @@ document.querySelectorAll(".toolbar button").forEach(btn => {
   btn.addEventListener("click", () => {
     const action = btn.innerText.trim();
     switch(action) {
-      case "N": applyStyle("bold"); break;
-      case "K": applyStyle("italic"); break;
-      case "S": applyStyle("underline"); break;
-      case "Izq": applyStyle("align", "left"); break;
-      case "Centro": applyStyle("align", "center"); break;
-      case "Der": applyStyle("align", "right"); break;
+      case "N": toggleStyle("bold"); break;
+      case "K": toggleStyle("italic"); break;
+      case "S": toggleStyle("underline"); break;
+      case "Izq": toggleStyle("align", "left"); break;
+      case "Centro": toggleStyle("align", "center"); break;
+      case "Der": toggleStyle("align", "right"); break;
     }
   });
 });
 
 document.getElementById("font-color").addEventListener("change", e => {
-  applyStyle("color", e.target.value);
+  toggleStyle("color", e.target.value);
 });
 
 document.getElementById("highlight-color").addEventListener("change", e => {
-  applyStyle("highlight", e.target.value);
+  toggleStyle("highlight", e.target.value);
 });
 
 // Guardado automático cada 1 minuto
