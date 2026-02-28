@@ -194,18 +194,36 @@ function numerarPaginas() {
   document.getElementById("aplicar").onclick = () => {
     const tamano = document.getElementById("tamano").value;
     const pos = document.getElementById("posicion").value;
+    const pageNumberArea = document.getElementById("page-number");
+
     pageNumberArea.style.fontSize = tamano + "px";
     pageNumberArea.innerText = "1"; // ejemplo
-    pageNumberArea.style.textAlign = pos.includes("der") ? "right" : "left";
-    pageNumberArea.style.position = "absolute";
-    pageNumberArea.style.width = "100%";
-    if (pos.includes("sup")) {
+    pageNumberArea.style.display = "block";
+
+    // Posición
+    if (pos === "sup-izq") {
       pageNumberArea.style.top = "0.5cm";
       pageNumberArea.style.bottom = "";
-    } else {
+      pageNumberArea.style.textAlign = "left";
+    } else if (pos === "sup-der") {
+      pageNumberArea.style.top = "0.5cm";
+      pageNumberArea.style.bottom = "";
+      pageNumberArea.style.textAlign = "right";
+    } else if (pos === "inf-izq") {
       pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
+      pageNumberArea.style.textAlign = "left";
+    } else if (pos === "inf-der") {
+      pageNumberArea.style.bottom = "0.5cm";
+      pageNumberArea.style.top = "";
+      pageNumberArea.style.textAlign = "right";
     }
+
+    closeModal();
+  };
+  document.getElementById("cancel").onclick = () => closeModal();
+}
+
     // Asegurar que esté dentro del documento y visible
     if (!documentArea.contains(pageNumberArea)) {
       documentArea.appendChild(pageNumberArea);
@@ -291,3 +309,4 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
