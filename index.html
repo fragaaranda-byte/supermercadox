@@ -48,13 +48,10 @@
       <option>Times New Roman</option>
       <option>Verdana</option>
     </select>
-    <select id="font-size">
-      <option>10</option>
-      <option>12</option>
-      <option>14</option>
-      <option>16</option>
-      <option>18</option>
-    </select>
+
+    <!-- Input numérico para tamaño de fuente -->
+    <input id="font-size" type="number" min="8" max="150" value="12">
+
     <button><b>N</b></button>
     <button><i>K</i></button>
     <button><u>S</u></button>
@@ -66,22 +63,21 @@
   </section>
 
   <!-- Área de documento -->
-<main>
-  <div id="document">
-    <!-- Encabezado fijo -->
-    <div id="header" contenteditable="false"></div>
+  <main>
+    <div id="document">
+      <!-- Encabezado fijo -->
+      <div id="header" contenteditable="false"></div>
 
-    <!-- Área editable -->
-    <div id="content" contenteditable="true"></div>
+      <!-- Área editable -->
+      <div id="content" contenteditable="true"></div>
 
-    <!-- Pie fijo -->
-    <div id="footer" contenteditable="false"></div>
+      <!-- Pie fijo -->
+      <div id="footer" contenteditable="false"></div>
 
-    <!-- Numeración fija -->
-    <div id="page-number" contenteditable="false"></div>
-  </div>
-</main>
-
+      <!-- Numeración fija -->
+      <div id="page-number" contenteditable="false"></div>
+    </div>
+  </main>
 
   <!-- Modal genérico -->
   <div id="modal" class="modal hidden">
@@ -96,4 +92,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
