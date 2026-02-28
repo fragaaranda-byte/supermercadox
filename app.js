@@ -99,6 +99,7 @@ function guardarComo() {
 function imprimirDocumento() {
   window.print();
 }
+
 // --- Funciones de Editar ---
 function deshacer() {
   document.execCommand("undo");
@@ -224,7 +225,7 @@ function encabezadoPie() {
     const align = document.getElementById("alignHeaderFooter").value;
 
     [headerArea, footerArea].forEach(el => {
-      el.style.fontFamily = font;
+            el.style.fontFamily = font;
       el.style.fontSize = size + "px";
       el.style.color = color;
       el.style.textAlign = align;
@@ -263,9 +264,11 @@ function numerarPaginas() {
     pageNumberArea.style.position = "absolute";
     pageNumberArea.style.width = "100%";
     if (pos.includes("sup")) {
-      pageNumberArea.style.top = "0";
+      pageNumberArea.style.top = "0.5cm";
+      pageNumberArea.style.bottom = "";
     } else {
-      pageNumberArea.style.bottom = "0";
+      pageNumberArea.style.bottom = "0.5cm";
+      pageNumberArea.style.top = "";
     }
     closeModal();
   };
@@ -295,9 +298,21 @@ document.querySelectorAll(".menu li").forEach(item => {
 document.getElementById("font-family").addEventListener("change", e => {
   document.execCommand("fontName", false, e.target.value);
 });
+
 document.getElementById("font-size").addEventListener("change", e => {
-  document.execCommand("fontSize", false, e.target.value);
+  let size = parseInt(e.target.value, 10);
+  if (isNaN(size)) size = 8;
+  if (size < 8) size = 8;
+  if (size > 150) size = 150;
+  document.execCommand("fontSize", false, "7");
+  const fontElements = documentArea.querySelectorAll("font[size='7']");
+  fontElements.forEach(el => {
+    el.removeAttribute("size");
+    el.style.fontSize = size + "px";
+  });
+  e.target.value = size;
 });
+
 document.querySelectorAll(".toolbar button").forEach(btn => {
   btn.addEventListener("click", () => {
     const action = btn.innerText.trim();
@@ -311,9 +326,11 @@ document.querySelectorAll(".toolbar button").forEach(btn => {
     }
   });
 });
+
 document.getElementById("font-color").addEventListener("change", e => {
   document.execCommand("foreColor", false, e.target.value);
 });
+
 document.getElementById("highlight-color").addEventListener("change", e => {
   document.execCommand("hiliteColor", false, e.target.value);
 });
@@ -323,5 +340,3 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
-
-
