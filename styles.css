@@ -1,10 +1,11 @@
 #page-number {
   position: absolute;
   width: 100%;
-  text-align: right; /* por defecto */
   font-size: 12px;
-  color: black;
+  color: #666;
   pointer-events: none; /* no interfiere con edición */
+  text-align: right; /* por defecto */
+  display: none; /* oculto hasta que se active */
 }
 
 body {
@@ -122,4 +123,5 @@ header {
   border-radius: 5px;
   width: 400px;
 }
+
 
