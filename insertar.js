@@ -1,7 +1,7 @@
 // insertar.js
 
 document.addEventListener("DOMContentLoaded", () => {
-  const docContent = document.getElementById("doc-content");
+  const docContent = document.querySelector(".doc-content");
 
   // === Función auxiliar: insertar HTML en la posición del cursor ===
   function insertarEnCursor(html) {
@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sel.removeAllRanges();
       sel.addRange(range);
     }
+    docContent.focus();
   }
 
   // === Insertar Imagen ===
@@ -39,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = ev => {
-        insertarEnCursor(`<img src="${ev.target.result}" style="max-width:200px;">`);
+        insertarEnCursor(`<img src="${ev.target.result}" style="max-width:200px;display:block;margin:10px auto;">`);
       };
       reader.readAsDataURL(file);
     };
@@ -50,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnIndice = document.querySelector("#insertar-menu button:nth-child(2)");
   btnIndice.addEventListener("click", () => {
     const headings = docContent.querySelectorAll("h1, h2, h3");
-    let indiceHTML = "<div><h3>Índice</h3><ul>";
+    let indiceHTML = "<div style='margin:10px 0;'><h3>Índice</h3><ul>";
     headings.forEach(h => {
       indiceHTML += `<li>${h.textContent}</li>`;
     });
@@ -103,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       cell.addEventListener("click", () => {
         // Crear tabla HTML
-        let tablaHTML = "<table border='1' style='border-collapse:collapse;'>";
+        let tablaHTML = "<table border='1' style='border-collapse:collapse;margin:10px auto;'>";
         for (let r = 0; r < filas; r++) {
           tablaHTML += "<tr>";
           for (let c = 0; c < columnas; c++) {
@@ -118,5 +119,4 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
 });
