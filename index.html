@@ -10,16 +10,16 @@
   <header>
     <nav class="menu">
       <ul>
-       <li>Archivo
-  <ul class="submenu">
-    <li>Nuevo</li>
-    <li>Abrir</li>
-    <li>Guardar</li>
-    <li>Guardar Como</li>
-    <li>Imprimir</li>
-    <li>Paginado</li>
-  </ul>
-</li>
+        <li>Archivo
+          <ul class="submenu">
+            <li>Nuevo</li>
+            <li>Abrir</li>
+            <li>Guardar</li>
+            <li>Guardar Como</li>
+            <li>Imprimir</li>
+            <li>Paginado</li>
+          </ul>
+        </li>
         <li>Editar
           <ul class="submenu">
             <li>Deshacer</li>
@@ -67,9 +67,19 @@
 
   <!-- Área de documento -->
   <main>
+    <!-- Encabezado fijo -->
+    <div id="header" contenteditable="false"></div>
+
+    <!-- Documento editable -->
     <div id="document" contenteditable="true">
       <!-- Aquí se escribe el contenido -->
     </div>
+
+    <!-- Pie fijo -->
+    <div id="footer" contenteditable="false"></div>
+
+    <!-- Numeración fija -->
+    <div id="page-number" contenteditable="false"></div>
   </main>
 
   <!-- Modal genérico -->
@@ -81,8 +91,7 @@
       <button>Cancelar</button>
     </div>
   </div>
-  <script src="app.js"></script> </body> </html>
+
+  <script src="app.js"></script>
 </body>
 </html>
-
-
