@@ -2,113 +2,123 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Referencias a los modales
-  const modalNuevo = document.getElementById("modal-nuevo");
-  const modalAbrir = document.getElementById("modal-abrir");
-  const modalGuardar = document.getElementById("modal-guardar");
-  const modalGuardarComo = document.getElementById("modal-guardar-como");
-  const modalImprimir = document.getElementById("modal-imprimir");
-  const modalPagina = document.getElementById("modal-pagina");
-
   const docContent = document.getElementById("doc-content");
 
-  // Funciones para abrir/cerrar modales
-  function abrirModal(modal) {
-    modal.style.display = "flex";
-    docContent.setAttribute("contenteditable", "false");
+  // === Función para crear documento nuevo ===
+  function nuevoDocumento() {
+    docContent.innerHTML = "";
   }
 
-  function cerrarModal(modal) {
-    modal.style.display = "none";
-    docContent.setAttribute("contenteditable", "true");
+  // === Función para abrir documento ===
+  function abrirDocumento(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      docContent.innerHTML = e.target.result;
+    };
+    reader.readAsText(file);
   }
 
-  // === Archivo > Nuevo ===
-  document.getElementById("nuevo").addEventListener("click", () => {
-    abrirModal(modalNuevo);
-    const botones = modalNuevo.querySelectorAll("button");
-    botones[0].onclick = () => {
-      // Guardar documento actual (exportar en .mpd/.docx/.pdf)
-      alert("Exportar documento actual (pendiente de implementar)");
-      cerrarModal(modalNuevo);
-      docContent.innerHTML = ""; // crear documento vacío
-    };
-    botones[1].onclick = () => {
-      // No guardar, simplemente crear documento nuevo
-      docContent.innerHTML = "";
-      cerrarModal(modalNuevo);
-    };
-  });
+  // === Función para guardar documento ===
+  function guardarDocumento(formato = "mpd") {
+    let contenido = docContent.innerHTML;
+    let blob;
+    let nombreArchivo = "documento." + formato;
 
-  // === Archivo > Abrir ===
-  document.getElementById("abrir").addEventListener("click", () => {
-    abrirModal(modalAbrir);
-    const botones = modalAbrir.querySelectorAll("button");
-    botones[0].onclick = () => {
-      alert("Guardar documento actual antes de abrir otro (pendiente de implementar)");
-      cerrarModal(modalAbrir);
-      alert("Abrir documento seleccionado (pendiente de implementar)");
-    };
-    botones[1].onclick = () => {
-      // No guardar, abrir documento nuevo
-      cerrarModal(modalAbrir);
-      alert("Abrir documento seleccionado (pendiente de implementar)");
-    };
-  });
+    if (formato === "mpd") {
+      blob = new Blob([contenido], { type: "text/plain;charset=utf-8" });
+    } else if (formato === "docx") {
+      // Exportar como DOCX (simplificado: HTML dentro de un blob)
+      blob = new Blob([contenido], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+    } else if (formato === "pdf") {
+      // Exportar como PDF (simplificado: HTML dentro de un blob)
+      blob = new Blob([contenido], { type: "application/pdf" });
+    }
 
-  // === Archivo > Guardar ===
-  document.getElementById("guardar").addEventListener("click", () => {
-    abrirModal(modalGuardar);
-    const botones = modalGuardar.querySelectorAll("button");
-    botones[0].onclick = () => {
-      alert("Guardar documento en formato .mpd (pendiente de implementar)");
-      cerrarModal(modalGuardar);
-    };
-    botones[1].onclick = () => cerrarModal(modalGuardar);
-  });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = nombreArchivo;
+    link.click();
+  }
 
-  // === Archivo > Guardar Como ===
-  document.getElementById("guardar-como").addEventListener("click", () => {
-    abrirModal(modalGuardarComo);
-    const botones = modalGuardarComo.querySelectorAll("button");
-    botones[0].onclick = () => {
-      const formato = modalGuardarComo.querySelector("select").value;
-      alert("Guardar documento como " + formato + " (pendiente de implementar)");
-      cerrarModal(modalGuardarComo);
-    };
-    botones[1].onclick = () => cerrarModal(modalGuardarComo);
-  });
+  // === Función para imprimir documento ===
+  function imprimirDocumento() {
+    const ventana = window.open("", "_blank");
+    ventana.document.write("<html><head><title>Imprimir</title></head><body>");
+    ventana.document.write(docContent.innerHTML);
+    ventana.document.write("</body></html>");
+    ventana.document.close();
+    ventana.print();
+  }
 
-  // === Archivo > Imprimir ===
-  document.getElementById("imprimir").addEventListener("click", () => {
-    abrirModal(modalImprimir);
-    const botones = modalImprimir.querySelectorAll("button");
-    botones[0].onclick = () => {
-      const paginas = modalImprimir.querySelector("input[type=text]").value;
-      const copias = modalImprimir.querySelector("input[type=number]").value;
-      alert("Imprimir páginas: " + paginas + " | Copias: " + copias + " (pendiente de implementar)");
-      cerrarModal(modalImprimir);
-    };
-    botones[1].onclick = () => cerrarModal(modalImprimir);
-  });
+  // === Función para configurar página ===
+  function configurarPagina(opciones) {
+    const page = document.querySelector(".page");
 
-  // === Archivo > Página ===
-  document.getElementById("pagina").addEventListener("click", () => {
-    abrirModal(modalPagina);
-    const botones = modalPagina.querySelectorAll("button");
-    botones[0].onclick = () => {
-      const orientacion = modalPagina.querySelectorAll("select")[0].value;
-      const papel = modalPagina.querySelectorAll("select")[1].value;
-      const margenes = {
-        derecho: modalPagina.querySelectorAll("select")[2].value,
-        izquierdo: modalPagina.querySelectorAll("select")[3].value,
-        superior: modalPagina.querySelectorAll("select")[4].value,
-        inferior: modalPagina.querySelectorAll("select")[5].value
-      };
-      alert("Aplicar configuración: " + orientacion + ", " + papel + ", márgenes: " + JSON.stringify(margenes));
-      cerrarModal(modalPagina);
+    // Orientación
+    if (opciones.orientacion === "Horizontal") {
+      page.style.width = "297mm";
+      page.style.height = "210mm";
+    } else {
+      page.style.width = "210mm";
+      page.style.height = "297mm";
+    }
+
+    // Márgenes
+    docContent.style.paddingTop = opciones.superior + "mm";
+    docContent.style.paddingBottom = opciones.inferior + "mm";
+    docContent.style.paddingLeft = opciones.izquierdo + "mm";
+    docContent.style.paddingRight = opciones.derecho + "mm";
+  }
+
+  // === Eventos de botones ===
+  // Nuevo
+  document.querySelector("#modal-nuevo button:nth-child(2)").onclick = () => {
+    nuevoDocumento();
+    document.getElementById("modal-nuevo").style.display = "none";
+  };
+
+  // Abrir
+  document.querySelector("#modal-abrir button:nth-child(2)").onclick = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".mpd,.docx,.pdf";
+    input.onchange = e => abrirDocumento(e.target.files[0]);
+    input.click();
+    document.getElementById("modal-abrir").style.display = "none";
+  };
+
+  // Guardar
+  document.querySelector("#modal-guardar button:first-child").onclick = () => {
+    guardarDocumento("mpd");
+    document.getElementById("modal-guardar").style.display = "none";
+  };
+
+  // Guardar Como
+  document.querySelector("#modal-guardar-como button:first-child").onclick = () => {
+    const formato = document.querySelector("#modal-guardar-como select").value.replace(".", "");
+    guardarDocumento(formato);
+    document.getElementById("modal-guardar-como").style.display = "none";
+  };
+
+  // Imprimir
+  document.querySelector("#modal-imprimir button:first-child").onclick = () => {
+    imprimirDocumento();
+    document.getElementById("modal-imprimir").style.display = "none";
+  };
+
+  // Página
+  document.querySelector("#modal-pagina button:first-child").onclick = () => {
+    const selects = document.querySelectorAll("#modal-pagina select");
+    const opciones = {
+      orientacion: selects[0].value,
+      papel: selects[1].value,
+      derecho: selects[2].value,
+      izquierdo: selects[3].value,
+      superior: selects[4].value,
+      inferior: selects[5].value
     };
-    botones[1].onclick = () => cerrarModal(modalPagina);
-  });
+    configurarPagina(opciones);
+    document.getElementById("modal-pagina").style.display = "none";
+  };
 
 });
