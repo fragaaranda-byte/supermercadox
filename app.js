@@ -60,7 +60,7 @@ function abrirDocumento() {
 function seleccionarArchivo() {
   const input = document.createElement("input");
   input.type = "file";
-  input.accept = ".myd,.docx";
+  input.accept = ".mpd,.docx";
   input.onchange = e => {
     const file = e.target.files[0];
     if (file) {
@@ -78,7 +78,7 @@ function guardarDocumento() {
   const blob = new Blob([documentArea.innerHTML], {type: "text/plain"});
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "documento.myd";
+  link.download = "documento.mpd";
   link.click();
 }
 
@@ -86,7 +86,7 @@ function guardarComo() {
   const blob = new Blob([documentArea.innerHTML], {type: "text/plain"});
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = prompt("Nombre del archivo:", "documento.myd") || "documento.myd";
+  link.download = prompt("Nombre del archivo:", "documento.mpd") || "documento.mpd";
   link.click();
 }
 
@@ -272,6 +272,7 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 
 // Guardado automático cada 1 minuto
 setInterval(() => {
-  console.log("Guardado automático en formato .myd");
+  console.log("Guardado automático en formato .mpd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
