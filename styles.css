@@ -22,7 +22,8 @@
   position: absolute;
   font-size: 12px;
   color: #666;
-  pointer-events: none;
+  pointer-events: none; /* no permite clics ni edición */
+  user-select: none;    /* no permite seleccionar texto */
   display: none;
 }
 
@@ -141,6 +142,7 @@ header {
   border-radius: 5px;
   width: 400px;
 }
+
 
 
 
