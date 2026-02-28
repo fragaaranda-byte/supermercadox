@@ -99,7 +99,6 @@ function configurarPaginado() {
   };
   document.getElementById("cancel").onclick = () => closeModal();
 }
-// --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
     <label>Tamaño:</label>
@@ -125,10 +124,14 @@ function numerarPaginas() {
     pageNumberArea.innerText = "(1)";
     pageNumberArea.style.display = "block";
 
+    // Reset posiciones
     pageNumberArea.style.top = "";
     pageNumberArea.style.bottom = "";
     pageNumberArea.style.left = "";
     pageNumberArea.style.right = "";
+
+    // Reset padding inferior por defecto
+    docContent.style.paddingBottom = "1.5cm";
 
     if (pos === "sup-izq") {
       pageNumberArea.style.top = "1cm";
@@ -139,9 +142,11 @@ function numerarPaginas() {
     } else if (pos === "inf-izq") {
       pageNumberArea.style.bottom = "1cm";
       pageNumberArea.style.left = "1.5cm";
+      docContent.style.paddingBottom = "2.5cm"; // reserva espacio extra
     } else if (pos === "inf-der") {
       pageNumberArea.style.bottom = "1cm";
       pageNumberArea.style.right = "1.5cm";
+      docContent.style.paddingBottom = "2.5cm"; // reserva espacio extra
     }
 
     closeModal();
@@ -220,3 +225,4 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
