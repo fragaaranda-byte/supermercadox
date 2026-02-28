@@ -63,9 +63,14 @@
 
   <!-- Área de documento inmersiva -->
 <main>
-  <div id="document" contenteditable="true" style="position:relative;">
-    <!-- Div flotante para numeración de páginas dentro de la hoja -->
-    <div id="page-number" contenteditable="false" style="display:none; position:absolute;"></div>
+  <div id="document" style="position:relative;">
+    <!-- Numeración y otros elementos fijos -->
+    <div id="page-number" contenteditable="false"></div>
+    <div id="header" contenteditable="false"></div>
+    <div id="footer" contenteditable="false"></div>
+
+    <!-- Área editable real -->
+    <div id="doc-content" contenteditable="true"></div>
   </div>
 </main>
 
@@ -82,5 +87,6 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
 
