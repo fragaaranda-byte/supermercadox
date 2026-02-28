@@ -172,7 +172,6 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
-
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -221,7 +220,7 @@ document.querySelectorAll(".menu li").forEach(item => {
       case "Guardar": guardarDocumento(); break;
       case "Guardar Como": guardarComo(); break;
       case "Imprimir": imprimirDocumento(); break;
-      case "Paginado": configurarPaginado(); break;
+      case "Página": configurarPaginado(); break;
       case "Deshacer": deshacer(); break;
       case "Rehacer": rehacer(); break;
       case "Numerar Páginas": numerarPaginas(); break;
@@ -229,9 +228,30 @@ document.querySelectorAll(".menu li").forEach(item => {
   });
 });
 
+// --- Función para aplicar estilos al texto seleccionado ---
+function applyStyle(style, value = null) {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  const span = document.createElement("span");
+
+  switch(style) {
+    case "bold": span.style.fontWeight = "bold"; break;
+    case "italic": span.style.fontStyle = "italic"; break;
+    case "underline": span.style.textDecoration = "underline"; break;
+    case "fontSize": span.style.fontSize = value + "px"; break;
+    case "color": span.style.color = value; break;
+    case "highlight": span.style.backgroundColor = value; break;
+    case "fontFamily": span.style.fontFamily = value; break;
+    case "align": span.style.display = "block"; span.style.textAlign = value; break;
+  }
+
+  range.surroundContents(span);
+}
+
 // --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
-  document.execCommand("fontName", false, e.target.value);
+  applyStyle("fontFamily", e.target.value);
 });
 
 document.getElementById("font-size").addEventListener("change", e => {
@@ -239,12 +259,7 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (isNaN(size)) size = 8;
   if (size < 8) size = 8;
   if (size > 150) size = 150;
-  document.execCommand("fontSize", false, "7");
-  const fontElements = documentArea.querySelectorAll("font[size='7']");
-  fontElements.forEach(el => {
-    el.removeAttribute("size");
-    el.style.fontSize = size + "px";
-  });
+  applyStyle("fontSize", size);
   e.target.value = size;
 });
 
@@ -252,22 +267,22 @@ document.querySelectorAll(".toolbar button").forEach(btn => {
   btn.addEventListener("click", () => {
     const action = btn.innerText.trim();
     switch(action) {
-      case "N": document.execCommand("bold"); break;
-      case "K": document.execCommand("italic"); break;
-      case "S": document.execCommand("underline"); break;
-      case "Izq": document.execCommand("justifyLeft"); break;
-      case "Centro": document.execCommand("justifyCenter"); break;
-      case "Der": document.execCommand("justifyRight"); break;
+      case "N": applyStyle("bold"); break;
+      case "K": applyStyle("italic"); break;
+      case "S": applyStyle("underline"); break;
+      case "Izq": applyStyle("align", "left"); break;
+      case "Centro": applyStyle("align", "center"); break;
+      case "Der": applyStyle("align", "right"); break;
     }
   });
 });
 
 document.getElementById("font-color").addEventListener("change", e => {
-  document.execCommand("foreColor", false, e.target.value);
+  applyStyle("color", e.target.value);
 });
 
 document.getElementById("highlight-color").addEventListener("change", e => {
-  document.execCommand("hiliteColor", false, e.target.value);
+  applyStyle("highlight", e.target.value);
 });
 
 // Guardado automático cada 1 minuto
@@ -275,4 +290,3 @@ setInterval(() => {
   console.log("Guardado automático en formato .mpd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
-
