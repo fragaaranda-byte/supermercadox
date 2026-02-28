@@ -5,6 +5,7 @@ body {
   background: #f4f4f4;
 }
 
+/* Barra superior */
 #toolbar {
   display: flex;
   align-items: center;
@@ -25,6 +26,39 @@ body {
   height: 32px;
 }
 
+/* Barra de formato */
+#format-bar {
+  display: flex;
+  align-items: center;
+  background: #f0f0f0;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+}
+
+#format-bar select,
+#format-bar input[type=color],
+#format-bar button {
+  margin-right: 10px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+#format-bar button {
+  border: 1px solid #aaa;
+  background: #fff;
+  font-weight: bold;
+}
+
+#format-bar button:hover {
+  background: #ddd;
+}
+
+#format-bar img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Menú desplegable Archivo */
 .dropdown {
   display: none;
   position: absolute;
@@ -44,14 +78,15 @@ body {
   cursor: pointer;
 }
 
+/* Barra lateral Insertar */
 #insertar-menu {
   position: fixed;
   left: 0;
-  top: 50px;
+  top: 90px; /* ajustado para que quede debajo de las dos barras */
   width: 200px;
   background: #f9f9f9;
   border-right: 1px solid #ccc;
-  height: calc(100% - 50px);
+  height: calc(100% - 90px);
   overflow-y: auto;
 }
 
@@ -75,6 +110,7 @@ body {
   cursor: pointer;
 }
 
+/* Selector de tabla */
 .grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -95,6 +131,7 @@ body {
   background: #cce;
 }
 
+/* Área de documento */
 #doc-area {
   margin-left: 220px;
   padding: 20px;
