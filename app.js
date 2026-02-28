@@ -231,7 +231,7 @@ document.querySelectorAll(".menu li").forEach(item => {
   });
 });
 
-// --- Barra de formato con toggles reales ---
+// --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
   document.execCommand("fontName", false, e.target.value);
 });
@@ -242,13 +242,16 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (size < 8) size = 8;
   if (size > 150) size = 150;
 
-  // Usamos fontSize=7 como marcador y luego lo reemplazamos
+  // Usamos fontSize=7 como marcador
   document.execCommand("fontSize", false, "7");
+
+  // Reemplazamos todos los <font size="7"> por estilos en px
   const fontElements = documentArea.querySelectorAll("font[size='7']");
   fontElements.forEach(el => {
     el.removeAttribute("size");
     el.style.fontSize = size + "px";
   });
+
   e.target.value = size;
 });
 
