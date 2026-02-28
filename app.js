@@ -173,6 +173,9 @@ function configurarPaginado() {
   document.getElementById("cancel").onclick = () => closeModal();
 }
 // --- Numerar páginas ---
+const docContent = document.getElementById("doc-content");
+const pageNumberArea = document.getElementById("page-number");
+
 function numerarPaginas() {
   openModal("Numerar Páginas", `
     <label>Tamaño:</label>
@@ -193,34 +196,28 @@ function numerarPaginas() {
   document.getElementById("aplicar").onclick = () => {
     const tamano = document.getElementById("tamano").value;
     const pos = document.getElementById("posicion").value;
-    const pageNumberArea = document.getElementById("page-number");
 
     pageNumberArea.style.fontSize = tamano + "px";
     pageNumberArea.innerText = "(1)";
     pageNumberArea.style.display = "block";
 
-    // Reset posiciones
     pageNumberArea.style.top = "";
     pageNumberArea.style.bottom = "";
-    pageNumberArea.style.textAlign = "";
+    pageNumberArea.style.left = "";
+    pageNumberArea.style.right = "";
 
-    // Posición y espacio extra
     if (pos === "sup-izq") {
       pageNumberArea.style.top = "1cm";
-      pageNumberArea.style.textAlign = "left";
-      documentArea.style.paddingTop = "3cm"; // espacio extra arriba
+      pageNumberArea.style.left = "1.5cm";
     } else if (pos === "sup-der") {
       pageNumberArea.style.top = "1cm";
-      pageNumberArea.style.textAlign = "right";
-      documentArea.style.paddingTop = "3cm";
+      pageNumberArea.style.right = "1.5cm";
     } else if (pos === "inf-izq") {
       pageNumberArea.style.bottom = "1cm";
-      pageNumberArea.style.textAlign = "left";
-      documentArea.style.paddingBottom = "3cm"; // espacio extra abajo
+      pageNumberArea.style.left = "1.5cm";
     } else if (pos === "inf-der") {
       pageNumberArea.style.bottom = "1cm";
-      pageNumberArea.style.textAlign = "right";
-      documentArea.style.paddingBottom = "3cm";
+      pageNumberArea.style.right = "1.5cm";
     }
 
     closeModal();
@@ -303,6 +300,7 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
 
 
 
