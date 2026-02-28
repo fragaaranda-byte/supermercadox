@@ -23,8 +23,8 @@ function closeModal() {
 function nuevoDocumento() {
   openModal("Nuevo Documento", `
     <p>¿Desea guardar el documento actual y empezar uno nuevo?</p>
-    <button id="delete-current">Borrar Actual</button>
-    <button id="save-current">Guardar Actual</button>
+    <button id="save-current">Si</button>
+    <button id="delete-current">No</button>    
     <button id="cancel">Cancelar</button>
   `);
 
@@ -126,10 +126,14 @@ function configurarPaginado() {
       <option value="Carta">Carta</option>
     </select>
 
-    <label>Márgen Izq:</label><input id="margenIzq" type="number" step="0.1" value="1.5">
-    <label>Márgen Der:</label><input id="margenDer" type="number" step="0.1" value="1.5">
-    <label>Márgen Sup:</label><input id="margenSup" type="number" step="0.1" value="1.5">
-    <label>Márgen Inf:</label><input id="margenInf" type="number" step="0.1" value="1.5">
+    <label>Márgen Izq:</label>
+    <select id="margenIzq"><option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    <label>Márgen Der:</label>
+    <select id="margenDer"><option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    <label>Márgen Sup:</label>
+    <select id="margenSup"><option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    <label>Márgen Inf:</label>
+    <select id="margenInf"><option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
 
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
@@ -180,6 +184,26 @@ function encabezadoPie() {
   openModal("Encabezado y Pié", `
     <label>Encabezado:</label><input id="encabezado" type="text">
     <label>Pié:</label><input id="pie" type="text">
+
+    <label>Fuente:</label>
+    <select id="fontHeaderFooter">
+      <option>Arial</option>
+      <option>Times New Roman</option>
+      <option>Verdana</option>
+    </select>
+
+    <label>Tamaño:</label>
+    <input id="sizeHeaderFooter" type="number" min="8" max="150" value="12">
+
+    <label>Color:</label><input type="color" id="colorHeaderFooter">
+
+    <label>Alineación:</label>
+    <select id="alignHeaderFooter">
+      <option value="left">Izquierda</option>
+      <option value="center">Centro</option>
+      <option value="right">Derecha</option>
+    </select>
+
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
   `);
@@ -187,8 +211,28 @@ function encabezadoPie() {
   document.getElementById("aplicar").onclick = () => {
     headerArea.innerText = document.getElementById("encabezado").value;
     footerArea.innerText = document.getElementById("pie").value;
+
+    const font = document.getElementById("fontHeaderFooter").value;
+    let size = parseInt(document.getElementById("sizeHeaderFooter").value, 10);
+
+    // Validación automática
+    if (isNaN(size)) size = 8;
+    if (size < 8) size = 8;
+    if (size > 150) size = 150;
+
+    const color = document.getElementById("colorHeaderFooter").value;
+    const align = document.getElementById("alignHeaderFooter").value;
+
+    [headerArea, footerArea].forEach(el => {
+      el.style.fontFamily = font;
+      el.style.fontSize = size + "px";
+      el.style.color = color;
+      el.style.textAlign = align;
+    });
+
     closeModal();
   };
+
   document.getElementById("cancel").onclick = () => closeModal();
 }
 
@@ -279,4 +323,5 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
 
