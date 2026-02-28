@@ -172,6 +172,8 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
+
+
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -205,7 +207,9 @@ function numerarPaginas() {
       pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
     }
-    documentArea.appendChild(pageNumberArea); // asegurar que esté dentro del documento
+    if (!documentArea.contains(pageNumberArea)) {
+      documentArea.appendChild(pageNumberArea);
+    }
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
@@ -229,76 +233,9 @@ document.querySelectorAll(".menu li").forEach(item => {
   });
 });
 
-// --- Función para aplicar/quitar estilos al texto seleccionado ---
-function toggleStyle(style, value = null) {
-  const selection = window.getSelection();
-  if (!selection.rangeCount) return;
-  const range = selection.getRangeAt(0);
-
-  // Si hay texto seleccionado
-  if (!range.collapsed) {
-    const selected = range.extractContents();
-    const wrapper = document.createElement("span");
-
-    switch(style) {
-      case "bold":
-        wrapper.style.fontWeight = "bold";
-        break;
-      case "italic":
-        wrapper.style.fontStyle = "italic";
-        break;
-      case "underline":
-        wrapper.style.textDecoration = "underline";
-        break;
-      case "fontSize":
-        wrapper.style.fontSize = value + "px";
-        break;
-      case "color":
-        wrapper.style.color = value;
-        break;
-      case "highlight":
-        wrapper.style.backgroundColor = value;
-        break;
-      case "fontFamily":
-        wrapper.style.fontFamily = value;
-        break;
-      case "align":
-        wrapper.style.display = "block";
-        wrapper.style.textAlign = value;
-        break;
-    }
-
-    wrapper.appendChild(selected);
-    range.insertNode(wrapper);
-  } else {
-    // Si solo hay cursor, usamos execCommand para mantener el toggle
-    switch(style) {
-      case "bold": document.execCommand("bold"); break;
-      case "italic": document.execCommand("italic"); break;
-      case "underline": document.execCommand("underline"); break;
-      case "fontSize":
-        document.execCommand("fontSize", false, "7");
-        const fontElements = documentArea.querySelectorAll("font[size='7']");
-        fontElements.forEach(el => {
-          el.removeAttribute("size");
-          el.style.fontSize = value + "px";
-        });
-        break;
-      case "color": document.execCommand("foreColor", false, value); break;
-      case "highlight": document.execCommand("hiliteColor", false, value); break;
-      case "fontFamily": document.execCommand("fontName", false, value); break;
-      case "align":
-        if (value === "left") document.execCommand("justifyLeft");
-        if (value === "center") document.execCommand("justifyCenter");
-        if (value === "right") document.execCommand("justifyRight");
-        break;
-    }
-  }
-}
-
-// --- Barra de formato ---
+// --- Barra de formato con execCommand (mantiene selección activa) ---
 document.getElementById("font-family").addEventListener("change", e => {
-  toggleStyle("fontFamily", e.target.value);
+  document.execCommand("fontName", false, e.target.value);
 });
 
 document.getElementById("font-size").addEventListener("change", e => {
@@ -306,7 +243,14 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (isNaN(size)) size = 8;
   if (size < 8) size = 8;
   if (size > 150) size = 150;
-  toggleStyle("fontSize", size);
+
+  // Usamos fontSize=7 como marcador y luego lo reemplazamos
+  document.execCommand("fontSize", false, "7");
+  const fontElements = documentArea.querySelectorAll("font[size='7']");
+  fontElements.forEach(el => {
+    el.removeAttribute("size");
+    el.style.fontSize = size + "px";
+  });
   e.target.value = size;
 });
 
@@ -314,26 +258,25 @@ document.querySelectorAll(".toolbar button").forEach(btn => {
   btn.addEventListener("click", () => {
     const action = btn.innerText.trim();
     switch(action) {
-      case "N": toggleStyle("bold"); break;
-      case "K": toggleStyle("italic"); break;
-      case "S": toggleStyle("underline"); break;
-      case "Izq": toggleStyle("align", "left"); break;
-      case "Centro": toggleStyle("align", "center"); break;
-      case "Der": toggleStyle("align", "right"); break;
+      case "N": document.execCommand("bold"); break;
+      case "K": document.execCommand("italic"); break;
+      case "S": document.execCommand("underline"); break;
+      case "Izq": document.execCommand("justifyLeft"); break;
+      case "Centro": document.execCommand("justifyCenter"); break;
+      case "Der": document.execCommand("justifyRight"); break;
     }
   });
 });
 
 document.getElementById("font-color").addEventListener("change", e => {
-  toggleStyle("color", e.target.value);
+  document.execCommand("foreColor", false, e.target.value);
 });
 
 document.getElementById("highlight-color").addEventListener("change", e => {
-  toggleStyle("highlight", e.target.value);
+  document.execCommand("hiliteColor", false, e.target.value);
 });
 
 // Guardado automático cada 1 minuto
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
-  // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
