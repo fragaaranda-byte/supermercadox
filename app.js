@@ -184,12 +184,12 @@ function configurarPaginado() {
 function encabezadoPie() {
   openModal("Encabezado y Pié", `
     <label>Encabezado:</label>
-    <input id="encabezado" type="text" maxlength="35" value="${headerArea.innerText}">
-    <small id="encabezado-count">Quedan ${35 - headerArea.innerText.length} caracteres</small>
+    <input id="encabezado" type="text" maxlength="40" value="${headerArea.innerText}">
+    <small id="encabezado-count">Quedan ${40 - headerArea.innerText.length} caracteres</small>
 
     <label>Pié:</label>
-    <input id="pie" type="text" maxlength="35" value="${footerArea.innerText}">
-    <small id="pie-count">Quedan ${35 - footerArea.innerText.length} caracteres</small>
+    <input id="pie" type="text" maxlength="40" value="${footerArea.innerText}">
+    <small id="pie-count">Quedan ${40 - footerArea.innerText.length} caracteres</small>
 
     <label>Fuente:</label>
     <select id="fontHeaderFooter">
@@ -206,8 +206,11 @@ function encabezadoPie() {
       }).join("")}
     </select>
 
-    <label>Color:</label>
-    <input type="color" id="colorHeaderFooter" value="${headerArea.style.color || "#000000"}">
+    <label>Color Encabezado:</label>
+    <input type="color" id="colorHeader">
+
+    <label>Color Pié:</label>
+    <input type="color" id="colorFooter">
 
     <label>Alineación:</label>
     <select id="alignHeaderFooter">
@@ -215,6 +218,16 @@ function encabezadoPie() {
       <option value="center">Centro</option>
       <option value="right">Derecha</option>
     </select>
+
+    <label>Estilo Encabezado:</label>
+    <button id="boldHeader"><b>N</b></button>
+    <button id="italicHeader"><i>K</i></button>
+    <button id="underlineHeader"><u>S</u></button>
+
+    <label>Estilo Pié:</label>
+    <button id="boldFooter"><b>N</b></button>
+    <button id="italicFooter"><i>K</i></button>
+    <button id="underlineFooter"><u>S</u></button>
 
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
@@ -238,21 +251,34 @@ function encabezadoPie() {
     pieCount.textContent = `Quedan ${remaining} caracteres`;
   });
 
+  // Aplicar estilos
+  document.getElementById("boldHeader").onclick = () => headerArea.style.fontWeight = headerArea.style.fontWeight === "bold" ? "normal" : "bold";
+  document.getElementById("italicHeader").onclick = () => headerArea.style.fontStyle = headerArea.style.fontStyle === "italic" ? "normal" : "italic";
+  document.getElementById("underlineHeader").onclick = () => headerArea.style.textDecoration = headerArea.style.textDecoration === "underline" ? "none" : "underline";
+
+  document.getElementById("boldFooter").onclick = () => footerArea.style.fontWeight = footerArea.style.fontWeight === "bold" ? "normal" : "bold";
+  document.getElementById("italicFooter").onclick = () => footerArea.style.fontStyle = footerArea.style.fontStyle === "italic" ? "normal" : "italic";
+  document.getElementById("underlineFooter").onclick = () => footerArea.style.textDecoration = footerArea.style.textDecoration === "underline" ? "none" : "underline";
+
   document.getElementById("aplicar").onclick = () => {
     headerArea.innerText = encabezadoInput.value;
     footerArea.innerText = pieInput.value;
 
     const font = document.getElementById("fontHeaderFooter").value;
     const size = document.getElementById("sizeHeaderFooter").value;
-    const color = document.getElementById("colorHeaderFooter").value;
+    const colorHeader = document.getElementById("colorHeader").value;
+    const colorFooter = document.getElementById("colorFooter").value;
     const align = document.getElementById("alignHeaderFooter").value;
 
-    [headerArea, footerArea].forEach(el => {
-      el.style.fontFamily = font;
-      el.style.fontSize = size + "px";
-      el.style.color = color;
-      el.style.textAlign = align;
-    });
+    headerArea.style.fontFamily = font;
+    headerArea.style.fontSize = size + "px";
+    headerArea.style.color = colorHeader;
+    headerArea.style.textAlign = align;
+
+    footerArea.style.fontFamily = font;
+    footerArea.style.fontSize = size + "px";
+    footerArea.style.color = colorFooter;
+    footerArea.style.textAlign = align;
 
     closeModal();
   };
@@ -363,4 +389,5 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
 
