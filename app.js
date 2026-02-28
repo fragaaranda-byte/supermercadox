@@ -185,7 +185,7 @@ function numerarPaginas() {
       <option value="sup-der">Superior Derecha</option>
       <option value="inf-izq">Inferior Izquierda</option>
       <option value="inf-der">Inferior Derecha</option>
-    </select>
+    </select><br><br>
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
   `);
@@ -196,7 +196,7 @@ function numerarPaginas() {
     const pageNumberArea = document.getElementById("page-number");
 
     pageNumberArea.style.fontSize = tamano + "px";
-    pageNumberArea.innerText = "1"; // ejemplo
+    pageNumberArea.innerText = "(1)"; // ejemplo
     pageNumberArea.style.display = "block";
 
     // Reset posiciones
@@ -206,16 +206,16 @@ function numerarPaginas() {
 
     // Posición
     if (pos === "sup-izq") {
-      pageNumberArea.style.top = "0.5cm";
+      pageNumberArea.style.top = "1.5cm";
       pageNumberArea.style.textAlign = "left";
     } else if (pos === "sup-der") {
-      pageNumberArea.style.top = "0.5cm";
+      pageNumberArea.style.top = "1.5cm";
       pageNumberArea.style.textAlign = "right";
     } else if (pos === "inf-izq") {
-      pageNumberArea.style.bottom = "0.5cm";
+      pageNumberArea.style.bottom = "1.5cm";
       pageNumberArea.style.textAlign = "left";
     } else if (pos === "inf-der") {
-      pageNumberArea.style.bottom = "0.5cm";
+      pageNumberArea.style.bottom = "1.5cm";
       pageNumberArea.style.textAlign = "right";
     }
 
@@ -299,4 +299,5 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
 
