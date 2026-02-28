@@ -235,51 +235,53 @@ function toggleStyle(style, value = null) {
   if (!selection.rangeCount) return;
   const range = selection.getRangeAt(0);
 
-  // Si no hay texto seleccionado (cursor), aplicamos estilo a futuro
-  if (range.collapsed) {
-    const span = document.createElement("span");
-    switch(style) {
-      case "bold": span.style.fontWeight = "bold"; break;
-      case "italic": span.style.fontStyle = "italic"; break;
-      case "underline": span.style.textDecoration = "underline"; break;
-      case "fontSize": span.style.fontSize = value + "px"; break;
-      case "color": span.style.color = value; break;
-      case "highlight": span.style.backgroundColor = value; break;
-      case "fontFamily": span.style.fontFamily = value; break;
-      case "align": span.style.display = "block"; span.style.textAlign = value; break;
-    }
-    span.appendChild(document.createTextNode("\u200B")); // espacio invisible
-    range.insertNode(span);
-    range.setStart(span.firstChild, 1);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-    return;
-  }
-
   // Si hay texto seleccionado
-  const contents = range.extractContents();
-  const wrapper = document.createElement("span");
+  if (!range.collapsed) {
+    const selected = range.extractContents();
+    const wrapper = document.createElement("span");
 
-  switch(style) {
-    case "bold":
-      wrapper.style.fontWeight = "bold";
-      break;
-    case "italic":
-      wrapper.style.fontStyle = "italic";
-      break;
-    case "underline":
-      wrapper.style.textDecoration = "underline";
-      break;
-    case "fontSize": wrapper.style.fontSize = value + "px"; break;
-    case "color": wrapper.style.color = value; break;
-    case "highlight": wrapper.style.backgroundColor = value; break;
-    case "fontFamily": wrapper.style.fontFamily = value; break;
-    case "align": wrapper.style.display = "block"; wrapper.style.textAlign = value; break;
+    switch(style) {
+      case "bold":
+        wrapper.style.fontWeight = "bold";
+        break;
+      case "italic":
+        wrapper.style.fontStyle = "italic";
+        break;
+      case "underline":
+        wrapper.style.textDecoration = "underline";
+        break;
+      case "fontSize":
+        wrapper.style.fontSize = value + "px";
+        break;
+      case "color":
+        wrapper.style.color = value;
+        break;
+      case "highlight":
+        wrapper.style.backgroundColor = value;
+        break;
+      case "fontFamily":
+        wrapper.style.fontFamily = value;
+        break;
+      case "align":
+        wrapper.style.display = "block";
+        wrapper.style.textAlign = value;
+        break;
+    }
+
+    wrapper.appendChild(selected);
+    range.insertNode(wrapper);
+  } else {
+    // Si solo hay cursor, aplicamos estilo a futuro
+    document.execCommand(
+      style === "bold" ? "bold" :
+      style === "italic" ? "italic" :
+      style === "underline" ? "underline" :
+      style === "align" && value === "left" ? "justifyLeft" :
+      style === "align" && value === "center" ? "justifyCenter" :
+      style === "align" && value === "right" ? "justifyRight" :
+      "", false, value
+    );
   }
-
-  wrapper.appendChild(contents);
-  range.insertNode(wrapper);
 }
 
 // --- Barra de formato ---
