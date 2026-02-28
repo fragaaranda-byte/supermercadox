@@ -232,7 +232,7 @@ document.querySelectorAll(".menu li").forEach(item => {
       case "Numerar Páginas": numerarPaginas(); break;
     }
   });
-});
+}
 
 // --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
