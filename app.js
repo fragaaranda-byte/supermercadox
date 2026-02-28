@@ -172,7 +172,6 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
-
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -198,14 +197,15 @@ function numerarPaginas() {
     pageNumberArea.innerText = "1"; // ejemplo
     pageNumberArea.style.textAlign = pos.includes("der") ? "right" : "left";
     pageNumberArea.style.position = "absolute";
-    pageNumberArea.style.width = "calc(100% - 3cm)"; // respeta márgenes
+    pageNumberArea.style.width = "100%";
     if (pos.includes("sup")) {
-      pageNumberArea.style.top = "1cm";
+      pageNumberArea.style.top = "0.5cm";
       pageNumberArea.style.bottom = "";
     } else {
-      pageNumberArea.style.bottom = "1cm";
+      pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
     }
+    documentArea.appendChild(pageNumberArea); // asegurar que esté dentro del documento
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
@@ -271,16 +271,28 @@ function toggleStyle(style, value = null) {
     wrapper.appendChild(selected);
     range.insertNode(wrapper);
   } else {
-    // Si solo hay cursor, aplicamos estilo a futuro
-    document.execCommand(
-      style === "bold" ? "bold" :
-      style === "italic" ? "italic" :
-      style === "underline" ? "underline" :
-      style === "align" && value === "left" ? "justifyLeft" :
-      style === "align" && value === "center" ? "justifyCenter" :
-      style === "align" && value === "right" ? "justifyRight" :
-      "", false, value
-    );
+    // Si solo hay cursor, usamos execCommand para mantener el toggle
+    switch(style) {
+      case "bold": document.execCommand("bold"); break;
+      case "italic": document.execCommand("italic"); break;
+      case "underline": document.execCommand("underline"); break;
+      case "fontSize":
+        document.execCommand("fontSize", false, "7");
+        const fontElements = documentArea.querySelectorAll("font[size='7']");
+        fontElements.forEach(el => {
+          el.removeAttribute("size");
+          el.style.fontSize = value + "px";
+        });
+        break;
+      case "color": document.execCommand("foreColor", false, value); break;
+      case "highlight": document.execCommand("hiliteColor", false, value); break;
+      case "fontFamily": document.execCommand("fontName", false, value); break;
+      case "align":
+        if (value === "left") document.execCommand("justifyLeft");
+        if (value === "center") document.execCommand("justifyCenter");
+        if (value === "right") document.execCommand("justifyRight");
+        break;
+    }
   }
 }
 
