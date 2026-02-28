@@ -1,4 +1,4 @@
-const documentArea = document.getElementById("document");
+const documentArea = document.getElementById("doc-content"); // área editable real
 const pageNumberArea = document.getElementById("page-number");
 const modal = document.getElementById("modal");
 const modalContent = modal.querySelector(".modal-content");
@@ -27,7 +27,7 @@ function nuevoDocumento() {
   `);
 
   document.getElementById("delete-current").onclick = () => {
-    documentArea.innerHTML = "";
+    documentArea.innerHTML = ""; // solo limpia el contenido editable
     pageNumberArea.innerHTML = "";
     closeModal();
   };
@@ -66,7 +66,7 @@ function seleccionarArchivo() {
     if (file) {
       const reader = new FileReader();
       reader.onload = ev => {
-        documentArea.innerHTML = ev.target.result; // simplificado
+        documentArea.innerHTML = ev.target.result; // carga solo en el área editable
       };
       reader.readAsText(file);
     }
@@ -101,7 +101,6 @@ function deshacer() {
 function rehacer() {
   document.execCommand("redo");
 }
-
 // --- Funciones de Paginado ---
 function configurarPaginado() {
   openModal("Configurar Paginado", `
@@ -138,7 +137,6 @@ function configurarPaginado() {
     const orientacion = document.getElementById("orientacion").value;
     const papel = document.getElementById("papel").value;
 
-    // Tamaños estándar en cm
     const tamaños = {
       "A4": {w: 21, h: 29.7},
       "A5": {w: 14.8, h: 21},
@@ -150,28 +148,29 @@ function configurarPaginado() {
 
     let ancho = tamaños[papel].w;
     let alto = tamaños[papel].h;
-    // Cambiar orientación
     if (orientacion === "horizontal") {
       [ancho, alto] = [alto, ancho];
     }
 
-    // Aplicar tamaño de hoja
-    documentArea.style.width = ancho + "cm";
-    documentArea.style.height = alto + "cm";
+    // Aplicar tamaño de hoja sobre #document
+    const hoja = document.getElementById("document");
+    hoja.style.width = ancho + "cm";
+    hoja.style.height = alto + "cm";
 
-    // Aplicar márgenes
+    // Aplicar márgenes como padding
     const margenIzq = document.getElementById("margenIzq").value;
     const margenDer = document.getElementById("margenDer").value;
     const margenSup = document.getElementById("margenSup").value;
     const margenInf = document.getElementById("margenInf").value;
 
-    documentArea.style.padding = `${margenSup}cm ${margenDer}cm ${margenInf}cm ${margenIzq}cm`;
+    hoja.style.padding = `${margenSup}cm ${margenDer}cm ${margenInf}cm ${margenIzq}cm`;
 
     closeModal();
   };
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
+
 // --- Numerar páginas ---
 const docContent = document.getElementById("doc-content");
 const pageNumberArea = document.getElementById("page-number");
@@ -254,16 +253,13 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (size < 8) size = 8;
   if (size > 150) size = 150;
 
-  // Usamos execCommand con fontSize=7 como marcador
   document.execCommand("fontSize", false, "7");
 
-  // Reemplazamos todos los <font size="7"> por estilos en px
-  const fontElements = documentArea.querySelectorAll("font[size='7']");
+  const fontElements = docContent.querySelectorAll("font[size='7']");
   fontElements.forEach(el => {
     el.removeAttribute("size");
     el.style.fontSize = size + "px";
 
-    // Mantener selección activa sobre el texto modificado
     const range = document.createRange();
     range.selectNodeContents(el);
     const selection = window.getSelection();
@@ -300,7 +296,3 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
-
-
-
-
