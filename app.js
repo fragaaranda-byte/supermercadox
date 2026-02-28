@@ -187,8 +187,8 @@ function numerarPaginas() {
       <option value="inf-izq">Inferior Izquierda</option>
       <option value="inf-der">Inferior Derecha</option>
     </select>
-    <br><center><button id="aplicar">Aceptar</button>
-    <button id="cancel">Cancelar</button></center>
+    <button id="aplicar">Aceptar</button>
+    <button id="cancel">Cancelar</button>
   `);
 
   document.getElementById("aplicar").onclick = () => {
@@ -200,56 +200,29 @@ function numerarPaginas() {
     pageNumberArea.innerText = "1"; // ejemplo
     pageNumberArea.style.display = "block";
 
+    // Reset posiciones
+    pageNumberArea.style.top = "";
+    pageNumberArea.style.bottom = "";
+    pageNumberArea.style.textAlign = "";
+
     // Posición
     if (pos === "sup-izq") {
       pageNumberArea.style.top = "0.5cm";
-      pageNumberArea.style.bottom = "";
       pageNumberArea.style.textAlign = "left";
     } else if (pos === "sup-der") {
       pageNumberArea.style.top = "0.5cm";
-      pageNumberArea.style.bottom = "";
       pageNumberArea.style.textAlign = "right";
     } else if (pos === "inf-izq") {
       pageNumberArea.style.bottom = "0.5cm";
-      pageNumberArea.style.top = "";
       pageNumberArea.style.textAlign = "left";
     } else if (pos === "inf-der") {
       pageNumberArea.style.bottom = "0.5cm";
-      pageNumberArea.style.top = "";
       pageNumberArea.style.textAlign = "right";
     }
 
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
-}
-
-    // Asegurar que esté dentro del documento y visible
-    if (!documentArea.contains(pageNumberArea)) {
-      documentArea.appendChild(pageNumberArea);
-    }
-    pageNumberArea.style.display = "block";
-    closeModal();
-  };
-  document.getElementById("cancel").onclick = () => closeModal();
-}
-
-// --- Eventos del menú ---
-document.querySelectorAll(".menu li").forEach(item => {
-  item.addEventListener("click", () => {
-    const text = item.innerText.trim();
-    switch(text) {
-      case "Nuevo": nuevoDocumento(); break;
-      case "Abrir": abrirDocumento(); break;
-      case "Guardar": guardarDocumento(); break;
-      case "Guardar Como": guardarComo(); break;
-      case "Imprimir": imprimirDocumento(); break;
-      case "Página": configurarPaginado(); break;
-      case "Deshacer": deshacer(); break;
-      case "Rehacer": rehacer(); break;
-      case "Numerar Páginas": numerarPaginas(); break;
-    }
-  });
 }
 
 // --- Barra de formato ---
@@ -309,5 +282,6 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
 
 
