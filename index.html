@@ -1,120 +1,85 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SUPERMERCADO X</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <title>My Documents</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <h1>SUPERMERCADO X</h1>
-    </div>
-    <nav class="topnav">
-      <button id="btnCargar">Cargar Stock</button>
-      <button id="btnVender">Vender</button>
-      <button id="btnControl">Controlar Stock</button>
-      <button id="btnModificar">Modificar Producto</button>
-      <button id="btnVentas">Control de Ventas</button>
-      <button id="btnTirarZ" class="danger">TIRAR Z</button>
+  <!-- Barra de menú superior -->
+  <header>
+    <nav class="menu">
+      <ul>
+        <li>Archivo
+          <ul class="submenu">
+            <li>Nuevo</li>
+            <li>Abrir</li>
+            <li>Guardar</li>
+            <li>Guardar Como</li>
+            <li>Imprimir</li>
+            <li>Paginado</li>
+          </ul>
+        </li>
+        <li>Editar
+          <ul class="submenu">
+            <li>Deshacer</li>
+            <li>Rehacer</li>
+          </ul>
+        </li>
+        <li>Insertar
+          <ul class="submenu">
+            <li>Imagen</li>
+            <li>Tabla</li>
+            <li>Símbolos</li>
+            <li>Emojis</li>
+            <li>Índice</li>
+          </ul>
+        </li>
+        <li>Encabezado y Pié</li>
+        <li>Numerar Páginas</li>
+      </ul>
     </nav>
   </header>
 
-  <main class="container">
+  <!-- Barra de formato -->
+  <section class="toolbar">
+    <select id="font-family">
+      <option>Arial</option>
+      <option>Times New Roman</option>
+      <option>Verdana</option>
+    </select>
+    <select id="font-size">
+      <option>10</option>
+      <option>12</option>
+      <option>14</option>
+      <option>16</option>
+      <option>18</option>
+    </select>
+    <button><b>N</b></button>
+    <button><i>K</i></button>
+    <button><u>S</u></button>
+    <input type="color" id="font-color">
+    <input type="color" id="highlight-color">
+    <button>Izq</button>
+    <button>Centro</button>
+    <button>Der</button>
+  </section>
 
-    <!-- Cargar Stock -->
-    <section id="seccion-cargar" class="panel">
-      <h2>Cargar Stock</h2>
-      <div class="form-grid">
-        <label>Código de barras<input id="barcodeInputStock" placeholder="ej: 123456"></label>
-        <label>Nombre producto<input id="nameInputStock" placeholder="ej: yerba playadito"></label>
-        <label>Precio (unidad)<input id="priceInputStock" type="number" step="0.01" placeholder="1000.00"></label>
-        <label>Cantidad<input id="quantityInputStock" type="number" placeholder="10"></label>
-      </div>
-      <div class="actions">
-        <button id="btnAddStock">Agregar / Actualizar Stock</button>
-      </div>
-    </section>
-
-    <!-- Vender -->
-    <section id="seccion-vender" class="panel">
-      <h2>Vender</h2>
-      <div class="sale-row">
-        <input id="barcodeInputSale" placeholder="Ingrese código de barras o téclee manual">
-        <div class="mini">
-          <label>Cantidad
-            <input id="quantityInputSale" type="number" value="1" min="1" />
-          </label>
-          <div class="qty-buttons">
-            <button id="qtyPlus" class="small">+</button>
-            <button id="qtyMinus" class="small">-</button>
-          </div>
-        </div>
-        <button id="btnAddToCart">Agregar al carrito</button>
-      </div>
-
-      <div class="table-wrap">
-        <table id="cartTable">
-          <thead><tr><th>Producto</th><th>Código</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th></th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div class="sale-footer">
-        <div class="total">Total: $ <span id="total">0.00</span></div>
-        <div class="sale-actions">
-          <button id="btnCobrar">Cobrar</button>
-          <div id="paymentMethodDiv" class="hidden">
-            <span>¿Cómo pagó el cliente?</span>
-            <button class="pay" data-method="Efectivo">Efectivo</button>
-            <button class="pay" data-method="Tarjeta">Tarjeta</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Control Stock -->
-    <section id="seccion-control" class="panel">
-      <h2>Control de Stock</h2>
-      <div class="table-wrap">
-        <table id="stockList">
-          <thead><tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Stock</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Modificar Producto -->
-    <section id="seccion-modificar" class="panel">
-      <h2>Modificar Producto</h2>
-      <div class="form-grid">
-        <label>Seleccione producto
-          <select id="modProductSelect"><option value="">-- seleccionar --</option></select>
-        </label>
-        <label>Nuevo nombre<input id="modNombre" placeholder="Nuevo nombre"></label>
-        <label>Nuevo precio<input id="modPrecio" type="number" step="0.01"></label>
-        <label>Nueva cantidad<input id="modStock" type="number"></label>
-        <label>Contraseña maestra<input id="masterPassword" type="password" placeholder="*******"></label>
-      </div>
-      <div class="actions">
-        <button id="btnModificar">Guardar cambios</button>
-      </div>
-    </section>
-
-    <!-- Control de Ventas -->
-    <section id="seccion-ventas" class="panel">
-      <h2>Control de Ventas (Tickets del día)</h2>
-      <div class="table-wrap">
-        <table id="salesTable">
-          <thead><tr><th>ID</th><th>Hora</th><th>Productos</th><th>Total</th><th>Método</th><th>Eliminar</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-
+  <!-- Área de documento -->
+  <main>
+    <div id="document" contenteditable="true">
+      <!-- Aquí se escribe el contenido -->
+    </div>
   </main>
 
-  <script type="module" src="app.js"></script>
+  <!-- Modal genérico -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Título del Modal</h2>
+      <p>Contenido del modal...</p>
+      <button>Aceptar</button>
+      <button>Cancelar</button>
+    </div>
+  </div>
 </body>
 </html>
