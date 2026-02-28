@@ -14,31 +14,32 @@ document.addEventListener("DOMContentLoaded", () => {
     subrayado: false
   };
 
-  // === Función para abrir modal ===
+  // === Abrir modal ===
   btnNumerar.addEventListener("click", () => {
     modalNumeracion.style.display = "flex";
-    document.getElementById("doc-content").setAttribute("contenteditable", "false");
+    docArea.querySelectorAll(".doc-content").forEach(c => c.setAttribute("contenteditable", "false"));
   });
 
-  // === Función para cerrar modal ===
+  // === Cerrar modal ===
   function cerrarModal() {
     modalNumeracion.style.display = "none";
-    document.getElementById("doc-content").setAttribute("contenteditable", "true");
+    docArea.querySelectorAll(".doc-content").forEach(c => c.setAttribute("contenteditable", "true"));
   }
 
-  modalNumeracion.querySelector(".close-modal").addEventListener("click", cerrarModal);
+  modalNumeracion.querySelector(".close-modal").addEventListener("click", () => {
+    aplicarNumeracion();
+    cerrarModal();
+  });
 
-  // === Configuración de numeración ===
+  // === Configuración ===
   const selectTamaño = modalNumeracion.querySelector("select:nth-of-type(1)");
   const selectFuente = modalNumeracion.querySelector("select:nth-of-type(2)");
   const botonesFormato = modalNumeracion.querySelectorAll(".format-buttons button");
 
-  // Botones de formato
   botonesFormato[0].addEventListener("click", () => configNumeracion.negrita = !configNumeracion.negrita);
   botonesFormato[1].addEventListener("click", () => configNumeracion.cursiva = !configNumeracion.cursiva);
   botonesFormato[2].addEventListener("click", () => configNumeracion.subrayado = !configNumeracion.subrayado);
 
-  // Selects
   selectTamaño.addEventListener("change", () => configNumeracion.tamaño = selectTamaño.value);
   selectFuente.addEventListener("change", () => configNumeracion.fuente = selectFuente.value);
 
@@ -54,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       numero.textContent = numeracionActiva ? (index + 1) : "";
 
-      // Estilos
       numero.style.position = "absolute";
       numero.style.bottom = "10px";
       numero.style.right = "10px";
@@ -66,17 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // === Activar/Desactivar numeración ===
+  // === Toggle numeración ===
   const toggleNumeracion = document.getElementById("page-number-toggle");
   toggleNumeracion.addEventListener("click", () => {
     numeracionActiva = !numeracionActiva;
     aplicarNumeracion();
   });
-
-  // === Guardar configuración y cerrar modal ===
-  modalNumeracion.querySelector(".close-modal").addEventListener("click", () => {
-    aplicarNumeracion();
-    cerrarModal();
-  });
-
 });
