@@ -183,8 +183,13 @@ function configurarPaginado() {
 // --- Encabezado y Pié ---
 function encabezadoPie() {
   openModal("Encabezado y Pié", `
-    <label>Encabezado:</label><input id="encabezado" type="text">
-    <label>Pié:</label><input id="pie" type="text">
+    <label>Encabezado:</label>
+    <input id="encabezado" type="text" maxlength="35" value="${headerArea.innerText}">
+    <small id="encabezado-count">Quedan ${35 - headerArea.innerText.length} caracteres</small>
+
+    <label>Pié:</label>
+    <input id="pie" type="text" maxlength="35" value="${footerArea.innerText}">
+    <small id="pie-count">Quedan ${35 - footerArea.innerText.length} caracteres</small>
 
     <label>Fuente:</label>
     <select id="fontHeaderFooter">
@@ -194,9 +199,15 @@ function encabezadoPie() {
     </select>
 
     <label>Tamaño:</label>
-    <input id="sizeHeaderFooter" type="number" min="8" max="150" value="12">
+    <select id="sizeHeaderFooter">
+      ${Array.from({length: 13}, (_, i) => {
+        const val = i + 8;
+        return `<option value="${val}" ${headerArea.style.fontSize.replace("px","")==val ? "selected":""}>${val}</option>`;
+      }).join("")}
+    </select>
 
-    <label>Color:</label><input type="color" id="colorHeaderFooter">
+    <label>Color:</label>
+    <input type="color" id="colorHeaderFooter" value="${headerArea.style.color || "#000000"}">
 
     <label>Alineación:</label>
     <select id="alignHeaderFooter">
@@ -209,23 +220,35 @@ function encabezadoPie() {
     <button id="cancel">Cancelar</button>
   `);
 
+  // Contadores dinámicos
+  const encabezadoInput = document.getElementById("encabezado");
+  const pieInput = document.getElementById("pie");
+  const encabezadoCount = document.getElementById("encabezado-count");
+  const pieCount = document.getElementById("pie-count");
+
+  encabezadoInput.addEventListener("input", () => {
+    encabezadoInput.value = encabezadoInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
+    const remaining = 35 - encabezadoInput.value.length;
+    encabezadoCount.textContent = `Quedan ${remaining} caracteres`;
+  });
+
+  pieInput.addEventListener("input", () => {
+    pieInput.value = pieInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
+    const remaining = 35 - pieInput.value.length;
+    pieCount.textContent = `Quedan ${remaining} caracteres`;
+  });
+
   document.getElementById("aplicar").onclick = () => {
-    headerArea.innerText = document.getElementById("encabezado").value;
-    footerArea.innerText = document.getElementById("pie").value;
+    headerArea.innerText = encabezadoInput.value;
+    footerArea.innerText = pieInput.value;
 
     const font = document.getElementById("fontHeaderFooter").value;
-    let size = parseInt(document.getElementById("sizeHeaderFooter").value, 10);
-
-    // Validación automática
-    if (isNaN(size)) size = 8;
-    if (size < 8) size = 8;
-    if (size > 150) size = 150;
-
+    const size = document.getElementById("sizeHeaderFooter").value;
     const color = document.getElementById("colorHeaderFooter").value;
     const align = document.getElementById("alignHeaderFooter").value;
 
     [headerArea, footerArea].forEach(el => {
-            el.style.fontFamily = font;
+      el.style.fontFamily = font;
       el.style.fontSize = size + "px";
       el.style.color = color;
       el.style.textAlign = align;
@@ -340,3 +363,4 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
