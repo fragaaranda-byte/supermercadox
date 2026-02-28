@@ -196,7 +196,7 @@ function numerarPaginas() {
     const pageNumberArea = document.getElementById("page-number");
 
     pageNumberArea.style.fontSize = tamano + "px";
-    pageNumberArea.innerText = "(1)"; // ejemplo
+    pageNumberArea.innerText = "(1)";
     pageNumberArea.style.display = "block";
 
     // Reset posiciones
@@ -204,19 +204,23 @@ function numerarPaginas() {
     pageNumberArea.style.bottom = "";
     pageNumberArea.style.textAlign = "";
 
-    // Posición
+    // Posición y espacio extra
     if (pos === "sup-izq") {
-      pageNumberArea.style.top = "1.5cm";
+      pageNumberArea.style.top = "1cm";
       pageNumberArea.style.textAlign = "left";
+      documentArea.style.paddingTop = "3cm"; // espacio extra arriba
     } else if (pos === "sup-der") {
-      pageNumberArea.style.top = "1.5cm";
+      pageNumberArea.style.top = "1cm";
       pageNumberArea.style.textAlign = "right";
+      documentArea.style.paddingTop = "3cm";
     } else if (pos === "inf-izq") {
-      pageNumberArea.style.bottom = "1.5cm";
+      pageNumberArea.style.bottom = "1cm";
       pageNumberArea.style.textAlign = "left";
+      documentArea.style.paddingBottom = "3cm"; // espacio extra abajo
     } else if (pos === "inf-der") {
-      pageNumberArea.style.bottom = "1.5cm";
+      pageNumberArea.style.bottom = "1cm";
       pageNumberArea.style.textAlign = "right";
+      documentArea.style.paddingBottom = "3cm";
     }
 
     closeModal();
@@ -299,5 +303,6 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
 
 
