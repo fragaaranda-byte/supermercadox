@@ -2,7 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const docArea = document.getElementById("doc-area");
-  const docContent = document.getElementById("doc-content");
+  const primeraPagina = docArea.querySelector(".page .doc-content");
 
   // Configuración inicial de página
   let configPagina = {
@@ -21,26 +21,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const paginas = docArea.querySelectorAll(".page");
 
     paginas.forEach(pagina => {
-      // Tamaños estándar en mm
       let width, height;
       switch (configPagina.tamaño) {
-        case "A4":
-          width = 210; height = 297; break;
-        case "A5":
-          width = 148; height = 210; break;
-        case "A3":
-          width = 297; height = 420; break;
-        case "Legal":
-          width = 216; height = 356; break;
-        case "Folio":
-          width = 210; height = 330; break;
-        case "Carta":
-          width = 216; height = 279; break;
-        default:
-          width = 210; height = 297;
+        case "A4": width = 210; height = 297; break;
+        case "A5": width = 148; height = 210; break;
+        case "A3": width = 297; height = 420; break;
+        case "Legal": width = 216; height = 356; break;
+        case "Folio": width = 210; height = 330; break;
+        case "Carta": width = 216; height = 279; break;
+        default: width = 210; height = 297;
       }
 
-      // Orientación
       if (configPagina.orientacion === "Horizontal") {
         [width, height] = [height, width];
       }
@@ -48,8 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pagina.style.width = width + "mm";
       pagina.style.height = height + "mm";
 
-      // Márgenes
-      const contenido = pagina.querySelector("#doc-content");
+      const contenido = pagina.querySelector(".doc-content");
       if (contenido) {
         contenido.style.paddingTop = configPagina.margenes.superior + "mm";
         contenido.style.paddingBottom = configPagina.margenes.inferior + "mm";
@@ -65,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     nuevaPagina.className = "page";
 
     const nuevoContenido = document.createElement("div");
-    nuevoContenido.id = "doc-content";
+    nuevoContenido.className = "doc-content";
     nuevoContenido.contentEditable = "true";
 
     nuevaPagina.appendChild(nuevoContenido);
@@ -79,11 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function verificarPaginacion() {
     const paginas = docArea.querySelectorAll(".page");
     paginas.forEach(pagina => {
-      const contenido = pagina.querySelector("#doc-content");
-      if (contenido.scrollHeight > pagina.clientHeight) {
-        // Si el contenido excede la altura de la página, crear nueva
+      const contenido = pagina.querySelector(".doc-content");
+      if (
+        contenido.scrollHeight > pagina.clientHeight &&
+        contenido.textContent.trim() !== ""
+      ) {
         const nuevoContenido = crearPagina();
-        // Mover el exceso de contenido a la nueva página
         while (contenido.scrollHeight > pagina.clientHeight) {
           const ultimoNodo = contenido.lastChild;
           if (!ultimoNodo) break;
@@ -94,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // === Evento: cada vez que el usuario escribe, verificar paginación ===
-  docContent.addEventListener("input", verificarPaginacion);
+  primeraPagina.addEventListener("input", verificarPaginacion);
 
   // === Exponer funciones globales para archivo.js (configurar página) ===
   window.configurarPagina = function(opciones) {
@@ -109,6 +100,5 @@ document.addEventListener("DOMContentLoaded", () => {
     aplicarConfigPagina();
   };
 
-  // Aplicar configuración inicial
   aplicarConfigPagina();
 });
