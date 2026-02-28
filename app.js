@@ -197,13 +197,16 @@ function numerarPaginas() {
     pageNumberArea.innerText = "1"; // ejemplo
     pageNumberArea.style.textAlign = pos.includes("der") ? "right" : "left";
     pageNumberArea.style.position = "absolute";
-    pageNumberArea.style.width = "calc(100% - 3cm)"; // respeta márgenes
+    pageNumberArea.style.width = "100%";
     if (pos.includes("sup")) {
-      pageNumberArea.style.top = "1cm";
+      pageNumberArea.style.top = "0.5cm";
       pageNumberArea.style.bottom = "";
     } else {
-      pageNumberArea.style.bottom = "1cm";
+      pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
+    }
+    if (!documentArea.contains(pageNumberArea)) {
+      documentArea.appendChild(pageNumberArea);
     }
     closeModal();
   };
@@ -220,7 +223,7 @@ document.querySelectorAll(".menu li").forEach(item => {
       case "Guardar": guardarDocumento(); break;
       case "Guardar Como": guardarComo(); break;
       case "Imprimir": imprimirDocumento(); break;
-      case "Paginado": configurarPaginado(); break;
+      case "Página": configurarPaginado(); break;
       case "Deshacer": deshacer(); break;
       case "Rehacer": rehacer(); break;
       case "Numerar Páginas": numerarPaginas(); break;
@@ -238,12 +241,31 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (isNaN(size)) size = 8;
   if (size < 8) size = 8;
   if (size > 150) size = 150;
-  document.execCommand("fontSize", false, "7");
-  const fontElements = documentArea.querySelectorAll("font[size='7']");
-  fontElements.forEach(el => {
-    el.removeAttribute("size");
-    el.style.fontSize = size + "px";
-  });
+
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0);
+    if (!range.collapsed) {
+      // Texto seleccionado → aplicar estilo directo
+      const span = document.createElement("span");
+      span.style.fontSize = size + "px";
+      span.appendChild(range.extractContents());
+      range.insertNode(span);
+      selection.removeAllRanges();
+      const newRange = document.createRange();
+      newRange.selectNodeContents(span);
+      selection.addRange(newRange);
+    } else {
+      // Solo cursor → usar execCommand como fallback
+      document.execCommand("fontSize", false, "7");
+      const fontElements = documentArea.querySelectorAll("font[size='7']");
+      fontElements.forEach(el => {
+        el.removeAttribute("size");
+        el.style.fontSize = size + "px";
+      });
+    }
+  }
+
   e.target.value = size;
 });
 
@@ -272,5 +294,4 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 // Guardado automático cada 1 minuto
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
-  // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
