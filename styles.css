@@ -1,3 +1,23 @@
+/* Estilos para impresión */
+@media print {
+  body * {
+    visibility: hidden; /* Oculta todo */
+  }
+
+  #document, #document * {
+    visibility: visible; /* Solo muestra el documento */
+  }
+
+  #document {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    box-shadow: none; /* Quita sombra en impresión */
+    background: white; /* Fondo blanco limpio */
+  }
+}
+
 #page-number {
   position: absolute;
   width: 100%;
@@ -123,5 +143,6 @@ header {
   border-radius: 5px;
   width: 400px;
 }
+
 
 
