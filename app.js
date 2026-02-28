@@ -206,10 +206,11 @@ function numerarPaginas() {
       pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
     }
-    // Asegurar que esté dentro del documento
+    // Asegurar que esté dentro del documento y visible
     if (!documentArea.contains(pageNumberArea)) {
       documentArea.appendChild(pageNumberArea);
     }
+    pageNumberArea.style.display = "block";
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
