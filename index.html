@@ -48,18 +48,8 @@
       <option>Verdana</option>
     </select>
 
-    <!-- Selector de tamaño de fuente -->
-    <select id="font-size">
-      <option>8</option>
-      <option>9</option>
-      <option>10</option>
-      <option>11</option>
-      <option>12</option>
-      <option>14</option>
-      <option>16</option>
-      <option>18</option>
-      <option>20</option>
-    </select>
+    <!-- Input numérico para tamaño de fuente (8–150) -->
+    <input id="font-size" type="number" min="8" max="150" value="12">
 
     <button><b>N</b></button>
     <button><i>K</i></button>
@@ -71,7 +61,7 @@
     <button>Der</button>
   </section>
 
-  <!-- Área de documento -->
+  <!-- Área de documento inmersiva -->
   <main>
     <div id="document" contenteditable="true"></div>
   </main>
