@@ -57,10 +57,39 @@ header {
 #document {
   background: white;
   margin: 20px auto;
-  width: 21cm; /* A4 */
-  min-height: 29.7cm;
+  width: 21cm; /* A4 vertical por defecto */
+  height: 29.7cm;
   padding: 1.5cm;
   box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  position: relative; /* Necesario para posicionar header/footer/numeración */
+}
+
+/* Encabezado, pie y numeración dentro de la hoja */
+#header, #footer, #page-number {
+  user-select: none;
+  pointer-events: none;
+  position: absolute;
+  width: calc(100% - 3cm); /* Respeta márgenes laterales */
+  text-align: center;
+  color: #333;
+}
+
+#header {
+  top: 0.5cm; /* Dentro del margen superior */
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+#footer {
+  bottom: 0.5cm; /* Dentro del margen inferior */
+  border-top: 1px solid #ccc;
+  padding-top: 5px;
+}
+
+#page-number {
+  bottom: 0.2cm; /* Justo encima del pie */
+  font-size: 12px;
+  color: #666;
 }
 
 .modal {
@@ -84,28 +113,3 @@ header {
   border-radius: 5px;
   width: 400px;
 }
-
-#header, #footer, #page-number {
-  text-align: center;
-  font-size: 14px;
-  color: #333;
-  margin: 10px 0;
-  user-select: none; /* No seleccionable */
-  pointer-events: none; /* No clickeable */
-}
-
-#header {
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 5px;
-}
-
-#footer {
-  border-top: 1px solid #ccc;
-  padding-top: 5px;
-}
-
-#page-number {
-  font-size: 12px;
-  color: #666;
-}
-
