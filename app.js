@@ -1,4 +1,7 @@
 const documentArea = document.getElementById("document");
+const headerArea = document.getElementById("header");
+const footerArea = document.getElementById("footer");
+const pageNumberArea = document.getElementById("page-number");
 const modal = document.getElementById("modal");
 const modalContent = modal.querySelector(".modal-content");
 
@@ -27,6 +30,9 @@ function nuevoDocumento() {
 
   document.getElementById("delete-current").onclick = () => {
     documentArea.innerHTML = "";
+    headerArea.innerHTML = "";
+    footerArea.innerHTML = "";
+    pageNumberArea.innerHTML = "";
     closeModal();
   };
   document.getElementById("save-current").onclick = () => guardarComo();
@@ -43,6 +49,9 @@ function abrirDocumento() {
 
   document.getElementById("delete-current").onclick = () => {
     documentArea.innerHTML = "";
+    headerArea.innerHTML = "";
+    footerArea.innerHTML = "";
+    pageNumberArea.innerHTML = "";
     closeModal();
     seleccionarArchivo();
   };
@@ -133,7 +142,8 @@ function encabezadoPie() {
   `);
 
   document.getElementById("aplicar").onclick = () => {
-    documentArea.innerHTML = `<header>${document.getElementById("encabezado").value}</header>` + documentArea.innerHTML + `<footer>${document.getElementById("pie").value}</footer>`;
+    headerArea.innerText = document.getElementById("encabezado").value;
+    footerArea.innerText = document.getElementById("pie").value;
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
@@ -145,10 +155,10 @@ function numerarPaginas() {
     <label>Tamaño:</label><input id="tamano" type="number" min="8" max="30">
     <label>Posición:</label>
     <select id="posicion">
-      <option>Superior Izquierda</option>
-      <option>Superior Derecha</option>
-      <option>Inferior Izquierda</option>
-      <option>Inferior Derecha</option>
+      <option value="sup-izq">Superior Izquierda</option>
+      <option value="sup-der">Superior Derecha</option>
+      <option value="inf-izq">Inferior Izquierda</option>
+      <option value="inf-der">Inferior Derecha</option>
     </select>
     <button id="aplicar">Aceptar</button>
     <button id="cancel">Cancelar</button>
@@ -161,7 +171,15 @@ function numerarPaginas() {
       alert("Debe elegir tamaño y lugar de numeración");
       return;
     }
-    documentArea.innerHTML += `<div style="font-size:${tamano}px; text-align:${pos.includes("Derecha")?"right":"left"};">1</div>`;
+    pageNumberArea.style.fontSize = tamano + "px";
+    pageNumberArea.innerText = "1"; // por ahora solo ejemplo
+    pageNumberArea.style.textAlign = (pos.includes("der") ? "right" : "left");
+    pageNumberArea.style.position = "absolute";
+    if (pos.includes("sup")) {
+      pageNumberArea.style.top = "0";
+    } else {
+      pageNumberArea.style.bottom = "0";
+    }
     closeModal();
   };
   document.getElementById("cancel").onclick = () => closeModal();
