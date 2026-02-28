@@ -1,6 +1,4 @@
 const documentArea = document.getElementById("document");
-const headerArea = document.getElementById("header");
-const footerArea = document.getElementById("footer");
 const pageNumberArea = document.getElementById("page-number");
 const modal = document.getElementById("modal");
 const modalContent = modal.querySelector(".modal-content");
@@ -30,8 +28,6 @@ function nuevoDocumento() {
 
   document.getElementById("delete-current").onclick = () => {
     documentArea.innerHTML = "";
-    headerArea.innerHTML = "";
-    footerArea.innerHTML = "";
     pageNumberArea.innerHTML = "";
     closeModal();
   };
@@ -49,8 +45,6 @@ function abrirDocumento() {
 
   document.getElementById("delete-current").onclick = () => {
     documentArea.innerHTML = "";
-    headerArea.innerHTML = "";
-    footerArea.innerHTML = "";
     pageNumberArea.innerHTML = "";
     closeModal();
     seleccionarArchivo();
@@ -156,7 +150,6 @@ function configurarPaginado() {
 
     let ancho = tamaños[papel].w;
     let alto = tamaños[papel].h;
-
     // Cambiar orientación
     if (orientacion === "horizontal") {
       [ancho, alto] = [alto, ancho];
@@ -173,112 +166,6 @@ function configurarPaginado() {
     const margenInf = document.getElementById("margenInf").value;
 
     documentArea.style.padding = `${margenSup}cm ${margenDer}cm ${margenInf}cm ${margenIzq}cm`;
-
-    closeModal();
-  };
-
-  document.getElementById("cancel").onclick = () => closeModal();
-}
-
-// --- Encabezado y Pié ---
-function encabezadoPie() {
-  openModal("Encabezado y Pié", `
-    <label>Encabezado:</label>
-    <input id="encabezado" type="text" maxlength="40" value="${headerArea.innerText}">
-    <small id="encabezado-count"> ${40 - headerArea.innerText.length} </small>
-
-    <br><br><label>Pié:</label>
-    <input id="pie" type="text" maxlength="40" value="${footerArea.innerText}">
-    <small id="pie-count"> ${40 - footerArea.innerText.length}</small>
-
-    <br><br><label>Fuente:</label>
-    <select id="fontHeaderFooter">
-      <option>Arial</option>
-      <option>Times New Roman</option>
-      <option>Verdana</option>
-    </select>
-
-    <label>Tamaño:</label>
-    <select id="sizeHeaderFooter">
-      ${Array.from({length: 13}, (_, i) => {
-        const val = i + 8;
-        return `<option value="${val}" ${headerArea.style.fontSize.replace("px","")==val ? "selected":""}>${val}</option>`;
-      }).join("")}
-    </select>
-
-    <br><br><label>Color Encabezado:</label>
-    <input type="color" id="colorHeader">
-
-    <br><br><label>Color Pié:</label>
-    <input type="color" id="colorFooter">
-
-    <br><br><label>Alineación:</label>
-    <select id="alignHeaderFooter">
-      <option value="left">Izquierda</option>
-      <option value="center">Centro</option>
-      <option value="right">Derecha</option>
-    </select>
-
-    <br><br><label>Estilo Encabezado:</label>
-    <button id="boldHeader"><b>N</b></button>
-    <button id="italicHeader"><i>K</i></button>
-    <button id="underlineHeader"><u>S</u></button>
-
-    <br><br><label>Estilo Pié:</label>
-    <button id="boldFooter"><b>N</b></button>
-    <button id="italicFooter"><i>K</i></button>
-    <button id="underlineFooter"><u>S</u></button>
-
-    <center><button id="aplicar">Aceptar</button>
-    <button id="cancel">Cancelar</button></center>
-  `);
-
-  // Contadores dinámicos
-  const encabezadoInput = document.getElementById("encabezado");
-  const pieInput = document.getElementById("pie");
-  const encabezadoCount = document.getElementById("encabezado-count");
-  const pieCount = document.getElementById("pie-count");
-
-  encabezadoInput.addEventListener("input", () => {
-    encabezadoInput.value = encabezadoInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
-    const remaining = 40 - encabezadoInput.value.length;
-    encabezadoCount.textContent = `Quedan ${remaining} caracteres`;
-  });
-
-  pieInput.addEventListener("input", () => {
-    pieInput.value = pieInput.value.replace(/[^a-zA-Z0-9 ]/g, "");
-    const remaining = 40 - pieInput.value.length;
-    pieCount.textContent = `Quedan ${remaining} caracteres`;
-  });
-
-  // Aplicar estilos
-  document.getElementById("boldHeader").onclick = () => headerArea.style.fontWeight = headerArea.style.fontWeight === "bold" ? "normal" : "bold";
-  document.getElementById("italicHeader").onclick = () => headerArea.style.fontStyle = headerArea.style.fontStyle === "italic" ? "normal" : "italic";
-  document.getElementById("underlineHeader").onclick = () => headerArea.style.textDecoration = headerArea.style.textDecoration === "underline" ? "none" : "underline";
-
-  document.getElementById("boldFooter").onclick = () => footerArea.style.fontWeight = footerArea.style.fontWeight === "bold" ? "normal" : "bold";
-  document.getElementById("italicFooter").onclick = () => footerArea.style.fontStyle = footerArea.style.fontStyle === "italic" ? "normal" : "italic";
-  document.getElementById("underlineFooter").onclick = () => footerArea.style.textDecoration = footerArea.style.textDecoration === "underline" ? "none" : "underline";
-
-  document.getElementById("aplicar").onclick = () => {
-    headerArea.innerText = encabezadoInput.value;
-    footerArea.innerText = pieInput.value;
-
-    const font = document.getElementById("fontHeaderFooter").value;
-    const size = document.getElementById("sizeHeaderFooter").value;
-    const colorHeader = document.getElementById("colorHeader").value;
-    const colorFooter = document.getElementById("colorFooter").value;
-    const align = document.getElementById("alignHeaderFooter").value;
-
-    headerArea.style.fontFamily = font;
-    headerArea.style.fontSize = size + "px";
-    headerArea.style.color = colorHeader;
-    headerArea.style.textAlign = align;
-
-    footerArea.style.fontFamily = font;
-    footerArea.style.fontSize = size + "px";
-    footerArea.style.color = colorFooter;
-    footerArea.style.textAlign = align;
 
     closeModal();
   };
@@ -311,12 +198,12 @@ function numerarPaginas() {
     pageNumberArea.innerText = "1"; // ejemplo
     pageNumberArea.style.textAlign = pos.includes("der") ? "right" : "left";
     pageNumberArea.style.position = "absolute";
-    pageNumberArea.style.width = "100%";
+    pageNumberArea.style.width = "calc(100% - 3cm)"; // respeta márgenes
     if (pos.includes("sup")) {
-      pageNumberArea.style.top = "0.5cm";
+      pageNumberArea.style.top = "1cm";
       pageNumberArea.style.bottom = "";
     } else {
-      pageNumberArea.style.bottom = "0.5cm";
+      pageNumberArea.style.bottom = "1cm";
       pageNumberArea.style.top = "";
     }
     closeModal();
@@ -337,7 +224,6 @@ document.querySelectorAll(".menu li").forEach(item => {
       case "Paginado": configurarPaginado(); break;
       case "Deshacer": deshacer(); break;
       case "Rehacer": rehacer(); break;
-      case "Encabezado y Pié": encabezadoPie(); break;
       case "Numerar Páginas": numerarPaginas(); break;
     }
   });
@@ -389,7 +275,3 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
-
-
-
-
