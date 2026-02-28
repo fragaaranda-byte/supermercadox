@@ -1,20 +1,18 @@
 /* Estilos para impresión */
 @media print {
   body * {
-    visibility: hidden; /* Oculta todo */
+    visibility: hidden;
   }
-
   #document, #document * {
-    visibility: visible; /* Solo muestra el documento */
+    visibility: visible;
   }
-
   #document {
     position: absolute;
     left: 0;
     top: 0;
     margin: 0;
-    box-shadow: none; /* Quita sombra en impresión */
-    background: white; /* Fondo blanco limpio */
+    box-shadow: none;
+    background: white;
   }
 }
 
@@ -33,7 +31,7 @@ header {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex; /* menú principal en horizontal */
+  display: flex;
 }
 
 .menu > ul > li {
@@ -77,46 +75,43 @@ header {
 #document {
   background: white;
   margin: 20px auto;
-  width: 21cm; /* A4 vertical por defecto */
+  width: 21cm;
   height: 29.7cm;
   padding: 1.5cm;
   box-shadow: 0 0 5px rgba(0,0,0,0.2);
   position: relative;
 }
 
-/* Área editable real */
+/* Área editable */
 #doc-content {
   width: 100%;
   height: 100%;
   outline: none;
 }
 
-/* Encabezado, pie y numeración dentro de la hoja */
-#header, #footer {
+/* Elementos fijos */
+#header, #footer, #page-number {
   position: absolute;
   pointer-events: none;
   user-select: none;
   color: #333;
-  width: calc(100% - 3cm); /* Respeta márgenes laterales */
-  text-align: center;
 }
 
 #header {
   top: 0.5cm;
-  padding-bottom: 5px;
+  width: calc(100% - 3cm);
+  text-align: center;
 }
 
 #footer {
   bottom: 0.5cm;
-  padding-top: 5px;
+  width: calc(100% - 3cm);
+  text-align: center;
 }
 
 #page-number {
-  position: absolute;
   font-size: 12px;
   color: #666;
-  pointer-events: none;
-  user-select: none;
   display: none;
 }
 
