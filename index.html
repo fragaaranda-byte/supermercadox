@@ -1,1 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>My Personal Docs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Barra superior principal -->
+  <div id="toolbar">
+    <button id="btn-archivo">Archivo ▼</button>
+    <button><img src="iconos/deshacer.png" alt="Deshacer"></button>
+    <button><img src="iconos/rehacer.png" alt="Rehacer"></button>
+    <button id="btn-numerar"><img src="iconos/numerar.png" alt="Numerar páginas"></button>
+  </div>
 
+  <!-- Menú Archivo desplegable -->
+  <div id="archivo-menu" class="dropdown">
+    <ul>
+      <li id="nuevo">Nuevo</li>
+      <li id="abrir">Abrir</li>
+      <li id="guardar">Guardar</li>
+      <li id="guardar-como">Guardar Como</li>
+      <li id="imprimir">Imprimir</li>
+      <li id="pagina">Página</li>
+    </ul>
+  </div>
+
+  <!-- Barra lateral Insertar -->
+  <div id="insertar-menu">
+    <div class="toggle"><span>&lt;&lt;</span></div>
+    <div class="insertar-opciones">
+      <button><img src="iconos/imagen.png" alt="Insertar Imagen"></button>
+      <button><img src="iconos/indice.png" alt="Insertar Índice"></button>
+      
+      <div class="emoji-list">
+        <h4>Emojis</h4><br>
+        <img src="emojis/smile.png" alt="😊">
+        <img src="emojis/love.png" alt="❤️">
+        <img src="emojis/thumb.png" alt="👍">
+      </div>
+<br>
+      <div class="simbolos">
+        <h4>Símbolos</h4><br>
+        <span>+</span><span>-</span><span>*</span><span>/</span>
+        <span>?</span><span>¿</span><span>(</span><span>)</span>
+        <span>&</span><span>%</span><span>¡</span><span>$</span>
+      </div>
+<br>
+      <div class="tabla">
+        <h4>Insertar Tabla</h4>
+        <div class="grid-selector">
+          <div class="grid">
+            <!-- 10x10 celdas -->
+            <!-- Generar 100 div.cell -->
+            <div class="cell"></div>
+            <!-- ... hasta 100 -->
+          </div>
+        </div>
+      </div>
+<br>
+      <div class="navegacion-paginas">
+        <button>&lt;</button>
+        <input type="text" maxlength="2" pattern="[0-9]*" inputmode="numeric" placeholder="Pg">
+        <button>&gt;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Área de documento -->
+  <div id="doc-area">
+    <div class="page">
+      <!-- Numeración de página -->
+      <div id="page-number-toggle">#</div>
+      <div id="doc-content" contenteditable="true"></div>
+    </div>
+  </div>
+
+  <!-- Modal genérico -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <div id="modal-body">
+        <!-- Aquí se cargará dinámicamente el contenido -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="archivo.js"></script>
+  <script src="editar.js"></script>
+  <script src="insertar.js"></script>
+  <script src="numeracion.js"></script>
+  <script src="hojas.js"></script>
+  <script src="formato.js"></script>
+</body>
+</html>
