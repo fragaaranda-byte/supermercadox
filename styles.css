@@ -115,12 +115,6 @@ header {
   padding-top: 5px;
 }
 
-#page-number {
-  bottom: 0.2cm; /* Justo encima del pie */
-  font-size: 12px;
-  color: #666;
-}
-
 .modal {
   position: fixed;
   top: 0; left: 0;
@@ -142,8 +136,3 @@ header {
   border-radius: 5px;
   width: 400px;
 }
-
-
-
-
-
