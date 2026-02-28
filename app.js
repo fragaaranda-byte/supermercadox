@@ -172,6 +172,7 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
+
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -295,3 +296,4 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
