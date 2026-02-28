@@ -225,6 +225,24 @@ function numerarPaginas() {
   document.getElementById("cancel").onclick = () => closeModal();
 }
 
+// --- Eventos del menú ---
+document.querySelectorAll(".menu li").forEach(item => {
+  item.addEventListener("click", () => {
+    const text = item.innerText.trim();
+    switch(text) {
+      case "Nuevo": nuevoDocumento(); break;
+      case "Abrir": abrirDocumento(); break;
+      case "Guardar": guardarDocumento(); break;
+      case "Guardar Como": guardarComo(); break;
+      case "Imprimir": imprimirDocumento(); break;
+      case "Página": configurarPaginado(); break;
+      case "Deshacer": deshacer(); break;
+      case "Rehacer": rehacer(); break;
+      case "Numerar Páginas": numerarPaginas(); break;
+    }
+  });
+}
+
 // --- Barra de formato ---
 document.getElementById("font-family").addEventListener("change", e => {
   document.execCommand("fontName", false, e.target.value);
@@ -282,6 +300,3 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
-
-
-
