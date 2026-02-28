@@ -92,32 +92,31 @@ header {
 }
 
 /* Encabezado, pie y numeración dentro de la hoja */
-#header, #footer, #page-number {
+#header, #footer {
   position: absolute;
   pointer-events: none;
   user-select: none;
   color: #333;
+  width: calc(100% - 3cm); /* Respeta márgenes laterales */
+  text-align: center;
 }
 
 #header {
   top: 0.5cm;
-  width: calc(100% - 3cm);
-  text-align: center;
-  border-bottom: 1px solid #ccc;
   padding-bottom: 5px;
 }
 
 #footer {
   bottom: 0.5cm;
-  width: calc(100% - 3cm);
-  text-align: center;
-  border-top: 1px solid #ccc;
   padding-top: 5px;
 }
 
 #page-number {
+  position: absolute;
   font-size: 12px;
   color: #666;
+  pointer-events: none;
+  user-select: none;
   display: none;
 }
 
