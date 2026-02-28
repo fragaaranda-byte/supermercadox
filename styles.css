@@ -9,37 +9,42 @@ header {
   color: white;
 }
 
-.menu ul {
+.menu > ul {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
+  display: flex; /* SOLO el menú principal en horizontal */
 }
 
-.menu > ul > li:hover .submenu {
-  display: block;
+.menu > ul > li {
+  position: relative; /* Necesario para posicionar submenús */
+  padding: 10px 20px;
+  cursor: pointer;
 }
 
-.menu li:hover {
+.menu > ul > li:hover {
   background: #444;
 }
 
-.submenu { display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          background: #555;
-          min-width: 150px;
-          z-index: 1000; 
+.submenu {
+  display: none; /* Oculto por defecto */
+  position: absolute;
+  top: 100%; /* Justo debajo del padre */
+  left: 0;
+  background: #555;
+  min-width: 150px;
+  z-index: 1000;
+  flex-direction: column; /* Submenú en vertical */
 }
 
-.submenu li { padding: 10px;
-             color: white;
-             cursor: pointer;
+.submenu li {
+  padding: 10px;
+  color: white;
+  cursor: pointer;
 }
 
-.menu li:hover .submenu {
-  display: block;
+.menu > ul > li:hover .submenu {
+  display: flex; /* Se muestra al pasar el mouse */
 }
 
 .toolbar {
