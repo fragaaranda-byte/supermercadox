@@ -145,10 +145,10 @@ document.querySelectorAll(".menu li").forEach(item => {
   item.addEventListener("click", () => {
     const text = item.innerText.trim();
     switch(text) {
-      case "Nuevo": /* tu lógica */ break;
-      case "Abrir": /* tu lógica */ break;
-      case "Guardar": /* tu lógica */ break;
-      case "Guardar Como": /* tu lógica */ break;
+      case "Nuevo": /* lógica para nuevo */ break;
+      case "Abrir": /* lógica para abrir */ break;
+      case "Guardar": /* lógica para guardar */ break;
+      case "Guardar Como": /* lógica para guardar como */ break;
       case "Imprimir": window.print(); break;
       case "Página": configurarPaginado(); break;
       case "Deshacer": deshacer(); break;
