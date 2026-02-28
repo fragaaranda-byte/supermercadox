@@ -1,13 +1,12 @@
 // interfaz.js
 
-// Esperamos a que cargue el DOM
 document.addEventListener("DOMContentLoaded", () => {
-  
   // === Menú Archivo desplegable ===
   const btnArchivo = document.getElementById("btn-archivo");
   const archivoMenu = document.getElementById("archivo-menu");
 
-  btnArchivo.addEventListener("click", () => {
+  btnArchivo.addEventListener("click", (e) => {
+    e.stopPropagation();
     archivoMenu.style.display = archivoMenu.style.display === "block" ? "none" : "block";
   });
 
@@ -31,14 +30,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para abrir modal
   function abrirModal(modal) {
-    modal.style.display = "flex"; // usamos flex para centrar
-    document.getElementById("doc-content").setAttribute("contenteditable", "false"); // bloquea edición
+    modal.style.display = "flex";
+    document.querySelectorAll(".doc-content").forEach(c => c.setAttribute("contenteditable", "false"));
   }
 
   // Función para cerrar modal
   function cerrarModal(modal) {
     modal.style.display = "none";
-    document.getElementById("doc-content").setAttribute("contenteditable", "true"); // desbloquea edición
+    document.querySelectorAll(".doc-content").forEach(c => c.setAttribute("contenteditable", "true"));
   }
 
   // === Botón Numerar páginas ===
@@ -69,5 +68,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
 });
