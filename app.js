@@ -172,8 +172,6 @@ function configurarPaginado() {
 
   document.getElementById("cancel").onclick = () => closeModal();
 }
-
-
 // --- Numerar páginas ---
 function numerarPaginas() {
   openModal("Numerar Páginas", `
@@ -233,7 +231,7 @@ document.querySelectorAll(".menu li").forEach(item => {
   });
 });
 
-// --- Barra de formato con execCommand (mantiene selección activa) ---
+// --- Barra de formato con toggles reales ---
 document.getElementById("font-family").addEventListener("change", e => {
   document.execCommand("fontName", false, e.target.value);
 });
