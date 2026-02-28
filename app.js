@@ -187,8 +187,8 @@ function numerarPaginas() {
       <option value="inf-izq">Inferior Izquierda</option>
       <option value="inf-der">Inferior Derecha</option>
     </select>
-    <button id="aplicar">Aceptar</button>
-    <button id="cancel">Cancelar</button>
+    <br><center><button id="aplicar">Aceptar</button>
+    <button id="cancel">Cancelar</button></center>
   `);
 
   document.getElementById("aplicar").onclick = () => {
@@ -309,4 +309,5 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
+
 
