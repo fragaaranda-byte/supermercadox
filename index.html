@@ -62,9 +62,12 @@
   </section>
 
   <!-- Área de documento inmersiva -->
-  <main>
+  <main style="position:relative;">
+    <!-- Área editable -->
     <div id="document" contenteditable="true"></div>
-    <div id="document" contenteditable="true"></div> <!-- Div flotante para numeración de páginas --> <div id="page-number" style="display:none;"></div>
+
+    <!-- Div flotante para numeración de páginas -->
+    <div id="page-number" style="display:none; position:absolute;"></div>
   </main>
 
   <!-- Modal genérico -->
@@ -80,5 +83,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
-
