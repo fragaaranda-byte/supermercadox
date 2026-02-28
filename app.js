@@ -152,12 +152,10 @@ function configurarPaginado() {
       [ancho, alto] = [alto, ancho];
     }
 
-    // Aplicar tamaño de hoja sobre #document
     const hoja = document.getElementById("document");
     hoja.style.width = ancho + "cm";
     hoja.style.height = alto + "cm";
 
-    // Aplicar márgenes como padding
     const margenIzq = document.getElementById("margenIzq").value;
     const margenDer = document.getElementById("margenDer").value;
     const margenSup = document.getElementById("margenSup").value;
