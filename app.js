@@ -187,11 +187,11 @@ function encabezadoPie() {
     <input id="encabezado" type="text" maxlength="40" value="${headerArea.innerText}">
     <small id="encabezado-count">Quedan ${40 - headerArea.innerText.length} caracteres</small>
 
-    <label>Pié:</label>
+    <br><br><label>Pié:</label>
     <input id="pie" type="text" maxlength="40" value="${footerArea.innerText}">
     <small id="pie-count">Quedan ${40 - footerArea.innerText.length} caracteres</small>
 
-    <label>Fuente:</label>
+    <br><br><label>Fuente:</label>
     <select id="fontHeaderFooter">
       <option>Arial</option>
       <option>Times New Roman</option>
@@ -229,8 +229,8 @@ function encabezadoPie() {
     <button id="italicFooter"><i>K</i></button>
     <button id="underlineFooter"><u>S</u></button>
 
-    <button id="aplicar">Aceptar</button>
-    <button id="cancel">Cancelar</button>
+    <center><button id="aplicar">Aceptar</button>
+    <button id="cancel">Cancelar</button></center>
   `);
 
   // Contadores dinámicos
@@ -389,5 +389,6 @@ setInterval(() => {
   console.log("Guardado automático en formato .myd");
   // Aquí luego implementaremos la lógica real de guardado en JSON
 }, 60000);
+
 
 
