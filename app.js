@@ -206,6 +206,7 @@ function numerarPaginas() {
       pageNumberArea.style.bottom = "0.5cm";
       pageNumberArea.style.top = "";
     }
+    // Asegurar que esté dentro del documento
     if (!documentArea.contains(pageNumberArea)) {
       documentArea.appendChild(pageNumberArea);
     }
@@ -243,29 +244,22 @@ document.getElementById("font-size").addEventListener("change", e => {
   if (size < 8) size = 8;
   if (size > 150) size = 150;
 
-  const selection = window.getSelection();
-  if (selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0);
-    if (!range.collapsed) {
-      // Texto seleccionado → aplicar estilo directo
-      const span = document.createElement("span");
-      span.style.fontSize = size + "px";
-      span.appendChild(range.extractContents());
-      range.insertNode(span);
-      selection.removeAllRanges();
-      const newRange = document.createRange();
-      newRange.selectNodeContents(span);
-      selection.addRange(newRange);
-    } else {
-      // Solo cursor → usar execCommand como fallback
-      document.execCommand("fontSize", false, "7");
-      const fontElements = documentArea.querySelectorAll("font[size='7']");
-      fontElements.forEach(el => {
-        el.removeAttribute("size");
-        el.style.fontSize = size + "px";
-      });
-    }
-  }
+  // Usamos execCommand con fontSize=7 como marcador
+  document.execCommand("fontSize", false, "7");
+
+  // Reemplazamos todos los <font size="7"> por estilos en px
+  const fontElements = documentArea.querySelectorAll("font[size='7']");
+  fontElements.forEach(el => {
+    el.removeAttribute("size");
+    el.style.fontSize = size + "px";
+
+    // Mantener selección activa sobre el texto modificado
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
 
   e.target.value = size;
 });
@@ -296,4 +290,3 @@ document.getElementById("highlight-color").addEventListener("change", e => {
 setInterval(() => {
   console.log("Guardado automático en formato .mpd");
 }, 60000);
-
