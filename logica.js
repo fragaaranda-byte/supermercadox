@@ -6,9 +6,10 @@ editor.innerHTML = "";
 let archivoActual = null;
 let configNumeracion = null;
 let rangoGuardado = null;
+let indiceActivo = false;
 
 // =====================
-// FORMATO ACTUAL (persistente)
+// FORMATO ACTUAL
 // =====================
 let formatoActual = {
     colorTexto: "#000000",
@@ -23,7 +24,7 @@ const PAGE_HEIGHT = 1123;
 const MARGEN = 56;
 
 // =====================
-// GUARDAR / RESTAURAR CURSOR (real)
+// GUARDAR / RESTAURAR CURSOR
 // =====================
 document.addEventListener("selectionchange", () => {
     const sel = window.getSelection();
@@ -42,7 +43,6 @@ function restaurarCursor() {
     sel.addRange(rangoGuardado);
 }
 
-// Guardar cursor al interactuar con la UI SIN bloquear selects ni flechas
 document.querySelectorAll("button, select, input, img").forEach(el => {
     el.addEventListener("mousedown", () => {
         restaurarCursor();
@@ -96,7 +96,7 @@ function crearPagina() {
 editor.appendChild(crearPagina());
 
 // =====================
-// OVERFLOW
+// OVERFLOW (CREAR PAGINAS SOLO CUANDO SE NECESITA)
 // =====================
 function verificarOverflow() {
     const pages = document.querySelectorAll(".page");
@@ -119,7 +119,7 @@ function verificarOverflow() {
 }
 
 // =====================
-// APLICAR FORMATO ACTUAL AL ESCRIBIR
+// FORMATO ACTUAL AL ESCRIBIR
 // =====================
 editor.addEventListener("keyup", aplicarFormatoActual);
 editor.addEventListener("click", aplicarFormatoActual);
@@ -145,7 +145,7 @@ fuenteSelect.onchange = e => {
 };
 
 // =====================
-// FIX DEFINITIVO TAMAÑO FUENTE
+// TAMAÑO FUENTE
 // =====================
 sizeSelect.onchange = e => {
     formatoActual.fontSize = e.target.value;
@@ -194,7 +194,7 @@ btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCent
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// INSERTAR TABLA (REDIMENSIONABLE)
+// INSERTAR TABLA
 // =====================
 document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
     cell.onclick = () => {
@@ -207,12 +207,12 @@ document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
 function insertarTabla(filas, columnas) {
     restaurarCursor();
 
-    let table = `<table border="1" style="border-collapse:collapse;width:100%;table-layout:fixed;">`;
+    let table = `<table border="1" style="border-collapse:collapse;table-layout:fixed;vertical-align:top;">`;
 
     for (let i = 0; i < filas; i++) {
         table += "<tr>";
         for (let j = 0; j < columnas; j++) {
-            table += `<td style="min-width:40px;min-height:25px;resize:both;overflow:auto;">&nbsp;</td>`;
+            table += `<td style="min-width:40px;min-height:25px;resize:both;overflow:auto;vertical-align:top;">&nbsp;</td>`;
         }
         table += "</tr>";
     }
@@ -240,6 +240,42 @@ document.querySelectorAll(".emojis img").forEach(img => {
         restaurarCursor();
         document.execCommand("insertHTML", false, `<img src="${img.src}" width="32">`);
     };
+});
+
+// =====================
+// INSERTAR IMAGEN
+// =====================
+btnImagen.onclick = () => {
+    restaurarCursor();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = e => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.execCommand("insertHTML", false, `<img src="${reader.result}" style="max-width:300px;">`);
+        };
+        reader.readAsDataURL(file);
+    };
+    input.click();
+};
+
+// =====================
+// INSERTAR ÍNDICE 1) 2) 3)
+// =====================
+btnIndice.onclick = () => {
+    restaurarCursor();
+    indiceActivo = !indiceActivo;
+};
+
+editor.addEventListener("keydown", e => {
+    if (indiceActivo && e.key === "Enter") {
+        e.preventDefault();
+        const sel = window.getSelection();
+        const num = document.querySelectorAll(".item-indice").length + 1;
+        document.execCommand("insertHTML", false, `<div class="item-indice">${num}) </div>`);
+    }
 });
 
 // =====================
