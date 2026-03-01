@@ -13,25 +13,25 @@
     <div class="menu-archivo">
         <button class="btn-menu">Archivo</button>
         <div class="submenu-archivo">
-            <button>Nuevo</button>
-            <button>Abrir</button>
-            <button>Guardar</button>
-            <button>Guardar Como</button>
-            <button>Imprimir</button>
-            <button>Página</button>
+            <button id="btnNuevo">Nuevo</button>
+            <button id="btnAbrir">Abrir</button>
+            <button id="btnGuardar">Guardar</button>
+            <button id="btnGuardarComo">Guardar Como</button>
+            <button id="btnImprimir">Imprimir</button>
+            <button id="btnPagina">Página</button>
         </div>
     </div>
 
-    <button class="btn-icono"><img src="iconos/deshacer.png"></button>
-    <button class="btn-icono"><img src="iconos/rehacer.png"></button>
-    <button class="btn-icono"><img src="iconos/numerar.png"></button>
+    <button class="btn-icono" id="btnDeshacer"><img src="iconos/deshacer.png"></button>
+    <button class="btn-icono" id="btnRehacer"><img src="iconos/rehacer.png"></button>
+    <button class="btn-icono" id="btnNumerar"><img src="iconos/numerar.png"></button>
 
 </div>
 
 <!-- BARRA DE FORMATO -->
 <div id="barra-formato">
 
-    <select>
+    <select id="fuenteSelect">
         <option>Arial</option>
         <option>Times New Roman</option>
         <option>Calibri</option>
@@ -39,7 +39,8 @@
         <option>Courier New</option>
     </select>
 
-    <select>
+    <select id="sizeSelect">
+        <option>8</option>
         <option>10</option>
         <option>12</option>
         <option>14</option>
@@ -48,18 +49,24 @@
         <option>20</option>
         <option>24</option>
         <option>32</option>
+        <option>48</option>
+        <option>72</option>
+        <option>100</option>
+        <option>150</option>
+        <option>200</option>
+        <option>250</option>
     </select>
 
-    <button class="btn-texto">N</button>
-    <button class="btn-texto">K</button>
-    <button class="btn-texto">S</button>
+    <button class="btn-texto" id="btnNegrita">N</button>
+    <button class="btn-texto" id="btnCursiva">K</button>
+    <button class="btn-texto" id="btnSubrayado">S</button>
 
-    <input type="color" title="Color de letra">
-    <input type="color" title="Color de resaltado">
+    <input type="color" id="colorTexto" title="Color de letra">
+    <input type="color" id="colorFondo" title="Color de resaltado">
 
-    <button class="btn-icono"><img src="iconos/izquierda.png"></button>
-    <button class="btn-icono"><img src="iconos/centrado.png"></button>
-    <button class="btn-icono"><img src="iconos/derecha.png"></button>
+    <button class="btn-icono" id="btnIzq"><img src="iconos/izquierda.png"></button>
+    <button class="btn-icono" id="btnCentro"><img src="iconos/centrado.png"></button>
+    <button class="btn-icono" id="btnDer"><img src="iconos/derecha.png"></button>
 
 </div>
 
@@ -72,14 +79,15 @@
         <div id="toggle-panel"><<</div>
 
         <div class="bloque-insertar">
-            <button class="btn-icono"><img src="iconos/imagen.png"></button>
-            <button class="btn-icono"><img src="iconos/indice.png"></button>
+            <button class="btn-icono" id="btnInsertarImagen"><img src="iconos/imagen.png"></button>
+            <button class="btn-icono" id="btnIndice"><img src="iconos/indice.png"></button>
         </div>
 
         <div class="bloque-tabla">
             <p>Tabla (máx 10x10)</p>
             <div class="grid-tabla">
                 <!-- 100 celdas -->
+                <!-- 10 x 10 -->
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
@@ -120,17 +128,53 @@
 
     </div>
 
-    <!-- AREA DE DOCUMENTO -->
-    <div id="editor" contenteditable="true">
+    <!-- EDITOR DE PÁGINAS -->
+    <div id="editor">
+
+        <!-- PÁGINA 1 -->
+        <div class="page">
+
+            <div class="page-header" contenteditable="false"></div>
+
+            <div class="page-content" contenteditable="true">
+                <p></p>
+            </div>
+
+            <div class="page-footer" contenteditable="false"></div>
+
+        </div>
+
     </div>
 
 </div>
 
-    <!-- SCRIPTS -->
+<!-- MODAL NUMERACIÓN -->
+<div id="modalNumeracion" class="modal oculto">
+    <div class="modal-contenido">
+
+        <div class="modal-titulo">Numeración de Páginas</div>
+
+        <div class="modal-botones-esquinas">
+            <button data-pos="top-left">↖</button>
+            <button data-pos="top-right">↗</button>
+            <button data-pos="bottom-left">↙</button>
+            <button data-pos="bottom-right">↘</button>
+        </div>
+
+        <div class="modal-acciones">
+            <button id="btnAceptarNumeracion">Aceptar</button>
+            <button id="btnCancelarNumeracion">Cancelar</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" class="oculto"></div>
+
+<!-- SCRIPTS -->
 <script src="logica.js"></script>
 <script src="mypersonaldocs.js"></script>
 
 </body>
 </html>
-
-
