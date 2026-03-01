@@ -20,28 +20,32 @@ let formatoActual = {
 // Medidas A4
 const PAGE_WIDTH = 794;
 const PAGE_HEIGHT = 1123;
-const MARGEN = 56; // 1.5cm
+const MARGEN = 56;
 
 // =====================
-// GUARDAR / RESTAURAR CURSOR
+// GUARDAR / RESTAURAR CURSOR (real)
 // =====================
 document.addEventListener("selectionchange", () => {
     const sel = window.getSelection();
     if (sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
         if (editor.contains(range.startContainer)) {
-            rangoGuardado = range;
+            rangoGuardado = range.cloneRange();
         }
     }
 });
 
 function restaurarCursor() {
-    if (rangoGuardado) {
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(rangoGuardado);
-    }
+    if (!rangoGuardado) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(rangoGuardado);
 }
+
+// Evitar perder cursor al hacer click en UI
+document.querySelectorAll("button, select, input, img").forEach(el => {
+    el.addEventListener("mousedown", e => e.preventDefault());
+});
 
 // =====================
 // CREAR PAGINA
@@ -113,15 +117,17 @@ function verificarOverflow() {
 }
 
 // =====================
-// MANTENER FORMATO AL MOVER CURSOR
+// APLICAR FORMATO ACTUAL AL ESCRIBIR
 // =====================
-editor.addEventListener("click", () => {
-    setTimeout(() => {
-        document.execCommand("foreColor", false, formatoActual.colorTexto);
-        document.execCommand("hiliteColor", false, formatoActual.colorFondo);
-        document.execCommand("fontName", false, formatoActual.fontName);
-    }, 0);
-});
+editor.addEventListener("keyup", aplicarFormatoActual);
+editor.addEventListener("click", aplicarFormatoActual);
+
+function aplicarFormatoActual() {
+    restaurarCursor();
+    document.execCommand("fontName", false, formatoActual.fontName);
+    document.execCommand("foreColor", false, formatoActual.colorTexto);
+    document.execCommand("hiliteColor", false, formatoActual.colorFondo);
+}
 
 // =====================
 // FORMATO TEXTO
@@ -136,19 +142,37 @@ fuenteSelect.onchange = e => {
     document.execCommand("fontName", false, formatoActual.fontName);
 };
 
-// FIX REAL TAMAÑO FUENTE
+// =====================
+// FIX DEFINITIVO TAMAÑO FUENTE (Word real)
+// =====================
 sizeSelect.onchange = e => {
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
 
-    if (window.getSelection().toString().length > 0) {
-        document.execCommand("fontSize", false, "1");
+    const sel = window.getSelection();
 
-        const fonts = editor.querySelectorAll("font[size='1']");
-        fonts.forEach(font => {
-            font.removeAttribute("size");
-            font.style.fontSize = formatoActual.fontSize + "px";
-        });
+    if (sel.rangeCount === 0) return;
+
+    const range = sel.getRangeAt(0);
+
+    if (!range.collapsed) {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize + "px";
+        range.surroundContents(span);
+    } else {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize + "px";
+        span.appendChild(document.createTextNode("\u200B"));
+        range.insertNode(span);
+
+        const newRange = document.createRange();
+        newRange.setStart(span.firstChild, 1);
+        newRange.collapse(true);
+
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+
+        rangoGuardado = newRange.cloneRange();
     }
 };
 
