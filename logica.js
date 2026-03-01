@@ -61,7 +61,7 @@ document.querySelectorAll("button, select, input, img").forEach(el => {
 });
 
 // =====================
-// CREAR PAGINA A4 REAL
+// CREAR PAGINA
 // =====================
 function crearPagina() {
     const page = document.createElement("div");
@@ -187,6 +187,7 @@ sizeSelect.onchange = e => {
     setTimeout(()=>cambiandoSize=false,100);
 };
 
+// ===== COLORES (RESTABLECIDO COMO ANTES) =====
 colorTexto.onchange = e => {
     formatoActual.colorTexto = e.target.value;
     restaurarCursor();
@@ -204,7 +205,7 @@ btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCent
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// TABLA WORD-LIKE
+// TABLA
 // =====================
 document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
     cell.onclick = () => {
@@ -221,7 +222,7 @@ function insertarTabla(filas, columnas) {
     for (let i=0;i<filas;i++){
         table+="<tr>";
         for(let j=0;j<columnas;j++){
-            table+=`<td style="width:100px;word-wrap:break-word;white-space:normal;vertical-align:top;">&nbsp;</td>`;
+            table+=`<td style="width:100px;height:30px;word-wrap:break-word;white-space:normal;vertical-align:top;">&nbsp;</td>`;
         }
         table+="</tr>";
     }
@@ -229,49 +230,67 @@ function insertarTabla(filas, columnas) {
 
     document.execCommand("insertHTML", false, table);
 
-    activarResizeColumnas();
+    activarResizeTabla();
 }
 
 // =====================
-// RESIZE COLUMNAS REAL (WORD)
+// RESIZE COLUMNAS Y FILAS (WORD)
 // =====================
-let resizing = false;
+let resizingCol = false;
+let resizingRow = false;
 let tdActual = null;
 let tdVecino = null;
+let filaActual = null;
 let startX = 0;
+let startY = 0;
 let startW1 = 0;
 let startW2 = 0;
+let startH = 0;
 
-function activarResizeColumnas(){
+function activarResizeTabla(){
     document.querySelectorAll("td").forEach(td=>{
         td.onmousemove = e=>{
-            if (td.clientWidth - e.offsetX < 6) {
-                td.style.cursor = "col-resize";
-            } else {
-                td.style.cursor = "text";
-            }
+            const bordeDerecho = td.clientWidth - e.offsetX < 6;
+            const bordeInferior = td.clientHeight - e.offsetY < 6;
+
+            if (bordeDerecho) td.style.cursor = "col-resize";
+            else if (bordeInferior) td.style.cursor = "row-resize";
+            else td.style.cursor = "text";
         };
 
         td.onmousedown = e=>{
-            if (td.clientWidth - e.offsetX < 6) {
+            const bordeDerecho = td.clientWidth - e.offsetX < 6;
+            const bordeInferior = td.clientHeight - e.offsetY < 6;
+
+            if (bordeDerecho) {
                 tdActual = td;
                 tdVecino = td.nextElementSibling;
                 if (!tdVecino) return;
 
-                resizing = true;
+                resizingCol = true;
                 startX = e.clientX;
                 startW1 = tdActual.offsetWidth;
                 startW2 = tdVecino.offsetWidth;
 
                 document.onmousemove = moverColumna;
-                document.onmouseup = soltarColumna;
+                document.onmouseup = soltarResize;
+            }
+
+            if (bordeInferior) {
+                filaActual = td.parentElement;
+                resizingRow = true;
+                startY = e.clientY;
+                startH = filaActual.offsetHeight;
+
+                document.onmousemove = moverFila;
+                document.onmouseup = soltarResize;
             }
         };
     });
 }
 
 function moverColumna(e){
-    if(!resizing) return;
+    if(!resizingCol) return;
 
     const dx = e.clientX - startX;
     let nueva1 = startW1 + dx;
@@ -283,10 +302,24 @@ function moverColumna(e){
     tdVecino.style.width = nueva2 + "px";
 }
 
-function soltarColumna(){
-    resizing = false;
+function moverFila(e){
+    if(!resizingRow) return;
+
+    const dy = e.clientY - startY;
+    let nuevaH = startH + dy;
+    if (nuevaH < 20) return;
+
+    filaActual.querySelectorAll("td").forEach(td=>{
+        td.style.height = nuevaH + "px";
+    });
+}
+
+function soltarResize(){
+    resizingCol = false;
+    resizingRow = false;
     tdActual = null;
     tdVecino = null;
+    filaActual = null;
     document.onmousemove = null;
     document.onmouseup = null;
 }
