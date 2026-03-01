@@ -7,6 +7,16 @@ let archivoActual = null;
 let configNumeracion = null;
 let rangoGuardado = null;
 
+// =====================
+// FORMATO ACTUAL (persistente)
+// =====================
+let formatoActual = {
+    colorTexto: "#000000",
+    colorFondo: "#ffffff",
+    fontSize: 8,
+    fontName: "Arial"
+};
+
 // Medidas A4
 const PAGE_WIDTH = 794;
 const PAGE_HEIGHT = 1123;
@@ -61,6 +71,7 @@ function crearPagina() {
     content.style.padding = MARGEN + "px";
     content.style.outline = "none";
     content.style.overflow = "hidden";
+    content.style.wordWrap = "break-word";
 
     const footer = document.createElement("div");
     footer.className = "footer";
@@ -94,13 +105,23 @@ function verificarOverflow() {
                 editor.appendChild(nuevaPagina);
             }
 
-            nuevaPagina.querySelector(".content")
-                .prepend(content.lastChild);
+            nuevaPagina.querySelector(".content").prepend(content.lastChild);
         }
     });
 
     aplicarNumeracion();
 }
+
+// =====================
+// MANTENER FORMATO AL MOVER CURSOR
+// =====================
+editor.addEventListener("click", () => {
+    setTimeout(() => {
+        document.execCommand("foreColor", false, formatoActual.colorTexto);
+        document.execCommand("hiliteColor", false, formatoActual.colorFondo);
+        document.execCommand("fontName", false, formatoActual.fontName);
+    }, 0);
+});
 
 // =====================
 // FORMATO TEXTO
@@ -110,31 +131,37 @@ btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); 
 btnSubrayado.onclick = () => { restaurarCursor(); document.execCommand("underline"); };
 
 fuenteSelect.onchange = e => {
+    formatoActual.fontName = e.target.value;
     restaurarCursor();
-    document.execCommand("fontName", false, e.target.value);
+    document.execCommand("fontName", false, formatoActual.fontName);
 };
 
-// 🔧 FIX REAL TAMAÑO FUENTE
+// FIX REAL TAMAÑO FUENTE
 sizeSelect.onchange = e => {
+    formatoActual.fontSize = e.target.value;
     restaurarCursor();
-    document.execCommand("fontSize", false, "1");
 
-    const fontElements = document.getElementsByTagName("font");
-    for (let i = fontElements.length - 1; i >= 0; i--) {
-        const font = fontElements[i];
-        font.removeAttribute("size");
-        font.style.fontSize = e.target.value + "px";
+    if (window.getSelection().toString().length > 0) {
+        document.execCommand("fontSize", false, "1");
+
+        const fonts = editor.querySelectorAll("font[size='1']");
+        fonts.forEach(font => {
+            font.removeAttribute("size");
+            font.style.fontSize = formatoActual.fontSize + "px";
+        });
     }
 };
 
 colorTexto.onchange = e => {
+    formatoActual.colorTexto = e.target.value;
     restaurarCursor();
-    document.execCommand("foreColor", false, e.target.value);
+    document.execCommand("foreColor", false, formatoActual.colorTexto);
 };
 
 colorFondo.onchange = e => {
+    formatoActual.colorFondo = e.target.value;
     restaurarCursor();
-    document.execCommand("hiliteColor", false, e.target.value);
+    document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 };
 
 btnIzq.onclick = () => { restaurarCursor(); document.execCommand("justifyLeft"); };
