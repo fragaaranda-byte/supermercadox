@@ -5,11 +5,33 @@ editor.innerHTML = "";
 
 let archivoActual = null;
 let configNumeracion = null;
+let rangoGuardado = null;
 
 // Medidas A4
 const PAGE_WIDTH = 794;
 const PAGE_HEIGHT = 1123;
-const MARGEN = 56; // 1.5cm aprox
+const MARGEN = 56; // 1.5cm
+
+// =====================
+// GUARDAR / RESTAURAR CURSOR (como Word)
+// =====================
+document.addEventListener("selectionchange", () => {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        if (editor.contains(range.startContainer)) {
+            rangoGuardado = range;
+        }
+    }
+});
+
+function restaurarCursor() {
+    if (rangoGuardado) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(rangoGuardado);
+    }
+}
 
 // =====================
 // CREAR PAGINA
@@ -80,8 +102,6 @@ function verificarOverflow() {
             }
 
             const nuevoContent = nuevaPagina.querySelector(".content");
-
-            // mover último nodo
             nuevoContent.prepend(content.lastChild);
         }
     });
@@ -90,33 +110,77 @@ function verificarOverflow() {
 }
 
 // =====================
-// FORMATO TEXTO
+// ESTADO BOTONES N K S
 // =====================
-document.getElementById("btnNegrita").onclick = () => document.execCommand("bold");
-document.getElementById("btnCursiva").onclick = () => document.execCommand("italic");
-document.getElementById("btnSubrayado").onclick = () => document.execCommand("underline");
+function actualizarEstadoBotones() {
+    document.getElementById("btnNegrita").classList.toggle("activo", document.queryCommandState("bold"));
+    document.getElementById("btnCursiva").classList.toggle("activo", document.queryCommandState("italic"));
+    document.getElementById("btnSubrayado").classList.toggle("activo", document.queryCommandState("underline"));
+}
 
-document.getElementById("fuenteSelect").onchange = e =>
+document.addEventListener("keyup", actualizarEstadoBotones);
+document.addEventListener("mouseup", actualizarEstadoBotones);
+
+// =====================
+// FORMATO TEXTO (Word real)
+// =====================
+document.getElementById("btnNegrita").onclick = () => {
+    restaurarCursor();
+    document.execCommand("bold");
+    actualizarEstadoBotones();
+};
+
+document.getElementById("btnCursiva").onclick = () => {
+    restaurarCursor();
+    document.execCommand("italic");
+    actualizarEstadoBotones();
+};
+
+document.getElementById("btnSubrayado").onclick = () => {
+    restaurarCursor();
+    document.execCommand("underline");
+    actualizarEstadoBotones();
+};
+
+document.getElementById("fuenteSelect").onchange = e => {
+    restaurarCursor();
     document.execCommand("fontName", false, e.target.value);
+};
 
-document.getElementById("sizeSelect").onchange = e =>
+document.getElementById("sizeSelect").onchange = e => {
+    restaurarCursor();
     document.execCommand("fontSize", false, "7");
+};
 
-document.getElementById("colorTexto").onchange = e =>
+document.getElementById("colorTexto").onchange = e => {
+    restaurarCursor();
     document.execCommand("foreColor", false, e.target.value);
+};
 
-document.getElementById("colorFondo").onchange = e =>
+document.getElementById("colorFondo").onchange = e => {
+    restaurarCursor();
     document.execCommand("hiliteColor", false, e.target.value);
+};
 
-document.getElementById("btnIzq").onclick = ()=>document.execCommand("justifyLeft");
-document.getElementById("btnCentro").onclick = ()=>document.execCommand("justifyCenter");
-document.getElementById("btnDer").onclick = ()=>document.execCommand("justifyRight");
+document.getElementById("btnIzq").onclick = () => {
+    restaurarCursor();
+    document.execCommand("justifyLeft");
+};
+
+document.getElementById("btnCentro").onclick = () => {
+    restaurarCursor();
+    document.execCommand("justifyCenter");
+};
+
+document.getElementById("btnDer").onclick = () => {
+    restaurarCursor();
+    document.execCommand("justifyRight");
+};
 
 // =====================
 // BOTON NUMERAR
 // =====================
-const botonesSuperior = document.getElementById("barra-superior").getElementsByClassName("btn-icono");
-const btnNumerar = botonesSuperior[2];
+const btnNumerar = document.getElementById("btnNumerar");
 btnNumerar.addEventListener("click", abrirModalNumeracion);
 
 // =====================
@@ -198,20 +262,20 @@ function aplicarNumeracion() {
         num.textContent = index+1;
         num.style.pointerEvents="none";
         num.style.position="absolute";
-        num.style.fontSize="14px";
+        num.style.fontSize="20px";
 
         let target;
 
         if(configNumeracion.startsWith("sup")){
             target = page.querySelector(".header");
-            num.style.top="10px";
+            num.style.top="30px";
         } else {
             target = page.querySelector(".footer");
-            num.style.bottom="10px";
+            num.style.bottom="30px";
         }
 
-        if(configNumeracion.endsWith("izq")) num.style.left="10px";
-        if(configNumeracion.endsWith("der")) num.style.right="10px";
+        if(configNumeracion.endsWith("izq")) num.style.left="30px";
+        if(configNumeracion.endsWith("der")) num.style.right="30px";
 
         target.appendChild(num);
     });
@@ -220,7 +284,7 @@ function aplicarNumeracion() {
 // =====================
 // NUEVO DOCUMENTO
 // =====================
-const btnNuevo = document.querySelector(".submenu-archivo button:nth-child(1)");
+const btnNuevo = document.getElementById("btnNuevo");
 btnNuevo.onclick = ()=>{
     if(confirm("Nuevo documento?")){
         editor.innerHTML="";
