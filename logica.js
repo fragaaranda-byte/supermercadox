@@ -3,11 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
 const editor = document.getElementById("editor");
 editor.innerHTML = "";
 
-let archivoActual = null;
 let configNumeracion = null;
 let rangoGuardado = null;
 let indiceActivo = false;
 let contadorIndice = 1;
+let cambiandoSize = false;
 
 // =====================
 // PANEL INSERTAR TOGGLE
@@ -37,6 +37,8 @@ const MARGEN = 56;
 // CURSOR
 // =====================
 document.addEventListener("selectionchange", () => {
+    if (cambiandoSize) return;
+
     const sel = window.getSelection();
     if (sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
@@ -59,23 +61,37 @@ document.querySelectorAll("button, select, input, img").forEach(el => {
 });
 
 // =====================
-// CREAR PAGINA
+// CREAR PAGINA A4 REAL
 // =====================
 function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
+    page.style.width = PAGE_WIDTH+"px";
+    page.style.height = PAGE_HEIGHT+"px";
+    page.style.margin = "20px auto";
+    page.style.border = "1px solid #444";
+    page.style.background = "white";
+    page.style.display = "flex";
+    page.style.flexDirection = "column";
+    page.style.position = "relative";
 
     const header = document.createElement("div");
     header.className = "header";
+    header.style.height = MARGEN+"px";
 
     const content = document.createElement("div");
     content.className = "content";
     content.contentEditable = true;
+    content.style.flex = "1";
+    content.style.padding = MARGEN+"px";
+    content.style.outline = "none";
     content.style.wordWrap = "break-word";
     content.style.whiteSpace = "normal";
+    content.style.overflow = "hidden";
 
     const footer = document.createElement("div");
     footer.className = "footer";
+    footer.style.height = MARGEN+"px";
 
     page.appendChild(header);
     page.appendChild(content);
@@ -111,38 +127,21 @@ function verificarOverflow() {
 }
 
 // =====================
-// ACTUALIZAR SELECT SIZE DESDE CURSOR
+// SELECT SIZE DESDE CURSOR
 // =====================
 function actualizarSelectsDesdeCursor() {
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
 
     let node = sel.anchorNode;
-    if (!node) return;
-
     if (node.nodeType === 3) node = node.parentElement;
 
     const size = window.getComputedStyle(node).fontSize;
-    const px = parseInt(size);
-
-    if (px) sizeSelect.value = px;
+    sizeSelect.value = parseInt(size);
 }
 
 // =====================
 // FORMATO
-// =====================
-editor.addEventListener("keyup", aplicarFormatoActual);
-editor.addEventListener("click", aplicarFormatoActual);
-
-function aplicarFormatoActual() {
-    restaurarCursor();
-    document.execCommand("fontName", false, formatoActual.fontName);
-    document.execCommand("foreColor", false, formatoActual.colorTexto);
-    document.execCommand("hiliteColor", false, formatoActual.colorFondo);
-}
-
-// =====================
-// BOTONES
 // =====================
 btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
 btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
@@ -157,17 +156,35 @@ fuenteSelect.onchange = e => {
 sizeSelect.value = "8";
 
 sizeSelect.onchange = e => {
+    cambiandoSize = true;
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
 
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
+
     const range = sel.getRangeAt(0);
 
-    const span = document.createElement("span");
-    span.style.fontSize = formatoActual.fontSize + "px";
-    span.appendChild(range.extractContents());
-    range.insertNode(span);
+    if (range.collapsed) {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize+"px";
+        span.appendChild(document.createTextNode("\u200B"));
+        range.insertNode(span);
+
+        const newRange = document.createRange();
+        newRange.setStart(span.firstChild,1);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        rangoGuardado = newRange.cloneRange();
+    } else {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize+"px";
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+    }
+
+    setTimeout(()=>cambiandoSize=false,100);
 };
 
 colorTexto.onchange = e => {
@@ -187,7 +204,7 @@ btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCent
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// TABLA
+// TABLA WORD-LIKE
 // =====================
 document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
     cell.onclick = () => {
@@ -201,33 +218,54 @@ function insertarTabla(filas, columnas) {
     restaurarCursor();
 
     let table = `<table border="1" style="border-collapse:collapse;table-layout:fixed;">`;
-    for (let i = 0; i < filas; i++) {
-        table += "<tr>";
-        for (let j = 0; j < columnas; j++) {
-            table += `<td contenteditable="true"
-                style="
-                min-width:80px;
-                max-width:200px;
-                height:30px;
-                resize:both;
-                overflow:auto;
-                word-wrap:break-word;
-                white-space:normal;
-                vertical-align:top;
-                ">&nbsp;</td>`;
+    for (let i=0;i<filas;i++){
+        table+="<tr>";
+        for(let j=0;j<columnas;j++){
+            table+=`<td style="width:100px;word-wrap:break-word;white-space:normal;vertical-align:top;">&nbsp;</td>`;
         }
-        table += "</tr>";
+        table+="</tr>";
     }
-    table += "</table><br>";
+    table+="</table><br>";
 
     document.execCommand("insertHTML", false, table);
+
+    activarResizeColumnas();
+}
+
+// =====================
+// RESIZE COLUMNAS TIPO WORD
+// =====================
+function activarResizeColumnas(){
+    document.querySelectorAll("td").forEach(td=>{
+        td.onmousedown = e=>{
+            if(e.offsetX > td.clientWidth-5){
+                const td2 = td.nextElementSibling;
+                if(!td2) return;
+
+                const startX = e.clientX;
+                const w1 = td.offsetWidth;
+                const w2 = td2.offsetWidth;
+
+                document.onmousemove = ev=>{
+                    const dx = ev.clientX-startX;
+                    td.style.width = (w1+dx)+"px";
+                    td2.style.width = (w2-dx)+"px";
+                };
+
+                document.onmouseup = ()=>{
+                    document.onmousemove=null;
+                    document.onmouseup=null;
+                };
+            }
+        };
+    });
 }
 
 // =====================
 // SIMBOLOS
 // =====================
-document.querySelectorAll(".simbolos button").forEach(btn => {
-    btn.onclick = () => {
+document.querySelectorAll(".simbolos button").forEach(btn=>{
+    btn.onclick=()=>{
         restaurarCursor();
         document.execCommand("insertText", false, btn.textContent);
     };
@@ -236,21 +274,17 @@ document.querySelectorAll(".simbolos button").forEach(btn => {
 // =====================
 // IMAGEN
 // =====================
-btnInsertarImagen.onclick = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
+btnInsertarImagen.onclick=()=>{
+    const input=document.createElement("input");
+    input.type="file";
+    input.accept="image/*";
 
-    input.onchange = () => {
-        const file = input.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = e => {
+    input.onchange=()=>{
+        const file=input.files[0];
+        const reader=new FileReader();
+        reader.onload=e=>{
             restaurarCursor();
-            document.execCommand("insertHTML", false,
-                `<img src="${e.target.result}" style="max-width:300px;">`
-            );
+            document.execCommand("insertHTML",false,`<img src="${e.target.result}" style="max-width:300px;">`);
         };
         reader.readAsDataURL(file);
     };
@@ -260,16 +294,16 @@ btnInsertarImagen.onclick = () => {
 // =====================
 // INDICE
 // =====================
-btnIndice.onclick = () => {
-    indiceActivo = !indiceActivo;
-    contadorIndice = 1;
+btnIndice.onclick=()=>{
+    indiceActivo=!indiceActivo;
+    contadorIndice=1;
 };
 
-editor.addEventListener("keydown", e => {
-    if (indiceActivo && e.key === "Enter") {
+editor.addEventListener("keydown",e=>{
+    if(indiceActivo && e.key==="Enter"){
         e.preventDefault();
         restaurarCursor();
-        document.execCommand("insertHTML", false, `<br>${contadorIndice}) `);
+        document.execCommand("insertHTML",false,`<br>${contadorIndice}) `);
         contadorIndice++;
     }
 });
@@ -283,50 +317,49 @@ function abrirModalNumeracion() {
     modalNumeracion.classList.remove("oculto");
     overlay.classList.remove("oculto");
 
-    let seleccion = null;
+    let seleccion=null;
 
-    modalNumeracion.querySelectorAll("button[data-pos]").forEach(btn => {
-        btn.onclick = () => seleccion = btn.dataset.pos;
+    modalNumeracion.querySelectorAll("button[data-pos]").forEach(btn=>{
+        btn.onclick=()=>seleccion=btn.dataset.pos;
     });
 
-    btnAceptarNumeracion.onclick = () => {
-        if (seleccion) {
-            configNumeracion = seleccion;
+    btnAceptarNumeracion.onclick=()=>{
+        if(seleccion){
+            configNumeracion=seleccion;
             aplicarNumeracion();
         }
         cerrarModal();
     };
 
-    btnCancelarNumeracion.onclick = cerrarModal;
+    btnCancelarNumeracion.onclick=cerrarModal;
 }
 
-function cerrarModal() {
+function cerrarModal(){
     modalNumeracion.classList.add("oculto");
     overlay.classList.add("oculto");
 }
 
-function aplicarNumeracion() {
-    document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-    if (!configNumeracion) return;
+function aplicarNumeracion(){
+    document.querySelectorAll(".numero-pagina").forEach(n=>n.remove());
+    if(!configNumeracion)return;
 
-    document.querySelectorAll(".page").forEach((page, index) => {
-        const num = document.createElement("div");
-        num.className = "numero-pagina";
-        num.textContent = index + 1;
-        num.style.position = "absolute";
+    document.querySelectorAll(".page").forEach((page,index)=>{
+        const num=document.createElement("div");
+        num.className="numero-pagina";
+        num.textContent=index+1;
+        num.style.position="absolute";
 
         let target;
-
-        if (configNumeracion.includes("top")) {
-            target = page.querySelector(".header");
-            num.style.top = "10px";
-        } else {
-            target = page.querySelector(".footer");
-            num.style.bottom = "10px";
+        if(configNumeracion.includes("top")){
+            target=page.querySelector(".header");
+            num.style.top="10px";
+        }else{
+            target=page.querySelector(".footer");
+            num.style.bottom="10px";
         }
 
-        if (configNumeracion.includes("left")) num.style.left = "20px";
-        if (configNumeracion.includes("right")) num.style.right = "20px";
+        if(configNumeracion.includes("left")) num.style.left="20px";
+        if(configNumeracion.includes("right")) num.style.right="20px";
 
         target.appendChild(num);
     });
@@ -335,11 +368,11 @@ function aplicarNumeracion() {
 // =====================
 // NUEVO
 // =====================
-btnNuevo.onclick = () => {
-    if (confirm("Nuevo documento?")) {
-        editor.innerHTML = "";
+btnNuevo.onclick=()=>{
+    if(confirm("Nuevo documento?")){
+        editor.innerHTML="";
         editor.appendChild(crearPagina());
-        configNumeracion = null;
+        configNumeracion=null;
     }
 };
 
