@@ -42,9 +42,11 @@ function restaurarCursor() {
     sel.addRange(rangoGuardado);
 }
 
-// Evitar perder cursor al hacer click en UI
+// Guardar cursor al interactuar con la UI SIN bloquear selects ni flechas
 document.querySelectorAll("button, select, input, img").forEach(el => {
-    el.addEventListener("mousedown", e => e.preventDefault());
+    el.addEventListener("mousedown", () => {
+        restaurarCursor();
+    });
 });
 
 // =====================
@@ -143,22 +145,22 @@ fuenteSelect.onchange = e => {
 };
 
 // =====================
-// FIX DEFINITIVO TAMAÑO FUENTE (Word real)
+// FIX DEFINITIVO TAMAÑO FUENTE
 // =====================
 sizeSelect.onchange = e => {
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
 
     const sel = window.getSelection();
-
-    if (sel.rangeCount === 0) return;
+    if (!sel.rangeCount) return;
 
     const range = sel.getRangeAt(0);
 
     if (!range.collapsed) {
         const span = document.createElement("span");
         span.style.fontSize = formatoActual.fontSize + "px";
-        range.surroundContents(span);
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
     } else {
         const span = document.createElement("span");
         span.style.fontSize = formatoActual.fontSize + "px";
@@ -171,7 +173,6 @@ sizeSelect.onchange = e => {
 
         sel.removeAllRanges();
         sel.addRange(newRange);
-
         rangoGuardado = newRange.cloneRange();
     }
 };
