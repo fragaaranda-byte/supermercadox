@@ -1,42 +1,48 @@
 document.addEventListener("DOMContentLoaded", () => {
 
 const editor = document.getElementById("editor");
+editor.innerHTML = ""; // elimina "Escribe tu documento aquí..."
 
 let archivoActual = null;
 let configNumeracion = null;
 
+const PAGE_WIDTH = 794;
+const PAGE_HEIGHT = 1123;
+const MARGEN = 56; // 1.5cm
+
 // =====================
-// CREAR PAGINA A4
+// CREAR PAGINA
 // =====================
 function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
-    page.style.width = "794px";
-    page.style.height = "1123px";
+    page.style.width = PAGE_WIDTH + "px";
+    page.style.height = PAGE_HEIGHT + "px";
     page.style.margin = "20px auto";
-    page.style.border = "1px solid #555";
+    page.style.border = "1px solid #444";
     page.style.background = "white";
     page.style.position = "relative";
+    page.style.boxSizing = "border-box";
     page.style.display = "flex";
     page.style.flexDirection = "column";
 
     const header = document.createElement("div");
-    header.className = "header-space";
-    header.style.height = "40px";
-    header.style.flexShrink = "0";
+    header.className = "header";
+    header.style.height = MARGEN + "px";
+    header.style.pointerEvents = "none";
 
     const content = document.createElement("div");
     content.className = "content";
     content.contentEditable = true;
     content.style.flex = "1";
-    content.style.padding = "40px";
+    content.style.padding = MARGEN + "px";
     content.style.outline = "none";
     content.style.overflow = "hidden";
 
     const footer = document.createElement("div");
-    footer.className = "footer-space";
-    footer.style.height = "40px";
-    footer.style.flexShrink = "0";
+    footer.className = "footer";
+    footer.style.height = MARGEN + "px";
+    footer.style.pointerEvents = "none";
 
     page.appendChild(header);
     page.appendChild(content);
@@ -47,10 +53,13 @@ function crearPagina() {
     return page;
 }
 
+// =====================
+// INICIAR DOCUMENTO
+// =====================
 editor.appendChild(crearPagina());
 
 // =====================
-// PAGINACION AUTOMATICA
+// OVERFLOW → NUEVA PAGINA
 // =====================
 function verificarOverflow() {
     const pages = document.querySelectorAll(".page");
@@ -78,13 +87,15 @@ function verificarOverflow() {
 // =====================
 // BOTON NUMERAR
 // =====================
-const btnNumerar = document.querySelectorAll(".btn-icono")[2];
+const botonesSuperior = document.getElementById("barra-superior").getElementsByClassName("btn-icono");
+const btnNumerar = botonesSuperior[2];
 btnNumerar.addEventListener("click", abrirModalNumeracion);
 
 // =====================
-// MODAL
+// MODAL NUMERACION
 // =====================
 function abrirModalNumeracion() {
+
     const overlay = document.createElement("div");
     overlay.style.position = "fixed";
     overlay.style.top = 0;
@@ -109,10 +120,12 @@ function abrirModalNumeracion() {
 
     modal.innerHTML = `
         <h2 style="text-align:center;">Numeración de Páginas</h2>
+
         <button class="pos sup-izq">↖</button>
         <button class="pos sup-der">↗</button>
         <button class="pos inf-izq">↙</button>
         <button class="pos inf-der">↘</button>
+
         <div style="position:absolute;bottom:20px;right:20px;">
             <button id="aceptarNum">Aceptar</button>
             <button id="cancelarNum">Cancelar</button>
@@ -159,9 +172,10 @@ function abrirModalNumeracion() {
 }
 
 // =====================
-// NUMERACION REAL
+// APLICAR NUMERACION
 // =====================
 function aplicarNumeracion() {
+
     document.querySelectorAll(".numero-pagina").forEach(n=>n.remove());
     if(!configNumeracion) return;
 
@@ -171,17 +185,18 @@ function aplicarNumeracion() {
         const num = document.createElement("div");
         num.className="numero-pagina";
         num.textContent = index+1;
-        num.style.pointerEvents = "none";
+        num.style.pointerEvents="none";
         num.style.position="absolute";
         num.style.fontSize="14px";
 
         if(configNumeracion.startsWith("sup")){
             num.style.top="10px";
-            page.querySelector(".header-space").appendChild(num);
+            page.querySelector(".header").appendChild(num);
         }
+
         if(configNumeracion.startsWith("inf")){
             num.style.bottom="10px";
-            page.querySelector(".footer-space").appendChild(num);
+            page.querySelector(".footer").appendChild(num);
         }
 
         if(configNumeracion.endsWith("izq")) num.style.left="10px";
@@ -192,7 +207,8 @@ function aplicarNumeracion() {
 // =====================
 // NUEVO DOCUMENTO
 // =====================
-document.querySelector(".submenu-archivo button:nth-child(1)").onclick=()=>{
+const btnNuevo = document.querySelector(".submenu-archivo button:nth-child(1)");
+btnNuevo.onclick = ()=>{
     if(confirm("Nuevo documento?")){
         editor.innerHTML="";
         editor.appendChild(crearPagina());
