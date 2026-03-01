@@ -2,12 +2,16 @@ body {
     margin: 0;
     font-family: Arial, sans-serif;
     background-color: #f3f3f3;
+    overflow: hidden; /* como Word: scroll solo en editor */
 }
 
-/* BARRA SUPERIOR */
+/* =========================
+   BARRA SUPERIOR (FIJA)
+========================= */
 #barra-superior {
     position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
     height: 45px;
     background-color: #e6e6e6;
@@ -55,14 +59,20 @@ body {
     text-align: left;
 }
 
-/* BARRA FORMATO */
+/* =========================
+   BARRA FORMATO (FIJA)
+========================= */
 #barra-formato {
-    margin-top: 55px;
+    position: fixed;
+    top: 55px;
+    left: 0;
+    width: 100%;
     height: 45px;
     background-color: #f0f0f0;
     display: flex;
     align-items: center;
     padding: 5px;
+    z-index: 999;
 }
 
 .btn-texto {
@@ -72,30 +82,54 @@ body {
     margin: 0 3px;
 }
 
-/* CONTENEDOR */
+/* =========================
+   CONTENEDOR GENERAL
+========================= */
 #contenedor {
     display: flex;
-    margin-top: 10px;
+    position: fixed;
+    top: 110px; /* debajo de barras */
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
-/* PANEL INSERTAR */
+/* =========================
+   PANEL INSERTAR (FIJO + ANIMADO)
+========================= */
 #panel-insertar {
-    width: 200px;
+    width: 220px;
     background-color: #dddddd;
     padding: 5px;
+    overflow-y: auto;
+    transition: width 0.3s ease, transform 0.3s ease;
 }
 
+/* estado contraído */
+#panel-insertar.contraido {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* boton toggle */
 #toggle-panel {
     text-align: right;
     cursor: pointer;
     font-weight: bold;
 }
 
-.bloque-insertar, .bloque-tabla, .bloque-simbolos, .bloque-emojis {
+/* bloques */
+.bloque-insertar,
+.bloque-tabla,
+.bloque-simbolos,
+.bloque-emojis {
     margin-bottom: 10px;
 }
 
-/* TABLA GRID */
+/* =========================
+   TABLA GRID
+========================= */
 .grid-tabla {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -107,16 +141,21 @@ body {
     height: 15px;
     background-color: white;
     border: 1px solid #aaa;
+    cursor: pointer;
 }
 
-/* SIMBOLOS */
+/* =========================
+   SIMBOLOS
+========================= */
 .simbolos button {
     width: 30px;
     height: 30px;
     margin: 2px;
 }
 
-/* EMOJIS */
+/* =========================
+   EMOJIS
+========================= */
 .emojis img {
     width: 32px;
     height: 32px;
@@ -124,13 +163,44 @@ body {
     cursor: pointer;
 }
 
-/* EDITOR */
+/* =========================
+   EDITOR (SCROLL PROPIO)
+========================= */
 #editor {
     flex: 1;
-    background-color: white;
-    margin: 10px;
+    background-color: #f3f3f3;
     padding: 20px;
-    min-height: 600px;
-    border: 1px solid #ccc;
     overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* =========================
+   PAGINAS (A4)
+========================= */
+.page {
+    margin: 20px auto;
+    background: white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 800px) {
+    #panel-insertar {
+        width: 180px;
+    }
+}
+
+@media (max-width: 600px) {
+    #panel-insertar {
+        position: absolute;
+        z-index: 2000;
+        height: 100%;
+        background: #ddd;
+    }
+
+    #panel-insertar.contraido {
+        transform: translateX(-100%);
+    }
 }
