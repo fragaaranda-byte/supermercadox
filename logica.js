@@ -10,17 +10,21 @@ let contadorIndice = 1;
 let cambiandoSize = false;
 
 // =====================
-// PANEL INSERTAR TOGGLE
+// PANEL INSERTAR TOGGLE (FUNCIONAL)
 // =====================
 const panelInsertar = document.getElementById("panel-insertar");
 const togglePanel = document.getElementById("toggle-panel");
 
 togglePanel.onclick = () => {
-    panelInsertar.classList.toggle("cerrado");
+    if (panelInsertar.style.display === "none") {
+        panelInsertar.style.display = "block";
+    } else {
+        panelInsertar.style.display = "none";
+    }
 };
 
 // =====================
-// FORMATO ACTUAL (NO TOCAR COLORES)
+// FORMATO ACTUAL
 // =====================
 let formatoActual = {
     colorTexto: "#000000",
@@ -32,6 +36,19 @@ let formatoActual = {
 const PAGE_WIDTH = 794;
 const PAGE_HEIGHT = 1123;
 const MARGEN = 56;
+
+// =====================
+// DESHACER / REHACER
+// =====================
+btnDeshacer.onclick = () => {
+    restaurarCursor();
+    document.execCommand("undo");
+};
+
+btnRehacer.onclick = () => {
+    restaurarCursor();
+    document.execCommand("redo");
+};
 
 // =====================
 // CURSOR
@@ -160,34 +177,21 @@ sizeSelect.onchange = e => {
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
 
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+    document.execCommand("fontSize", false, 7);
 
-    const range = sel.getRangeAt(0);
-
-    if (range.collapsed) {
-        const span = document.createElement("span");
+    const spans = editor.querySelectorAll("font[size='7']");
+    spans.forEach(span=>{
+        span.removeAttribute("size");
         span.style.fontSize = formatoActual.fontSize+"px";
-        span.appendChild(document.createTextNode("\u200B"));
-        range.insertNode(span);
-
-        const newRange = document.createRange();
-        newRange.setStart(span.firstChild,1);
-        newRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-        rangoGuardado = newRange.cloneRange();
-    } else {
-        const span = document.createElement("span");
-        span.style.fontSize = formatoActual.fontSize+"px";
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-    }
+        span.style.lineHeight = "normal";
+    });
 
     setTimeout(()=>cambiandoSize=false,100);
 };
 
-// ===== COLORES (RESTABLECIDO COMO ANTES) =====
+// =====================
+// COLORES PERSISTENTES (COMO WORD)
+// =====================
 colorTexto.onchange = e => {
     formatoActual.colorTexto = e.target.value;
     restaurarCursor();
@@ -200,129 +204,26 @@ colorFondo.onchange = e => {
     document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 };
 
+editor.addEventListener("keydown", e => {
+    if (e.key.length === 1) {
+        restaurarCursor();
+        document.execCommand("foreColor", false, formatoActual.colorTexto);
+        document.execCommand("hiliteColor", false, formatoActual.colorFondo);
+        document.execCommand("fontName", false, formatoActual.fontName);
+        document.execCommand("fontSize", false, 7);
+
+        const spans = editor.querySelectorAll("font[size='7']");
+        spans.forEach(span=>{
+            span.removeAttribute("size");
+            span.style.fontSize = formatoActual.fontSize+"px";
+            span.style.lineHeight = "normal";
+        });
+    }
+});
+
 btnIzq.onclick = () => { restaurarCursor(); document.execCommand("justifyLeft"); };
 btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCenter"); };
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
-
-// =====================
-// TABLA
-// =====================
-document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
-    cell.onclick = () => {
-        const cols = (index % 10) + 1;
-        const rows = Math.floor(index / 10) + 1;
-        insertarTabla(rows, cols);
-    };
-});
-
-function insertarTabla(filas, columnas) {
-    restaurarCursor();
-
-    let table = `<table border="1" style="border-collapse:collapse;table-layout:fixed;">`;
-    for (let i=0;i<filas;i++){
-        table+="<tr>";
-        for(let j=0;j<columnas;j++){
-            table+=`<td style="width:100px;height:30px;word-wrap:break-word;white-space:normal;vertical-align:top;">&nbsp;</td>`;
-        }
-        table+="</tr>";
-    }
-    table+="</table><br>";
-
-    document.execCommand("insertHTML", false, table);
-
-    activarResizeTabla();
-}
-
-// =====================
-// RESIZE COLUMNAS Y FILAS (WORD)
-// =====================
-let resizingCol = false;
-let resizingRow = false;
-let tdActual = null;
-let tdVecino = null;
-let filaActual = null;
-let startX = 0;
-let startY = 0;
-let startW1 = 0;
-let startW2 = 0;
-let startH = 0;
-
-function activarResizeTabla(){
-    document.querySelectorAll("td").forEach(td=>{
-        td.onmousemove = e=>{
-            const bordeDerecho = td.clientWidth - e.offsetX < 6;
-            const bordeInferior = td.clientHeight - e.offsetY < 6;
-
-            if (bordeDerecho) td.style.cursor = "col-resize";
-            else if (bordeInferior) td.style.cursor = "row-resize";
-            else td.style.cursor = "text";
-        };
-
-        td.onmousedown = e=>{
-            const bordeDerecho = td.clientWidth - e.offsetX < 6;
-            const bordeInferior = td.clientHeight - e.offsetY < 6;
-
-            if (bordeDerecho) {
-                tdActual = td;
-                tdVecino = td.nextElementSibling;
-                if (!tdVecino) return;
-
-                resizingCol = true;
-                startX = e.clientX;
-                startW1 = tdActual.offsetWidth;
-                startW2 = tdVecino.offsetWidth;
-
-                document.onmousemove = moverColumna;
-                document.onmouseup = soltarResize;
-            }
-
-            if (bordeInferior) {
-                filaActual = td.parentElement;
-                resizingRow = true;
-                startY = e.clientY;
-                startH = filaActual.offsetHeight;
-
-                document.onmousemove = moverFila;
-                document.onmouseup = soltarResize;
-            }
-        };
-    });
-}
-
-function moverColumna(e){
-    if(!resizingCol) return;
-
-    const dx = e.clientX - startX;
-    let nueva1 = startW1 + dx;
-    let nueva2 = startW2 - dx;
-
-    if (nueva1 < 40 || nueva2 < 40) return;
-
-    tdActual.style.width = nueva1 + "px";
-    tdVecino.style.width = nueva2 + "px";
-}
-
-function moverFila(e){
-    if(!resizingRow) return;
-
-    const dy = e.clientY - startY;
-    let nuevaH = startH + dy;
-    if (nuevaH < 20) return;
-
-    filaActual.querySelectorAll("td").forEach(td=>{
-        td.style.height = nuevaH + "px";
-    });
-}
-
-function soltarResize(){
-    resizingCol = false;
-    resizingRow = false;
-    tdActual = null;
-    tdVecino = null;
-    filaActual = null;
-    document.onmousemove = null;
-    document.onmouseup = null;
-}
 
 // =====================
 // SIMBOLOS
