@@ -8,7 +8,7 @@ let configNumeracion = null;
 let rangoGuardado = null;
 
 // =====================
-// FORMATO ACTUAL (persistente)
+// FORMATO ACTUAL
 // =====================
 let formatoActual = {
     colorTexto: "#000000",
@@ -23,7 +23,61 @@ const PAGE_HEIGHT = 1123;
 const MARGEN = 56;
 
 // =====================
-// GUARDAR / RESTAURAR CURSOR (real)
+// REGLAS (cm)
+// =====================
+function crearReglas() {
+    let reglaH = document.getElementById("reglaHorizontal");
+    let reglaV = document.getElementById("reglaVertical");
+
+    if (!reglaH) {
+        reglaH = document.createElement("div");
+        reglaH.id = "reglaHorizontal";
+        reglaH.style.width = PAGE_WIDTH + "px";
+        reglaH.style.margin = "0 auto";
+        reglaH.style.height = "25px";
+        reglaH.style.background = "#ddd";
+        reglaH.style.position = "relative";
+        reglaH.style.display = "flex";
+        reglaH.style.fontSize = "10px";
+
+        for (let i = 0; i <= 21; i++) {
+            const mark = document.createElement("div");
+            mark.style.flex = "1";
+            mark.style.borderLeft = "1px solid #999";
+            mark.textContent = i;
+            reglaH.appendChild(mark);
+        }
+
+        editor.parentNode.insertBefore(reglaH, editor);
+    }
+
+    if (!reglaV) {
+        reglaV = document.createElement("div");
+        reglaV.id = "reglaVertical";
+        reglaV.style.position = "absolute";
+        reglaV.style.left = "0";
+        reglaV.style.top = "0";
+        reglaV.style.width = "25px";
+        reglaV.style.height = PAGE_HEIGHT + "px";
+        reglaV.style.background = "#ddd";
+        reglaV.style.fontSize = "10px";
+
+        for (let i = 0; i <= 29; i++) {
+            const mark = document.createElement("div");
+            mark.style.height = (PAGE_HEIGHT/29) + "px";
+            mark.style.borderTop = "1px solid #999";
+            mark.textContent = i;
+            reglaV.appendChild(mark);
+        }
+
+        editor.parentNode.appendChild(reglaV);
+    }
+}
+
+crearReglas();
+
+// =====================
+// CURSOR
 // =====================
 document.addEventListener("selectionchange", () => {
     const sel = window.getSelection();
@@ -42,7 +96,6 @@ function restaurarCursor() {
     sel.addRange(rangoGuardado);
 }
 
-// Guardar cursor al interactuar con la UI SIN bloquear selects ni flechas
 document.querySelectorAll("button, select, input, img").forEach(el => {
     el.addEventListener("mousedown", () => {
         restaurarCursor();
@@ -119,7 +172,7 @@ function verificarOverflow() {
 }
 
 // =====================
-// APLICAR FORMATO ACTUAL AL ESCRIBIR
+// FORMATO
 // =====================
 editor.addEventListener("keyup", aplicarFormatoActual);
 editor.addEventListener("click", aplicarFormatoActual);
@@ -131,9 +184,6 @@ function aplicarFormatoActual() {
     document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 }
 
-// =====================
-// FORMATO TEXTO
-// =====================
 btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
 btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
 btnSubrayado.onclick = () => { restaurarCursor(); document.execCommand("underline"); };
@@ -144,9 +194,6 @@ fuenteSelect.onchange = e => {
     document.execCommand("fontName", false, formatoActual.fontName);
 };
 
-// =====================
-// FIX DEFINITIVO TAMAÑO FUENTE
-// =====================
 sizeSelect.onchange = e => {
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
@@ -194,7 +241,7 @@ btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCent
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// INSERTAR TABLA
+// TABLAS
 // =====================
 document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
     cell.onclick = () => {
@@ -207,11 +254,11 @@ document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
 function insertarTabla(filas, columnas) {
     restaurarCursor();
 
-    let table = "<table border='1' style='border-collapse:collapse;width:100%'>";
+    let table = "<table border='1' style='border-collapse:collapse;width:100%;table-layout:fixed;'>";
     for (let i = 0; i < filas; i++) {
         table += "<tr>";
         for (let j = 0; j < columnas; j++) {
-            table += "<td>&nbsp;</td>";
+            table += "<td style='word-break:break-word;padding:4px;'>&nbsp;</td>";
         }
         table += "</tr>";
     }
@@ -221,7 +268,7 @@ function insertarTabla(filas, columnas) {
 }
 
 // =====================
-// INSERTAR SÍMBOLOS
+// SIMBOLOS
 // =====================
 document.querySelectorAll(".simbolos button").forEach(btn => {
     btn.onclick = () => {
@@ -231,7 +278,7 @@ document.querySelectorAll(".simbolos button").forEach(btn => {
 });
 
 // =====================
-// INSERTAR EMOJIS
+// EMOJIS
 // =====================
 document.querySelectorAll(".emojis img").forEach(img => {
     img.onclick = () => {
@@ -239,6 +286,22 @@ document.querySelectorAll(".emojis img").forEach(img => {
         document.execCommand("insertHTML", false, `<img src="${img.src}" width="32">`);
     };
 });
+
+// =====================
+// PANEL INSERTAR (PLEGAR)
+// =====================
+const panelInsertar = document.getElementById("panelInsertar");
+const btnToggleInsertar = document.getElementById("btnToggleInsertar");
+
+if (btnToggleInsertar && panelInsertar) {
+    btnToggleInsertar.onclick = () => {
+        if (panelInsertar.style.display === "none") {
+            panelInsertar.style.display = "block";
+        } else {
+            panelInsertar.style.display = "none";
+        }
+    };
+}
 
 // =====================
 // NUMERACION
@@ -287,7 +350,7 @@ function abrirModalNumeracion() {
         };
     });
 
-    aceptarNum.onclick=()=>{
+    modal.querySelector("#aceptarNum").onclick=()=>{
         if(seleccion){
             configNumeracion=seleccion;
             aplicarNumeracion();
@@ -295,7 +358,7 @@ function abrirModalNumeracion() {
         overlay.remove();
     };
 
-    cancelarNum.onclick=()=>overlay.remove();
+    modal.querySelector("#cancelarNum").onclick=()=>overlay.remove();
 }
 
 function aplicarNumeracion() {
