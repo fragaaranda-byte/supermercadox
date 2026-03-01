@@ -1,50 +1,42 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-// =========================
-// VARIABLES PRINCIPALES
-// =========================
 const editor = document.getElementById("editor");
 
+// ===== BOTONES ARCHIVO =====
 const btnNuevo = document.querySelector(".submenu-archivo button:nth-child(1)");
 const btnAbrir = document.querySelector(".submenu-archivo button:nth-child(2)");
 const btnGuardar = document.querySelector(".submenu-archivo button:nth-child(3)");
 const btnGuardarComo = document.querySelector(".submenu-archivo button:nth-child(4)");
 const btnImprimir = document.querySelector(".submenu-archivo button:nth-child(5)");
 
-const btnDeshacer = document.querySelectorAll(".btn-icono")[0];
-const btnRehacer = document.querySelectorAll(".btn-icono")[1];
-const btnNumerar = document.querySelectorAll(".btn-icono")[2];
+// ===== BARRA SUPERIOR =====
+const botonesSuperior = document.getElementById("barra-superior").getElementsByClassName("btn-icono");
+const btnDeshacer = botonesSuperior[0];
+const btnRehacer = botonesSuperior[1];
+const btnNumerar = botonesSuperior[2];
 
-const fuenteSelect = document.querySelector("#barra-formato select:nth-child(1)");
-const sizeSelect = document.querySelector("#barra-formato select:nth-child(2)");
+// ===== FORMATO =====
+const barraFormato = document.getElementById("barra-formato");
+const selects = barraFormato.getElementsByTagName("select");
+const botonesTexto = barraFormato.getElementsByClassName("btn-texto");
+const inputsColor = barraFormato.querySelectorAll("input[type='color']");
+const botonesIcono = barraFormato.getElementsByClassName("btn-icono");
 
-const btnNegrita = document.querySelectorAll(".btn-texto")[0];
-const btnCursiva = document.querySelectorAll(".btn-texto")[1];
-const btnSubrayado = document.querySelectorAll(".btn-texto")[2];
-
-const colorTexto = document.querySelector("#barra-formato input[type='color']");
-const colorFondo = document.querySelectorAll("#barra-formato input[type='color']")[1];
-
-const btnIzq = document.querySelectorAll(".btn-icono")[3];
-const btnCentro = document.querySelectorAll(".btn-icono")[4];
-const btnDer = document.querySelectorAll(".btn-icono")[5];
-
-const btnImagen = document.querySelector("#panel-insertar .bloque-insertar button:nth-child(1)");
-const btnIndice = document.querySelector("#panel-insertar .bloque-insertar button:nth-child(2)");
+// ===== PANEL INSERTAR =====
+const panelInsertar = document.getElementById("panel-insertar");
+const togglePanel = document.getElementById("toggle-panel");
+const btnInsertarImagen = document.querySelector(".bloque-insertar .btn-icono:first-child");
+const btnIndice = document.querySelector(".bloque-insertar .btn-icono:nth-child(2)");
 
 const gridTabla = document.querySelectorAll(".grid-tabla div");
-
 const simbolos = document.querySelectorAll(".simbolos button");
 const emojis = document.querySelectorAll(".emojis img");
-
-const togglePanel = document.getElementById("toggle-panel");
-const panelInsertar = document.getElementById("panel-insertar");
 
 let archivoActual = null;
 let paginasNumeradas = false;
 
 // =========================
-// FUNCIONES BÁSICAS
+// FUNCION GENERAL
 // =========================
 function ejecutar(comando, valor = null) {
     editor.focus();
@@ -52,22 +44,58 @@ function ejecutar(comando, valor = null) {
 }
 
 // =========================
-// NUEVO DOCUMENTO
+// TEXTO
+// =========================
+botonesTexto[0].addEventListener("click", () => ejecutar("bold"));
+botonesTexto[1].addEventListener("click", () => ejecutar("italic"));
+botonesTexto[2].addEventListener("click", () => ejecutar("underline"));
+
+// Fuente
+selects[0].addEventListener("change", function () {
+    ejecutar("fontName", this.value);
+});
+
+// Tamaño real px
+selects[1].addEventListener("change", function () {
+    document.execCommand("fontSize", false, "7");
+    let fonts = editor.getElementsByTagName("font");
+    for (let i = 0; i < fonts.length; i++) {
+        if (fonts[i].size === "7") {
+            fonts[i].removeAttribute("size");
+            fonts[i].style.fontSize = this.value + "px";
+        }
+    }
+});
+
+// Colores
+inputsColor[0].addEventListener("change", () => ejecutar("foreColor", inputsColor[0].value));
+inputsColor[1].addEventListener("change", () => ejecutar("hiliteColor", inputsColor[1].value));
+
+// Alineación
+botonesIcono[0].addEventListener("click", () => ejecutar("justifyLeft"));
+botonesIcono[1].addEventListener("click", () => ejecutar("justifyCenter"));
+botonesIcono[2].addEventListener("click", () => ejecutar("justifyRight"));
+
+// =========================
+// DESHACER / REHACER
+// =========================
+btnDeshacer.addEventListener("click", () => ejecutar("undo"));
+btnRehacer.addEventListener("click", () => ejecutar("redo"));
+
+// =========================
+// ARCHIVO
 // =========================
 btnNuevo.addEventListener("click", () => {
-    if (confirm("¿Nuevo documento? Se perderán los cambios no guardados.")) {
+    if (confirm("¿Nuevo documento?")) {
         editor.innerHTML = "";
         archivoActual = null;
     }
 });
 
-// =========================
-// ABRIR ARCHIVO
-// =========================
 btnAbrir.addEventListener("click", () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".txt,.html";
+    input.accept = ".html,.txt,.mpd";
 
     input.onchange = e => {
         const file = e.target.files[0];
@@ -84,21 +112,15 @@ btnAbrir.addEventListener("click", () => {
     input.click();
 });
 
-// =========================
-// GUARDAR
-// =========================
 btnGuardar.addEventListener("click", () => {
-    if (!archivoActual) {
-        guardarComo();
-    } else {
-        guardarArchivo(archivoActual);
-    }
+    if (!archivoActual) guardarComo();
+    else guardarArchivo(archivoActual);
 });
 
 btnGuardarComo.addEventListener("click", guardarComo);
 
 function guardarComo() {
-    const nombre = prompt("Nombre del archivo:", "documento.html");
+    const nombre = prompt("Nombre del archivo:", "documento.mpd");
     if (!nombre) return;
     archivoActual = nombre;
     guardarArchivo(nombre);
@@ -112,53 +134,48 @@ function guardarArchivo(nombre) {
     a.click();
 }
 
+btnImprimir.addEventListener("click", () => window.print());
+
 // =========================
-// IMPRIMIR
+// PANEL INSERTAR
 // =========================
-btnImprimir.addEventListener("click", () => {
-    window.print();
+togglePanel.addEventListener("click", () => {
+    panelInsertar.classList.toggle("oculto");
+    togglePanel.textContent = panelInsertar.classList.contains("oculto") ? ">>" : "<<";
 });
 
 // =========================
-// DESHACER / REHACER
+// INSERTAR SÍMBOLOS
 // =========================
-btnDeshacer.addEventListener("click", () => ejecutar("undo"));
-btnRehacer.addEventListener("click", () => ejecutar("redo"));
+simbolos.forEach(btn => {
+    btn.addEventListener("click", () => {
+        insertTextAtCursor(btn.textContent);
+    });
+});
 
 // =========================
-// FORMATO TEXTO
+// INSERTAR EMOJIS
 // =========================
-btnNegrita.addEventListener("click", () => ejecutar("bold"));
-btnCursiva.addEventListener("click", () => ejecutar("italic"));
-btnSubrayado.addEventListener("click", () => ejecutar("underline"));
-
-fuenteSelect.addEventListener("change", () => ejecutar("fontName", fuenteSelect.value));
-sizeSelect.addEventListener("change", () => ejecutar("fontSize", "7"));
-
-colorTexto.addEventListener("change", () => ejecutar("foreColor", colorTexto.value));
-colorFondo.addEventListener("change", () => ejecutar("hiliteColor", colorFondo.value));
-
-// =========================
-// ALINEACIÓN
-// =========================
-btnIzq.addEventListener("click", () => ejecutar("justifyLeft"));
-btnCentro.addEventListener("click", () => ejecutar("justifyCenter"));
-btnDer.addEventListener("click", () => ejecutar("justifyRight"));
+emojis.forEach(img => {
+    img.addEventListener("click", () => {
+        insertImageAtCursor(img.src);
+    });
+});
 
 // =========================
 // INSERTAR IMAGEN
 // =========================
-btnImagen.addEventListener("click", () => {
-    const input = document.createElement("input");
+btnInsertarImagen.addEventListener("click", () => {
+    let input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
 
-    input.onchange = e => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
+    input.onchange = function () {
+        let file = input.files[0];
+        let reader = new FileReader();
 
-        reader.onload = ev => {
-            ejecutar("insertImage", ev.target.result);
+        reader.onload = function (e) {
+            insertImageAtCursor(e.target.result);
         };
 
         reader.readAsDataURL(file);
@@ -168,7 +185,7 @@ btnImagen.addEventListener("click", () => {
 });
 
 // =========================
-// INSERTAR ÍNDICE (placeholder)
+// ÍNDICE
 // =========================
 btnIndice.addEventListener("click", () => {
     ejecutar("insertHTML", "<h2>Índice</h2><ul><li>Sección 1</li><li>Sección 2</li></ul>");
@@ -201,33 +218,7 @@ gridTabla.forEach((celda, index) => {
 });
 
 // =========================
-// SÍMBOLOS
-// =========================
-simbolos.forEach(btn => {
-    btn.addEventListener("click", () => {
-        ejecutar("insertText", btn.textContent);
-    });
-});
-
-// =========================
-// EMOJIS
-// =========================
-emojis.forEach(img => {
-    img.addEventListener("click", () => {
-        ejecutar("insertImage", img.src);
-    });
-});
-
-// =========================
-// PANEL LATERAL
-// =========================
-togglePanel.addEventListener("click", () => {
-    panelInsertar.classList.toggle("oculto");
-    togglePanel.textContent = panelInsertar.classList.contains("oculto") ? ">>" : "<<";
-});
-
-// =========================
-// NUMERAR PÁGINAS (visual)
+// NUMERAR PÁGINAS
 // =========================
 btnNumerar.addEventListener("click", () => {
     paginasNumeradas = !paginasNumeradas;
@@ -255,7 +246,41 @@ function numerarPaginas() {
 }
 
 // =========================
-// LIMPIEZA DE TEXTO INICIAL
+// FUNCIONES CURSOR
+// =========================
+function insertTextAtCursor(text) {
+    let sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    let range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(document.createTextNode(text));
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    editor.focus();
+}
+
+function insertImageAtCursor(src) {
+    let img = document.createElement("img");
+    img.src = src;
+    img.style.maxWidth = "300px";
+    img.style.display = "block";
+    img.style.margin = "5px 0";
+
+    let sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    let range = sel.getRangeAt(0);
+    range.insertNode(img);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    editor.focus();
+}
+
+// =========================
+// LIMPIAR TEXTO INICIAL
 // =========================
 editor.addEventListener("focus", () => {
     if (editor.textContent === "Escribe tu documento aquí...") {
