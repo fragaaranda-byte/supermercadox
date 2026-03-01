@@ -20,7 +20,7 @@ togglePanel.onclick = () => {
 };
 
 // =====================
-// FORMATO ACTUAL
+// FORMATO ACTUAL (NO TOCAR COLORES)
 // =====================
 let formatoActual = {
     colorTexto: "#000000",
@@ -233,32 +233,62 @@ function insertarTabla(filas, columnas) {
 }
 
 // =====================
-// RESIZE COLUMNAS TIPO WORD
+// RESIZE COLUMNAS REAL (WORD)
 // =====================
+let resizing = false;
+let tdActual = null;
+let tdVecino = null;
+let startX = 0;
+let startW1 = 0;
+let startW2 = 0;
+
 function activarResizeColumnas(){
     document.querySelectorAll("td").forEach(td=>{
+        td.onmousemove = e=>{
+            if (td.clientWidth - e.offsetX < 6) {
+                td.style.cursor = "col-resize";
+            } else {
+                td.style.cursor = "text";
+            }
+        };
+
         td.onmousedown = e=>{
-            if(e.offsetX > td.clientWidth-5){
-                const td2 = td.nextElementSibling;
-                if(!td2) return;
+            if (td.clientWidth - e.offsetX < 6) {
+                tdActual = td;
+                tdVecino = td.nextElementSibling;
+                if (!tdVecino) return;
 
-                const startX = e.clientX;
-                const w1 = td.offsetWidth;
-                const w2 = td2.offsetWidth;
+                resizing = true;
+                startX = e.clientX;
+                startW1 = tdActual.offsetWidth;
+                startW2 = tdVecino.offsetWidth;
 
-                document.onmousemove = ev=>{
-                    const dx = ev.clientX-startX;
-                    td.style.width = (w1+dx)+"px";
-                    td2.style.width = (w2-dx)+"px";
-                };
-
-                document.onmouseup = ()=>{
-                    document.onmousemove=null;
-                    document.onmouseup=null;
-                };
+                document.onmousemove = moverColumna;
+                document.onmouseup = soltarColumna;
             }
         };
     });
+}
+
+function moverColumna(e){
+    if(!resizing) return;
+
+    const dx = e.clientX - startX;
+    let nueva1 = startW1 + dx;
+    let nueva2 = startW2 - dx;
+
+    if (nueva1 < 40 || nueva2 < 40) return;
+
+    tdActual.style.width = nueva1 + "px";
+    tdVecino.style.width = nueva2 + "px";
+}
+
+function soltarColumna(){
+    resizing = false;
+    tdActual = null;
+    tdVecino = null;
+    document.onmousemove = null;
+    document.onmouseup = null;
 }
 
 // =====================
