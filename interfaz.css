@@ -218,7 +218,7 @@ body {
    PAGINAS (A4)
 ========================= */
 .page {
-    background-color: #E0E0E0; /* blanco apagado */
+    background-color: #FFFFFF; /* blanco apagado */
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 15px rgba(0,0,0,0.5); /* sombra más remarcada */
@@ -231,7 +231,7 @@ body {
 .page-header,
 .page-footer {
     height: 56px;
-    background-color: #E0E0E0;
+    background-color: #FFFFFF;
     height: 0px;
     flex-shrink: 0;
 }
@@ -308,3 +308,4 @@ body {
         z-index: 2000;
     }
 }
+
