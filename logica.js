@@ -2,49 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const editor = document.getElementById("editor");
 
-let archivoActual = null;
-let configNumeracion = null;
-let rangoGuardado = null;
-let indiceActivo = null;
-let contadorIndice = 1;
-
-// =====================
-// FORMATO ACTUAL
-// =====================
-let formatoActual = {
-    colorTexto: "#000000",
-    colorFondo: "#ffffff",
-    fontSize: 8,
-    fontName: "Arial"
-};
-
-// =====================
-// CURSOR
-// =====================
-document.addEventListener("selectionchange", () => {
-    const sel = window.getSelection();
-    if (sel.rangeCount > 0) {
-        const range = sel.getRangeAt(0);
-        if (editor.contains(range.startContainer)) {
-            rangoGuardado = range.cloneRange();
-        }
-    }
-});
-
-function restaurarCursor() {
-    if (!rangoGuardado) return;
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(rangoGuardado);
-}
-
-document.querySelectorAll("button, select, input, img").forEach(el => {
-    el.addEventListener("mousedown", restaurarCursor);
-});
-
-// =====================
-// DIMENSIONES POR DEFECTO
-// =====================
+// ---------------------
+// DIMENSIONES HOJA POR DEFECTO
+// ---------------------
 let dimensionesHoja = {
     ancho: 794,
     alto: 1123,
@@ -64,27 +24,26 @@ const HOJAS = {
     "Legal": { w: 816, h: 1344 }
 };
 
-// =====================
+// ---------------------
 // CREAR PÁGINA
-// =====================
+// ---------------------
 function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
 
-    // Aplicar dimensiones y márgenes actuales
+    // Aplicar dimensiones y márgenes
+    const hoja = HOJAS[dimensionesHoja.tipoHoja];
     if (dimensionesHoja.orientacion === "vertical") {
-        page.style.width = dimensionesHoja.ancho + "px";
-        page.style.height = dimensionesHoja.alto + "px";
+        page.style.width = hoja.w + "px";
+        page.style.height = hoja.h + "px";
     } else {
-        page.style.width = dimensionesHoja.alto + "px";
-        page.style.height = dimensionesHoja.ancho + "px";
+        page.style.width = hoja.h + "px";
+        page.style.height = hoja.w + "px";
     }
     page.style.paddingTop = dimensionesHoja.margenTop;
     page.style.paddingBottom = dimensionesHoja.margenBottom;
     page.style.paddingLeft = dimensionesHoja.margenLeft;
     page.style.paddingRight = dimensionesHoja.margenRight;
-    page.style.boxSizing = "border-box";
-    page.style.backgroundColor = "#E0E0E0"; // fondo apagado
 
     const header = document.createElement("div");
     header.className = "page-header";
@@ -93,8 +52,6 @@ function crearPagina() {
     const content = document.createElement("div");
     content.className = "page-content";
     content.contentEditable = true;
-    content.style.minHeight = "20px"; // asegurar altura mínima
-    content.addEventListener("input", verificarOverflow);
 
     const footer = document.createElement("div");
     footer.className = "page-footer";
@@ -107,37 +64,16 @@ function crearPagina() {
     return page;
 }
 
-// Inicializar editor con una página
-editor.innerHTML = "";
-editor.appendChild(crearPagina());
+// Inicializar editor con una página si no hay
+if (editor.children.length === 0) editor.appendChild(crearPagina());
 
-// =====================
-// OVERFLOW
-// =====================
-function verificarOverflow() {
-    const pages = document.querySelectorAll(".page");
-    pages.forEach((page, index) => {
-        const content = page.querySelector(".page-content");
-        while (content.scrollHeight > content.clientHeight) {
-            let nuevaPagina = pages[index + 1];
-            if (!nuevaPagina) {
-                nuevaPagina = crearPagina();
-                editor.appendChild(nuevaPagina);
-            }
-            nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
-        }
-    });
-    aplicarNumeracion();
-}
-
-// =====================
+// ---------------------
 // MODAL CONFIGURAR PÁGINAS
-// =====================
+// ---------------------
 const btnConfig = document.querySelectorAll('.btn-icono img[src="iconos/config.png"]')[0];
 btnConfig.onclick = abrirModalConfigPaginas;
 
 function abrirModalConfigPaginas() {
-    // Crear overlay y modal
     let overlay = document.getElementById("overlayConfig");
     if (!overlay) {
         overlay = document.createElement("div");
@@ -232,7 +168,6 @@ function abrirModalConfigPaginas() {
         </div>
     `;
 
-    // Set defaults actuales
     document.getElementById("orientacionSelect").value = dimensionesHoja.orientacion;
     document.getElementById("margenTop").value = parseFloat(dimensionesHoja.margenTop);
     document.getElementById("margenBottom").value = parseFloat(dimensionesHoja.margenBottom);
@@ -249,7 +184,6 @@ function abrirModalConfigPaginas() {
     };
 
     document.getElementById("aceptarConfig").onclick = () => {
-        // Guardar valores
         dimensionesHoja.orientacion = document.getElementById("orientacionSelect").value;
         dimensionesHoja.margenTop = document.getElementById("margenTop").value + "cm";
         dimensionesHoja.margenBottom = document.getElementById("margenBottom").value + "cm";
@@ -257,9 +191,8 @@ function abrirModalConfigPaginas() {
         dimensionesHoja.margenRight = document.getElementById("margenRight").value + "cm";
         dimensionesHoja.tipoHoja = document.getElementById("tamanoHoja").value;
 
-        // Aplicar a todas las páginas
-        const pages = document.querySelectorAll(".page");
-        pages.forEach(page => {
+        // Aplicar solo tamaño y márgenes a las páginas existentes
+        document.querySelectorAll(".page").forEach(page => {
             const hoja = HOJAS[dimensionesHoja.tipoHoja];
             if (dimensionesHoja.orientacion === "vertical") {
                 page.style.width = hoja.w + "px";
