@@ -230,8 +230,7 @@ body {
 ========================= */
 .page-header,
 .page-footer {
-    height: 56px;
-    background-color: #E0E0E0;
+    height: 0px;
     flex-shrink: 0;
 }
 
@@ -249,26 +248,6 @@ body {
     max-width: 100%;
     height: auto;
 }
-
-/* =========================
-   MODAL NUMERACIÓN
-========================= */
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    border: 1px solid #aaa;
-    z-index: 2000;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.3);
-}
-
-.modal.oculto {
-    display: none;
-}
-
 /* =========================
    OVERLAY
 ========================= */
@@ -307,4 +286,3 @@ body {
         z-index: 2000;
     }
 }
-
