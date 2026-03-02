@@ -1,12 +1,20 @@
-body {
+/* =========================
+   RESET Y BODY
+========================= */
+* {
+    box-sizing: border-box;
     margin: 0;
+    padding: 0;
+}
+
+body {
     font-family: Arial, sans-serif;
     background-color: #f3f3f3;
-    overflow: hidden; /* como Word: scroll solo en editor */
+    overflow: hidden; /* scroll solo en editor */
 }
 
 /* =========================
-   BARRA SUPERIOR (FIJA)
+   BARRA SUPERIOR
 ========================= */
 #barra-superior {
     position: fixed;
@@ -44,6 +52,7 @@ body {
     border: 1px solid #ccc;
     top: 40px;
     left: 0;
+    z-index: 1005;
 }
 
 .menu-archivo:hover .submenu-archivo {
@@ -57,10 +66,11 @@ body {
     border: none;
     background: white;
     text-align: left;
+    cursor: pointer;
 }
 
 /* =========================
-   BARRA FORMATO (FIJA)
+   BARRA DE FORMATO
 ========================= */
 #barra-formato {
     position: fixed;
@@ -80,6 +90,15 @@ body {
     width: 32px;
     height: 32px;
     margin: 0 3px;
+    cursor: pointer;
+}
+
+/* SELECTS Y INPUTS COLOR */
+#barra-formato select,
+#barra-formato input[type=color] {
+    margin: 0 3px;
+    height: 32px;
+    cursor: pointer;
 }
 
 /* =========================
@@ -92,10 +111,11 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
+    overflow: hidden;
 }
 
 /* =========================
-   PANEL INSERTAR (FIJO + ANIMADO)
+   PANEL INSERTAR
 ========================= */
 #panel-insertar {
     width: 220px;
@@ -103,41 +123,20 @@ body {
     padding: 5px;
     overflow-y: auto;
     overflow-x: hidden;
-    transition: width 0.3s ease, transform 0.3s ease, padding 0.3s ease;
-    position: relative;
+    transition: width 0.3s ease, padding 0.3s ease;
     z-index: 1001;
 }
 
-/* estado contraído */
-#panel-insertar.contraido {
-    width: 35px; /* deja visible el icono del toggle */
-    padding: 5px 0 5px 0; 
-    overflow: hidden;
-}
-
-/* boton toggle */
-#toggle-panel {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    z-index: 1002;
-    transition: transform 0.3s ease;
-}
-
-/* animación icono */
-#toggle-panel.rotado {
-    transform: rotate(180deg);
-}
-
-/* bloques */
 .bloque-insertar,
 .bloque-tabla,
-.bloque-simbolos,
-.bloque-emojis {
+.bloque-simbolos {
     margin-bottom: 10px;
+}
+
+.bloque-insertar button,
+.bloque-tabla div,
+.bloque-simbolos button {
+    cursor: pointer;
 }
 
 /* =========================
@@ -150,11 +149,10 @@ body {
 }
 
 .grid-tabla div {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
     background-color: white;
     border: 1px solid #aaa;
-    cursor: pointer;
 }
 
 /* =========================
@@ -167,17 +165,7 @@ body {
 }
 
 /* =========================
-   EMOJIS
-========================= */
-.emojis img {
-    width: 32px;
-    height: 32px;
-    margin: 2px;
-    cursor: pointer;
-}
-
-/* =========================
-   EDITOR (SCROLL PROPIO)
+   EDITOR
 ========================= */
 #editor {
     flex: 1;
@@ -185,37 +173,120 @@ body {
     padding: 20px;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* =========================
    PAGINAS (A4)
 ========================= */
 .page {
-    margin: 20px auto;
-    background: white;
+    background-color: white;
+    width: 794px;  /* A4 en px 96dpi */
+    height: 1123px; 
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+.page-header,
+.page-footer {
+    height: 56px;
+    padding: 5px;
+    background-color: #fefefe;
+    flex-shrink: 0;
+}
+
+.page-content {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+    min-height: calc(1123px - 112px); /* altura total - header/footer */
+    word-wrap: break-word;
+}
+
+/* =========================
+   IMÁGENES EN PÁGINA
+========================= */
+.page-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* =========================
+   MODAL NUMERACIÓN
+========================= */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 1px solid #aaa;
+    z-index: 2000;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.modal.oculto {
+    display: none;
+}
+
+.modal-titulo {
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.modal-botones-esquinas {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+}
+
+.modal-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* =========================
+   OVERLAY
+========================= */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 1500;
+}
+
+#overlay.oculto {
+    display: none;
 }
 
 /* =========================
    RESPONSIVE
 ========================= */
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     #panel-insertar {
         width: 180px;
+    }
+
+    .page {
+        width: 90%;
+        height: auto;
     }
 }
 
 @media (max-width: 600px) {
     #panel-insertar {
         position: absolute;
-        z-index: 2000;
         height: 100%;
-        background: #ddd;
-    }
-
-    #panel-insertar.contraido {
-        transform: translateX(-100%);
-        width: 220px; /* tamaño real pero fuera de pantalla */
+        z-index: 2000;
     }
 }
-
