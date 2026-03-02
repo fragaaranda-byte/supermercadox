@@ -1,14 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
+
     const editor = document.getElementById("editor");
 
     // =====================
     // ESTADO GENERAL
     // =====================
     let archivoActual = null;
+    let configNumeracion = null;
     let rangoGuardado = null;
     let indiceActivo = null;
-    let contadorIndiceGlobal = 1; // Numeración global
-    let indicesActivos = []; // Lista de indices en el documento
+    let contadorIndice = 1;
 
     let formatoActual = {
         colorTexto: "#000000",
@@ -19,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 0, bottom: 0, left: 20, right: 20 }
+        margen: { top: 20, bottom: 20, left: 20, right: 20 }
     };
 
     const tamañosPredefinidos = {
@@ -37,6 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
+                // Actualizar select de tamaño en tiempo real
+                const parent = range.startContainer.parentElement;
+                if (parent) {
+                    const size = parseInt(window.getComputedStyle(parent).fontSize);
+                    if (!isNaN(size) && typeof sizeSelect !== "undefined") sizeSelect.value = size;
+                }
             }
         }
     });
@@ -48,6 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
+    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -58,30 +66,48 @@ document.addEventListener("DOMContentLoaded", () => {
     function crearPagina() {
         const page = document.createElement("div");
         page.className = "page";
+
         const tamaño = tamañosPredefinidos[configPagina.tamaño];
         page.style.width = tamaño.width + "px";
         page.style.height = tamaño.height + "px";
-        page.style.padding = `${configPagina.margen.top}px ${configPagina.margen.right}px ${configPagina.margen.bottom}px ${configPagina.margen.left}px`;
+        page.style.paddingTop = configPagina.margen.top + "px";
+        page.style.paddingBottom = configPagina.margen.bottom + "px";
+        page.style.paddingLeft = configPagina.margen.left + "px";
+        page.style.paddingRight = configPagina.margen.right + "px";
+
         page.style.background = "#fff";
         page.style.position = "relative";
         page.style.boxSizing = "border-box";
         page.style.margin = "20px auto";
         page.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
-        page.style.display = "flex";
-        page.style.flexDirection = "column";
+
+        const header = document.createElement("div");
+        header.className = "page-header";
+        header.contentEditable = false;
+        header.style.height = "40px";
 
         const content = document.createElement("div");
         content.className = "page-content";
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
-        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom + "px";
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
+
+        const footer = document.createElement("div");
+        footer.className = "page-footer";
+        footer.contentEditable = false;
+        footer.style.height = "40px";
+
+        page.appendChild(header);
+        page.appendChild(content);
+        page.appendChild(footer);
+
         content.addEventListener("input", verificarOverflow);
 
-        page.appendChild(content);
         return page;
     }
 
+    // Inicializar editor con una página
     editor.innerHTML = "";
     editor.appendChild(crearPagina());
 
@@ -101,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
             }
         });
+        aplicarNumeracion();
     }
 
     // =====================
@@ -127,6 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.execCommand("fontName", false, formatoActual.fontName);
     };
 
+    sizeSelect.value = "8";
     sizeSelect.onchange = e => {
         formatoActual.fontSize = e.target.value;
         restaurarCursor();
@@ -138,11 +166,31 @@ document.addEventListener("DOMContentLoaded", () => {
             span.style.fontSize = formatoActual.fontSize + "px";
             span.appendChild(range.extractContents());
             range.insertNode(span);
+        } else {
+            const span = document.createElement("span");
+            span.style.fontSize = formatoActual.fontSize + "px";
+            span.appendChild(document.createTextNode("\u200B"));
+            range.insertNode(span);
+            const newRange = document.createRange();
+            newRange.setStart(span.firstChild, 1);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            rangoGuardado = newRange.cloneRange();
         }
     };
 
-    colorTexto.onchange = e => { formatoActual.colorTexto = e.target.value; restaurarCursor(); document.execCommand("foreColor", false, formatoActual.colorTexto); };
-    colorFondo.onchange = e => { formatoActual.colorFondo = e.target.value; restaurarCursor(); document.execCommand("hiliteColor", false, formatoActual.colorFondo); };
+    colorTexto.onchange = e => {
+        formatoActual.colorTexto = e.target.value;
+        restaurarCursor();
+        document.execCommand("foreColor", false, formatoActual.colorTexto);
+    };
+
+    colorFondo.onchange = e => {
+        formatoActual.colorFondo = e.target.value;
+        restaurarCursor();
+        document.execCommand("hiliteColor", false, formatoActual.colorFondo);
+    };
 
     btnIzq.onclick = () => { restaurarCursor(); document.execCommand("justifyLeft"); };
     btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCenter"); };
@@ -164,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const table = document.createElement("table");
         table.style.borderCollapse = "collapse";
         table.style.tableLayout = "fixed";
-        table.style.width = "auto";
+        table.style.width = "100%";
 
         for (let i = 0; i < filas; i++) {
             const tr = document.createElement("tr");
@@ -175,186 +223,183 @@ document.addEventListener("DOMContentLoaded", () => {
                 td.style.padding = "2px";
                 td.style.border = "1px solid #000";
                 td.style.overflow = "hidden";
-                td.style.position = "relative";
                 td.contentEditable = true;
+
+                // Redimensionamiento simple por borde derecho
+                td.style.position = "relative";
+                td.addEventListener("mousedown", iniciarRedimension);
                 tr.appendChild(td);
             }
             table.appendChild(tr);
         }
 
-        const sel = window.getSelection();
-        if (!sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
-        range.insertNode(table);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
-
-        agregarRedimensionTabla(table);
+        document.execCommand("insertHTML", false, table.outerHTML + "<br>");
     }
 
-    function agregarRedimensionTabla(table) {
-        const tds = table.querySelectorAll("td");
-        tds.forEach(td => {
-            const handleR = document.createElement("div");
-            handleR.style.width = "6px";
-            handleR.style.height = "100%";
-            handleR.style.position = "absolute";
-            handleR.style.top = 0;
-            handleR.style.right = 0;
-            handleR.style.cursor = "col-resize";
-            td.appendChild(handleR);
-            handleR.addEventListener("mousedown", e => { e.preventDefault(); startResize(e, td, "col"); });
+    let celdaRedim = null;
+    let startX, startWidth;
 
-            const handleB = document.createElement("div");
-            handleB.style.height = "6px";
-            handleB.style.width = "100%";
-            handleB.style.position = "absolute";
-            handleB.style.bottom = 0;
-            handleB.style.left = 0;
-            handleB.style.cursor = "row-resize";
-            td.appendChild(handleB);
-            handleB.addEventListener("mousedown", e => { e.preventDefault(); startResize(e, td, "row"); });
-        });
-    }
-
-    let resizing = false, resizeTd, resizeType, startX, startY, startWidth, startHeight;
-    function startResize(e, td, type) {
-        resizing = true; resizeTd = td; resizeType = type; startX = e.clientX; startY = e.clientY;
-        startWidth = td.offsetWidth; startHeight = td.offsetHeight;
-        document.addEventListener("mousemove", doResize);
-        document.addEventListener("mouseup", stopResize);
-    }
-    function doResize(e) {
-        if (!resizing) return;
-        if (resizeType === "col") {
-            let w = startWidth + (e.clientX - startX);
-            if (w > 30) resizeTd.style.width = w + "px";
-        } else if (resizeType === "row") {
-            let h = startHeight + (e.clientY - startY);
-            if (h > 20) resizeTd.style.height = h + "px";
+    function iniciarRedimension(e) {
+        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
+            celdaRedim = e.target;
+            startX = e.clientX;
+            startWidth = celdaRedim.offsetWidth;
+            document.addEventListener("mousemove", redimensionar);
+            document.addEventListener("mouseup", detenerRedimension);
+            e.preventDefault();
         }
     }
-    function stopResize() { resizing = false; resizeTd = null; document.removeEventListener("mousemove", doResize); document.removeEventListener("mouseup", stopResize); }
+
+    function redimensionar(e) {
+        if (!celdaRedim) return;
+        let nuevaAncho = startWidth + (e.clientX - startX);
+        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
+    }
+
+    function detenerRedimension() {
+        celdaRedim = null;
+        document.removeEventListener("mousemove", redimensionar);
+        document.removeEventListener("mouseup", detenerRedimension);
+    }
 
     // =====================
-    // IMAGENES REDIMENSIONABLES
+    // SÍMBOLOS
+    // =====================
+    document.querySelectorAll(".simbolos button").forEach(btn => {
+        btn.onclick = () => {
+            restaurarCursor();
+            document.execCommand("insertText", false, btn.innerText);
+        };
+    });
+
+    // =====================
+    // INSERTAR IMAGEN
     // =====================
     btnInsertarImagen.onclick = () => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
+
         input.onchange = () => {
-            const file = input.files[0]; if (!file) return;
+            const file = input.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = e => {
                 restaurarCursor();
-                const wrapper = document.createElement("div");
-                wrapper.style.display = "inline-block";
-                wrapper.style.position = "relative";
-                wrapper.style.minWidth = "50px"; wrapper.style.minHeight = "50px";
-
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style.maxWidth = "300px"; img.style.height = "auto"; img.style.cursor = "move"; img.style.display = "block";
-                wrapper.appendChild(img);
-                makeImageResizableAndDraggable(wrapper);
-
-                const sel = window.getSelection();
-                if (!sel.rangeCount) return;
-                sel.getRangeAt(0).insertNode(wrapper);
+                document.execCommand("insertHTML", false, `<img src="${e.target.result}" style="max-width:300px;">`);
             };
             reader.readAsDataURL(file);
         };
         input.click();
     };
 
-    function makeImageResizableAndDraggable(wrapper) {
-        const img = wrapper.querySelector("img");
-        let offsetX, offsetY, dragging = false, resizing = false, startX, startY, startWidth, startHeight;
-
-        const handle = document.createElement("div");
-        handle.style.width = "10px"; handle.style.height = "10px"; handle.style.position = "absolute";
-        handle.style.right = "0"; handle.style.bottom = "0"; handle.style.cursor = "se-resize"; handle.style.background = "#FA932D";
-        wrapper.appendChild(handle);
-
-        img.addEventListener("mousedown", e => { if (e.target === handle) return; dragging = true; offsetX = e.offsetX; offsetY = e.offsetY; wrapper.style.zIndex = 1000; });
-        handle.addEventListener("mousedown", e => { e.stopPropagation(); resizing = true; startX = e.clientX; startY = e.clientY; startWidth = img.offsetWidth; startHeight = img.offsetHeight; });
-        document.addEventListener("mousemove", e => {
-            if (dragging) { wrapper.style.position = "absolute"; wrapper.style.left = e.pageX - offsetX + "px"; wrapper.style.top = e.pageY - offsetY + "px"; }
-            else if (resizing) { let w = startWidth + (e.clientX - startX); let h = startHeight + (e.clientY - startY); if (w>20) img.style.width=w+"px"; if(h>20) img.style.height=h+"px"; }
-        });
-        document.addEventListener("mouseup", e => { dragging=false; resizing=false; });
-    }
-
     // =====================
-    // INDICES GLOBALES
+    // ÍNDICES
     // =====================
     document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
         btn.onclick = () => {
             indiceActivo = btn.id;
-            resetBtnIndice(); btn.style.backgroundColor="#FA932D";
+            contadorIndice = 1;
         };
     });
 
     editor.addEventListener("keydown", e => {
         if (!indiceActivo) return;
-        if (e.key==="Enter") {
+        if (e.key === "Enter") {
             e.preventDefault();
-            if(e.shiftKey){ insertarSaltoPagina(); indiceActivo=null; resetBtnIndice(); return; }
-            restaurarCursor(); insertarIndice(indiceActivo);
+            restaurarCursor();
+            let formato = "";
+            if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
+            if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
+            if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
+            if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
+            if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
+            if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
+            document.execCommand("insertHTML", false, `<br>${formato}`);
+            contadorIndice++;
         }
     });
 
-    function insertarIndice(tipo) {
-        let formato="";
-        if(tipo.includes("1)")) formato=`${contadorIndiceGlobal}) `;
-        else if(tipo.includes("1.")) formato=`${contadorIndiceGlobal}. `;
-        else if(tipo.includes("A)")) formato=String.fromCharCode(64+contadorIndiceGlobal)+") ";
-        else if(tipo.includes("a)")) formato=String.fromCharCode(96+contadorIndiceGlobal)+") ";
-        else if(tipo.includes("A.")) formato=String.fromCharCode(64+contadorIndiceGlobal)+". ";
-        else if(tipo.includes("a.")) formato=String.fromCharCode(96+contadorIndiceGlobal)+". ";
+    // =====================
+    // DESHACER / REHACER
+    // =====================
+    btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
+    btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
 
-        const span=document.createElement("span");
-        span.className="indice"; span.textContent=formato; span.contentEditable=false;
-        span.style.userSelect="none"; span.style.cursor="default";
+    // =====================
+    // NUMERACIÓN
+    // =====================
+    btnNumerar.onclick = abrirModalNumeracion;
 
-        span.oncontextmenu=e=>{e.preventDefault(); contadorIndiceGlobal=1; span.textContent=formato;};
+    function abrirModalNumeracion() {
+        const modal = document.getElementById("modalNumeracion");
+        const overlay = document.getElementById("overlay");
 
-        const br=document.createElement("br");
+        modal.classList.remove("oculto");
+        overlay.classList.remove("oculto");
 
-        const sel=window.getSelection(); if(!sel.rangeCount) return;
-        const range=sel.getRangeAt(0);
-        range.insertNode(br); range.insertNode(span);
-        range.setStartAfter(span); range.collapse(true);
-        sel.removeAllRanges(); sel.addRange(range);
-        contadorIndiceGlobal++;
+        let seleccion = null;
+
+        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+
+        document.getElementById("aceptarNumeracion").onclick = () => {
+            if (seleccion) {
+                configNumeracion = seleccion;
+                aplicarNumeracion();
+            }
+            cerrarModal();
+        };
+        document.getElementById("cancelarNumeracion").onclick = cerrarModal;
+
+        function cerrarModal() {
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
+        }
     }
-    function resetBtnIndice(){ document.querySelectorAll("[id^='btnIndice']").forEach(btn=>btn.style.backgroundColor="#F78719"); }
 
-    function insertarSaltoPagina() {
-        const sel=window.getSelection(); if(!sel.rangeCount) return;
-        const range=sel.getRangeAt(0);
-        const page=crearPagina();
-        range.insertNode(page);
-        range.setStart(page.querySelector(".page-content"),0); range.collapse(true);
-        sel.removeAllRanges(); sel.addRange(range);
+    function aplicarNumeracion() {
+        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+        if (!configNumeracion) return;
+
+        document.querySelectorAll(".page").forEach((page, index) => {
+            const num = document.createElement("div");
+            num.className = "numero-pagina";
+            num.textContent = index + 1;
+            num.style.position = "absolute";
+            num.style.fontSize = "20px";
+
+            let target;
+            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
+            else target = page.querySelector(".page-footer");
+
+            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
+            if (configNumeracion.includes("derecha")) num.style.right = "20px";
+
+            target.appendChild(num);
+        });
     }
 
     // =====================
     // NUEVO DOCUMENTO
     // =====================
-    btnNuevo.onclick=()=>{
-        const modal=document.getElementById("modalNuevo");
-        const overlay=document.getElementById("overlay");
-        modal.classList.remove("oculto"); overlay.classList.remove("oculto");
-        document.getElementById("nuevoSi").onclick=()=>{
-            editor.innerHTML=""; editor.appendChild(crearPagina());
-            contadorIndiceGlobal=1; indiceActivo=null; resetBtnIndice();
-            modal.classList.add("oculto"); overlay.classList.add("oculto");
+    btnNuevo.onclick = () => {
+        const modal = document.getElementById("modalNuevo");
+        const overlay = document.getElementById("overlay");
+        modal.classList.remove("oculto");
+        overlay.classList.remove("oculto");
+
+        document.getElementById("nuevoSi").onclick = () => {
+            editor.innerHTML = "";
+            editor.appendChild(crearPagina());
+            configNumeracion = null;
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
         };
-        document.getElementById("nuevoNo").onclick=()=>{
-            modal.classList.add("oculto"); overlay.classList.add("oculto");
+        document.getElementById("nuevoNo").onclick = () => {
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
         };
     };
+
 });
