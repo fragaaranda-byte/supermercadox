@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 0, bottom: 0, left: 0, right: 0 }
+        margen: { top: 20, bottom: 20, left: 20, right: 20 }
     };
 
     const tamañosPredefinidos = {
@@ -78,24 +78,25 @@ document.addEventListener("DOMContentLoaded", () => {
         page.style.background = "#fff";
         page.style.position = "relative";
         page.style.boxSizing = "border-box";
-        page.style.marginBottom = "20px";
-        page.style.overflow = "hidden";
-        page.style.display = "flex";
-        page.style.flexDirection = "column";
+        page.style.margin = "20px auto";
+        page.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
 
         const header = document.createElement("div");
         header.className = "page-header";
         header.contentEditable = false;
+        header.style.height = "40px";
 
         const content = document.createElement("div");
         content.className = "page-content";
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
 
         const footer = document.createElement("div");
         footer.className = "page-footer";
         footer.contentEditable = false;
+        footer.style.height = "40px";
 
         page.appendChild(header);
         page.appendChild(content);
@@ -208,36 +209,106 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function insertarTabla(filas, columnas) {
         restaurarCursor();
-        let table = document.createElement("table");
-        table.border = 1;
+        const table = document.createElement("table");
         table.style.borderCollapse = "collapse";
-        table.style.width = "auto";
+        table.style.tableLayout = "fixed";
+        table.style.width = "100%";
 
         for (let i = 0; i < filas; i++) {
-            let tr = document.createElement("tr");
+            const tr = document.createElement("tr");
             for (let j = 0; j < columnas; j++) {
-                let td = document.createElement("td");
+                const td = document.createElement("td");
                 td.style.minWidth = "50px";
                 td.style.height = "30px";
-                td.style.resize = "both";
-                td.style.overflow = "auto";
-                td.innerHTML = "&nbsp;";
+                td.style.padding = "2px";
+                td.style.border = "1px solid #000";
+                td.style.overflow = "hidden";
+                td.contentEditable = true;
+
+                // Redimensionamiento simple por borde derecho
+                td.style.position = "relative";
+                td.addEventListener("mousedown", iniciarRedimension);
                 tr.appendChild(td);
             }
             table.appendChild(tr);
         }
+
         document.execCommand("insertHTML", false, table.outerHTML + "<br>");
     }
 
+    let celdaRedim = null;
+    let startX, startWidth;
+
+    function iniciarRedimension(e) {
+        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
+            celdaRedim = e.target;
+            startX = e.clientX;
+            startWidth = celdaRedim.offsetWidth;
+            document.addEventListener("mousemove", redimensionar);
+            document.addEventListener("mouseup", detenerRedimension);
+            e.preventDefault();
+        }
+    }
+
+    function redimensionar(e) {
+        if (!celdaRedim) return;
+        let nuevaAncho = startWidth + (e.clientX - startX);
+        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
+    }
+
+    function detenerRedimension() {
+        celdaRedim = null;
+        document.removeEventListener("mousemove", redimensionar);
+        document.removeEventListener("mouseup", detenerRedimension);
+    }
+
     // =====================
-    // NUMERACIÓN
+    // SÍMBOLOS
     // =====================
+    document.querySelectorAll(".simbolos button").forEach(btn => {
+        btn.onclick = () => {
+            restaurarCursor();
+            document.execCommand("insertText", false, btn.innerText);
+        };
+    });
+
+    // =====================
+    // INSERTAR IMAGEN
+    // =====================
+    btnInsertarImagen.onclick = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+
+        input.onchange = () => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                restaurarCursor();
+                document.execCommand("insertHTML", false, `<img src="${e.target.result}" style="max-width:300px;">`);
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    };
+
+    // =====================
+    // ÍNDICES
+    // =====================
+    document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
+        btn.onclick = () => {
+            indiceActivo = btn.id;
+            contadorIndice = 1;
+        };
+    });
+
     editor.addEventListener("keydown", e => {
         if (!indiceActivo) return;
         if (e.key === "Enter") {
             e.preventDefault();
             restaurarCursor();
-
             let formato = "";
             if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
             if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
@@ -245,11 +316,47 @@ document.addEventListener("DOMContentLoaded", () => {
             if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
             if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
             if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
-
             document.execCommand("insertHTML", false, `<br>${formato}`);
             contadorIndice++;
         }
     });
+
+    // =====================
+    // DESHACER / REHACER
+    // =====================
+    btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
+    btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
+
+    // =====================
+    // NUMERACIÓN
+    // =====================
+    btnNumerar.onclick = abrirModalNumeracion;
+
+    function abrirModalNumeracion() {
+        const modal = document.getElementById("modalNumeracion");
+        const overlay = document.getElementById("overlay");
+
+        modal.classList.remove("oculto");
+        overlay.classList.remove("oculto");
+
+        let seleccion = null;
+
+        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+
+        document.getElementById("aceptarNumeracion").onclick = () => {
+            if (seleccion) {
+                configNumeracion = seleccion;
+                aplicarNumeracion();
+            }
+            cerrarModal();
+        };
+        document.getElementById("cancelarNumeracion").onclick = cerrarModal;
+
+        function cerrarModal() {
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
+        }
+    }
 
     function aplicarNumeracion() {
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
@@ -263,11 +370,11 @@ document.addEventListener("DOMContentLoaded", () => {
             num.style.fontSize = "20px";
 
             let target;
-            if (configNumeracion.includes("top")) target = page.querySelector(".page-header");
+            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
             else target = page.querySelector(".page-footer");
 
-            if (configNumeracion.includes("left")) num.style.left = "20px";
-            if (configNumeracion.includes("right")) num.style.right = "20px";
+            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
+            if (configNumeracion.includes("derecha")) num.style.right = "20px";
 
             target.appendChild(num);
         });
@@ -277,11 +384,22 @@ document.addEventListener("DOMContentLoaded", () => {
     // NUEVO DOCUMENTO
     // =====================
     btnNuevo.onclick = () => {
-        if (confirm("Nuevo documento?")) {
+        const modal = document.getElementById("modalNuevo");
+        const overlay = document.getElementById("overlay");
+        modal.classList.remove("oculto");
+        overlay.classList.remove("oculto");
+
+        document.getElementById("nuevoSi").onclick = () => {
             editor.innerHTML = "";
             editor.appendChild(crearPagina());
             configNumeracion = null;
-        }
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
+        };
+        document.getElementById("nuevoNo").onclick = () => {
+            modal.classList.add("oculto");
+            overlay.classList.add("oculto");
+        };
     };
 
 });
