@@ -14,9 +14,11 @@ let cambiandoSize = false;
 // =====================
 const panelInsertar = document.getElementById("panel-insertar");
 const togglePanel = document.getElementById("toggle-panel");
+const flechaIcon = togglePanel.querySelector('img');
 
 togglePanel.onclick = () => {
     panelInsertar.classList.toggle("contraido");
+    flechaIcon.style.transform = panelInsertar.classList.contains("contraido") ? "rotate(-180deg)" : "rotate(0deg)";
 };
 
 // =====================
@@ -36,15 +38,8 @@ const MARGEN = 56;
 // =====================
 // DESHACER / REHACER
 // =====================
-btnDeshacer.onclick = () => {
-    restaurarCursor();
-    document.execCommand("undo");
-};
-
-btnRehacer.onclick = () => {
-    restaurarCursor();
-    document.execCommand("redo");
-};
+btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
+btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
 
 // =====================
 // CURSOR
@@ -187,15 +182,12 @@ sizeSelect.onchange = e => {
     cambiandoSize = true;
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
-
     document.execCommand("fontSize", false, 7);
-
     const spans = editor.querySelectorAll("font[size='7']");
     spans.forEach(span=>{
         span.removeAttribute("size");
         span.style.fontSize = formatoActual.fontSize+"px";
     });
-
     setTimeout(()=>cambiandoSize=false,100);
 };
 
@@ -215,7 +207,7 @@ colorFondo.onchange = e => {
 };
 
 // =====================
-// ESCRITURA NORMAL
+// ESCRITURA NORMAL (LETTERS + BACKSPACE)
 // =====================
 editor.addEventListener("keydown", e => {
 
@@ -356,7 +348,3 @@ btnNuevo.onclick=()=>{
         editor.innerHTML="";
         editor.appendChild(crearPagina());
         configNumeracion=null;
-    }
-};
-
-});
