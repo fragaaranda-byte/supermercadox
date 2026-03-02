@@ -93,6 +93,10 @@ btnNumerar.onclick = () => {
     window.aplicarNumeracion = function(config) {
         // Eliminar numeraciones existentes
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+
+        // Resetear altura de headers y footers a 0 si no hay numeración
+        document.querySelectorAll(".page-header, .page-footer").forEach(hf => hf.style.height = "0px");
+
         if (!config) return; // si es null, solo borramos
 
         document.querySelectorAll(".page").forEach((page, index) => {
@@ -111,8 +115,13 @@ btnNumerar.onclick = () => {
 
             // Posición
             let target;
-            if (config.posicion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
+            if (config.posicion.includes("superior")) {
+                target = page.querySelector(".page-header");
+                target.style.height = "56px"; // Solo ocupar espacio si hay numeración
+            } else {
+                target = page.querySelector(".page-footer");
+                target.style.height = "56px"; // Solo ocupar espacio si hay numeración
+            }
 
             if (config.posicion.includes("izquierda")) num.style.left = "20px";
             if (config.posicion.includes("derecha")) num.style.right = "20px";
@@ -137,12 +146,20 @@ btnNumerar.onclick = () => {
         cerrarModal("modalNumeracion");
     };
 
-    // Cancelar numeración: elimina todos los números
+    // Cancelar numeración: elimina todos los números y oculta headers/footers
     document.getElementById("cancelarNumeracion").onclick = () => {
         window.aplicarNumeracion(null);
         window.configNumeracion = null;
         cerrarModal("modalNumeracion");
     };
+
+    // Función para cerrar modal
+    function cerrarModal(idModal) {
+        const modal = document.getElementById(idModal);
+        const overlay = document.getElementById("overlay");
+        modal.classList.add("oculto");
+        overlay.classList.add("oculto");
+    }
 };
     // =====================
     // MODAL NUEVO DOCUMENTO
