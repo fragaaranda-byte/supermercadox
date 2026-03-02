@@ -196,71 +196,91 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCenter"); };
     btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
-    // =====================
-    // TABLAS REDIMENSIONABLES
-    // =====================
-    document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
-        cell.onclick = () => {
-            const cols = (index % 10) + 1;
-            const rows = Math.floor(index / 10) + 1;
-            insertarTabla(rows, cols);
-        };
-    });
+// =====================
+// TABLAS REDIMENSIONABLES (estilo Word)
+// =====================
+document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
+    cell.onclick = () => {
+        const cols = (index % 10) + 1;
+        const rows = Math.floor(index / 10) + 1;
+        insertarTabla(rows, cols);
+    };
+});
 
-    function insertarTabla(filas, columnas) {
-        restaurarCursor();
-        const table = document.createElement("table");
-        table.style.borderCollapse = "collapse";
-        table.style.tableLayout = "fixed";
-        table.style.width = "100%";
+function insertarTabla(filas, columnas) {
+    restaurarCursor();
+    const table = document.createElement("table");
+    table.style.borderCollapse = "collapse";
+    table.style.tableLayout = "fixed";
+    table.style.width = "100%";
 
-        for (let i = 0; i < filas; i++) {
-            const tr = document.createElement("tr");
-            for (let j = 0; j < columnas; j++) {
-                const td = document.createElement("td");
-                td.style.minWidth = "50px";
-                td.style.height = "30px";
-                td.style.padding = "2px";
-                td.style.border = "1px solid #000";
-                td.style.overflow = "hidden";
-                td.contentEditable = true;
+    for (let i = 0; i < filas; i++) {
+        const tr = document.createElement("tr");
+        for (let j = 0; j < columnas; j++) {
+            const td = document.createElement("td");
+            td.style.minWidth = "50px";
+            td.style.height = "30px";
+            td.style.padding = "2px";
+            td.style.border = "1px solid #000";
+            td.style.overflow = "hidden";
+            td.contentEditable = true;
+            td.style.position = "relative";
 
-                // Redimensionamiento simple por borde derecho
-                td.style.position = "relative";
-                td.addEventListener("mousedown", iniciarRedimension);
-                tr.appendChild(td);
-            }
-            table.appendChild(tr);
+            // Detectar hover cerca del borde derecho para cursor tipo Word
+            td.addEventListener("mousemove", e => {
+                if (e.offsetX > td.offsetWidth - 8) {
+                    td.style.cursor = "col-resize";
+                } else {
+                    td.style.cursor = "text";
+                }
+            });
+
+            // Redimensionamiento al hacer clic
+            td.addEventListener("mousedown", iniciarRedimension);
+
+            tr.appendChild(td);
         }
-
-        document.execCommand("insertHTML", false, table.outerHTML + "<br>");
+        table.appendChild(tr);
     }
 
-    let celdaRedim = null;
-    let startX, startWidth;
+    // Insertar tabla directamente en el rango del cursor
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(table);
+    range.collapse(false);
 
-    function iniciarRedimension(e) {
-        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
-            celdaRedim = e.target;
-            startX = e.clientX;
-            startWidth = celdaRedim.offsetWidth;
-            document.addEventListener("mousemove", redimensionar);
-            document.addEventListener("mouseup", detenerRedimension);
-            e.preventDefault();
-        }
-    }
+    // Añadir un <br> al final para que el cursor siga escribiendo
+    const br = document.createElement("br");
+    table.after(br);
+}
 
-    function redimensionar(e) {
-        if (!celdaRedim) return;
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
+let celdaRedim = null;
+let startX, startWidth;
 
-    function detenerRedimension() {
-        celdaRedim = null;
-        document.removeEventListener("mousemove", redimensionar);
-        document.removeEventListener("mouseup", detenerRedimension);
+function iniciarRedimension(e) {
+    if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
+        celdaRedim = e.target;
+        startX = e.clientX;
+        startWidth = celdaRedim.offsetWidth;
+        document.addEventListener("mousemove", redimensionar);
+        document.addEventListener("mouseup", detenerRedimension);
+        e.preventDefault();
     }
+}
+
+function redimensionar(e) {
+    if (!celdaRedim) return;
+    let nuevaAncho = startWidth + (e.clientX - startX);
+    if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
+}
+
+function detenerRedimension() {
+    celdaRedim = null;
+    document.removeEventListener("mousemove", redimensionar);
+    document.removeEventListener("mouseup", detenerRedimension);
+}
 
     // =====================
     // SÍMBOLOS
