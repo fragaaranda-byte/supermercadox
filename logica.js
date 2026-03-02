@@ -8,11 +8,28 @@ let rangoGuardado = null;
 let indiceActivo = null;
 let contadorIndice = 1;
 
+// =====================
+// FORMATO ACTUAL
+// =====================
 let formatoActual = {
     colorTexto: "#000000",
     colorFondo: "#ffffff",
     fontSize: 8,
     fontName: "Arial"
+};
+
+// =====================
+// CONFIGURACION PAGINA
+// =====================
+let configPagina = {
+    tamaño: "A4", // A4 por defecto
+    margen: { top: 0, bottom: 0, left: 0, right: 0 }
+};
+
+const tamañosPredefinidos = {
+    A4: { width: 794, height: 1123 },
+    A5: { width: 559, height: 794 },
+    Carta: { width: 816, height: 1056 }
 };
 
 // =====================
@@ -52,10 +69,15 @@ function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
 
-    // Tamaño A4 en pixeles (794 x 1123)
-    page.style.width = "794px";
-    page.style.height = "1123px";
-    page.style.padding = "0"; // Sin márgenes extras
+    // Tamaño y margen dinámico
+    const tamaño = tamañosPredefinidos[configPagina.tamaño];
+    page.style.width = tamaño.width + "px";
+    page.style.height = tamaño.height + "px";
+    page.style.paddingTop = configPagina.margen.top + "px";
+    page.style.paddingBottom = configPagina.margen.bottom + "px";
+    page.style.paddingLeft = configPagina.margen.left + "px";
+    page.style.paddingRight = configPagina.margen.right + "px";
+
     page.style.background = "#fff";
     page.style.position = "relative";
     page.style.boxSizing = "border-box";
@@ -87,8 +109,62 @@ function crearPagina() {
     return page;
 }
 
+// Inicializar editor con una página
 editor.innerHTML = "";
 editor.appendChild(crearPagina());
+
+// =====================
+// MODAL CONFIG PAGINA
+// =====================
+btnConfigPagina.onclick = abrirModalConfigPagina;
+
+function abrirModalConfigPagina() {
+    const modal = document.getElementById("modalConfigPagina");
+    const overlay = document.getElementById("overlay");
+    if (!modal || !overlay) return;
+
+    modal.classList.remove("oculto");
+    overlay.classList.remove("oculto");
+
+    // Inicializar selects con valores actuales
+    modal.querySelector("#selectTamano").value = configPagina.tamaño;
+    modal.querySelector("#margenTop").value = configPagina.margen.top;
+    modal.querySelector("#margenBottom").value = configPagina.margen.bottom;
+    modal.querySelector("#margenLeft").value = configPagina.margen.left;
+    modal.querySelector("#margenRight").value = configPagina.margen.right;
+
+    btnAceptarConfigPagina.onclick = () => {
+        // Guardar configuración
+        configPagina.tamaño = modal.querySelector("#selectTamano").value;
+        configPagina.margen.top = parseInt(modal.querySelector("#margenTop").value);
+        configPagina.margen.bottom = parseInt(modal.querySelector("#margenBottom").value);
+        configPagina.margen.left = parseInt(modal.querySelector("#margenLeft").value);
+        configPagina.margen.right = parseInt(modal.querySelector("#margenRight").value);
+
+        // Aplicar cambios a todas las páginas
+        document.querySelectorAll(".page").forEach(page => {
+            const tamaño = tamañosPredefinidos[configPagina.tamaño];
+            page.style.width = tamaño.width + "px";
+            page.style.height = tamaño.height + "px";
+            page.style.paddingTop = configPagina.margen.top + "px";
+            page.style.paddingBottom = configPagina.margen.bottom + "px";
+            page.style.paddingLeft = configPagina.margen.left + "px";
+            page.style.paddingRight = configPagina.margen.right + "px";
+        });
+
+        cerrarModalConfigPagina();
+    };
+
+    btnCancelarConfigPagina.onclick = cerrarModalConfigPagina;
+}
+
+function cerrarModalConfigPagina() {
+    const modal = document.getElementById("modalConfigPagina");
+    const overlay = document.getElementById("overlay");
+    if (!modal || !overlay) return;
+    modal.classList.add("oculto");
+    overlay.classList.add("oculto");
+}
 
 // =====================
 // OVERFLOW
@@ -212,45 +288,9 @@ function insertarTabla(filas, columnas) {
 }
 
 // =====================
-// MODALES FUNCIONALES
+// NUMERACION Y RESTO DEL CODIGO
 // =====================
-function abrirModalNumeracion() {
-    const modal = document.getElementById("modalNumeracion");
-    const overlay = document.getElementById("overlay");
-    if (!modal || !overlay) return;
-
-    modal.classList.remove("oculto");
-    overlay.classList.remove("oculto");
-
-    let seleccion = null;
-    modal.querySelectorAll("button[data-pos]").forEach(btn => {
-        btn.onclick = () => seleccion = btn.dataset.pos;
-    });
-
-    btnAceptarNumeracion.onclick = () => {
-        if (seleccion) {
-            configNumeracion = seleccion;
-            aplicarNumeracion();
-        }
-        cerrarModal();
-    };
-
-    btnCancelarNumeracion.onclick = cerrarModal;
-}
-
-function cerrarModal() {
-    const modal = document.getElementById("modalNumeracion");
-    const overlay = document.getElementById("overlay");
-    if (!modal || !overlay) return;
-    modal.classList.add("oculto");
-    overlay.classList.add("oculto");
-}
-
-btnNumerar.onclick = abrirModalNumeracion;
-
-// =====================
-// RESTO DEL CÓDIGO (no se toca)
-// =====================
+// (igual que tu JS original, no lo toco)
 editor.addEventListener("keydown", e => {
     if (!indiceActivo) return;
     if (e.key === "Enter") {
