@@ -197,7 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// TABLAS REDIMENSIONABLES (estilo Word)
+// TABLAS REDIMENSIONABLES (exacto estilo Word)
 // =====================
 document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
     cell.onclick = () => {
@@ -226,7 +226,7 @@ function insertarTabla(filas, columnas) {
             td.contentEditable = true;
             td.style.position = "relative";
 
-            // Detectar hover cerca del borde derecho para cursor tipo Word
+            // Cursor estilo Word
             td.addEventListener("mousemove", e => {
                 if (e.offsetX > td.offsetWidth - 8) {
                     td.style.cursor = "col-resize";
@@ -235,15 +235,20 @@ function insertarTabla(filas, columnas) {
                 }
             });
 
-            // Redimensionamiento al hacer clic
-            td.addEventListener("mousedown", iniciarRedimension);
+            // Redimensionamiento con posibilidad de Shift para varias celdas
+            td.addEventListener("mousedown", e => {
+                if (e.offsetX > td.offsetWidth - 8) {
+                    iniciarRedimensionWord(e, td);
+                    e.preventDefault();
+                }
+            });
 
             tr.appendChild(td);
         }
         table.appendChild(tr);
     }
 
-    // Insertar tabla directamente en el rango del cursor
+    // Insertar tabla en el cursor
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
@@ -251,35 +256,49 @@ function insertarTabla(filas, columnas) {
     range.insertNode(table);
     range.collapse(false);
 
-    // Añadir un <br> al final para que el cursor siga escribiendo
     const br = document.createElement("br");
     table.after(br);
 }
 
+// =====================
+// Redimensionamiento estilo Word
+// =====================
 let celdaRedim = null;
 let startX, startWidth;
+let celdasColumna = [];
 
-function iniciarRedimension(e) {
-    if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
-        celdaRedim = e.target;
-        startX = e.clientX;
-        startWidth = celdaRedim.offsetWidth;
-        document.addEventListener("mousemove", redimensionar);
-        document.addEventListener("mouseup", detenerRedimension);
-        e.preventDefault();
+function iniciarRedimensionWord(e, td) {
+    celdaRedim = td;
+    startX = e.clientX;
+    startWidth = td.offsetWidth;
+
+    // Seleccionar todas las celdas de la columna si Shift está presionado
+    if (e.shiftKey) {
+        const table = td.closest("table");
+        const index = Array.from(td.parentNode.children).indexOf(td);
+        celdasColumna = Array.from(table.querySelectorAll("tr")).map(tr => tr.children[index]);
+    } else {
+        celdasColumna = [td];
+    }
+
+    document.addEventListener("mousemove", redimensionarWord);
+    document.addEventListener("mouseup", detenerRedimensionWord);
+}
+
+function redimensionarWord(e) {
+    if (!celdaRedim) return;
+    const delta = e.clientX - startX;
+    const nuevoAncho = startWidth + delta;
+    if (nuevoAncho > 30) {
+        celdasColumna.forEach(c => c.style.width = nuevoAncho + "px");
     }
 }
 
-function redimensionar(e) {
-    if (!celdaRedim) return;
-    let nuevaAncho = startWidth + (e.clientX - startX);
-    if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-}
-
-function detenerRedimension() {
+function detenerRedimensionWord() {
     celdaRedim = null;
-    document.removeEventListener("mousemove", redimensionar);
-    document.removeEventListener("mouseup", detenerRedimension);
+    celdasColumna = [];
+    document.removeEventListener("mousemove", redimensionarWord);
+    document.removeEventListener("mouseup", detenerRedimensionWord);
 }
 
     // =====================
