@@ -117,7 +117,8 @@
     <div class="modal-contenido">
         <div class="modal-titulo">Numeración de Páginas</div>
         <div class="modal-campos">
-            <p>¿Cómo desea la numeración?</p><br>
+            <p>¿Cómo desea la numeración?</p><br>Presione "cancelar" para borrar cualquier numeración existente<br><br>
+            
             <label>Posición:</label>
             <select id="posicionNumeracion">
                 <option>Esquina superior izquierda</option>
@@ -125,10 +126,12 @@
                 <option>Esquina inferior izquierda</option>
                 <option>Esquina inferior derecha</option>
             </select><br><br>
+            
             <label>Estilo:</label>
             <button id="numNegrita">N</button>
             <button id="numCursiva">K</button>
             <button id="numSubrayado">S</button><br><br>
+            
             <label>Tamaño:</label>
             <select id="tamanioNumeracion">
                 <option>8</option><option>9</option><option>10</option><option>11</option>
@@ -136,7 +139,13 @@
                 <option>16</option><option>17</option><option>18</option><option>19</option>
                 <option>20</option><option>21</option><option>22</option><option>23</option>
                 <option>24</option><option>25</option>
-            </select>
+            </select><br><br>
+
+            <label>Color de texto:</label>
+            <input type="color" id="colorNumeracionTexto" value="#000000"><br><br>
+            
+            <label>Color de fondo:</label>
+            <input type="color" id="colorNumeracionFondo" value="#ffffff">
         </div>
         <div class="modal-acciones">
             <button id="aceptarNumeracion">Aceptar</button>
@@ -225,4 +234,5 @@
 
 </body>
 </html>
+
 
