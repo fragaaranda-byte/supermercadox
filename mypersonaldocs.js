@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         overlay.classList.add("oculto");
     }
 
-    // Hacer click sobre overlay cierra cualquier modal activo
+    // Cerrar modales al hacer click fuera
     overlay.addEventListener("click", () => {
         [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir].forEach(m => {
             if (m && !m.classList.contains("oculto")) cerrarModal(m);
@@ -38,26 +38,51 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnNumerar = document.getElementById("btnNumerar");
     const btnAceptarNumeracion = document.getElementById("aceptarNumeracion");
     const btnCancelarNumeracion = document.getElementById("cancelarNumeracion");
+    const selectPosicion = document.getElementById("posicionNumeracion");
+    const selectTamanoNumeracion = document.getElementById("tamanoNumeracion");
+    const btnNegritaNumeracion = document.getElementById("negritaNumeracion");
+    const btnCursivaNumeracion = document.getElementById("cursivaNumeracion");
+    const btnSubrayadoNumeracion = document.getElementById("subrayadoNumeracion");
 
-    let seleccionNumeracion = null;
+    let configNumeracion = {
+        posicion: "esq-sup-izq",
+        estilo: { negrita: false, cursiva: false, subrayado: false },
+        tamano: 12
+    };
 
     btnNumerar.addEventListener("click", () => abrirModal(modalNumeracion));
 
-    // Selección de posición
-    const selectPosicion = document.getElementById("posicionNumeracion");
+    // Cambios en posición
     selectPosicion.addEventListener("change", () => {
-        seleccionNumeracion = selectPosicion.value;
+        configNumeracion.posicion = selectPosicion.value;
+    });
+
+    // Cambios en tamaño
+    selectTamanoNumeracion.addEventListener("change", () => {
+        configNumeracion.tamano = parseInt(selectTamanoNumeracion.value);
+    });
+
+    // Cambios en estilo
+    btnNegritaNumeracion.addEventListener("click", () => {
+        configNumeracion.estilo.negrita = !configNumeracion.estilo.negrita;
+    });
+    btnCursivaNumeracion.addEventListener("click", () => {
+        configNumeracion.estilo.cursiva = !configNumeracion.estilo.cursiva;
+    });
+    btnSubrayadoNumeracion.addEventListener("click", () => {
+        configNumeracion.estilo.subrayado = !configNumeracion.estilo.subrayado;
     });
 
     btnAceptarNumeracion.addEventListener("click", () => {
-        // Aquí se puede guardar la configuración en logica.js
         cerrarModal(modalNumeracion);
+        console.log("Numeración aplicada:", configNumeracion);
+        // aplicarNumeracion(configNumeracion) → implementar en logica.js
     });
 
     btnCancelarNumeracion.addEventListener("click", () => cerrarModal(modalNumeracion));
 
     // =====================
-    // MODAL CONFIGURACIÓN PÁGINA
+    // MODAL CONFIGURACIÓN DE PÁGINA
     // =====================
     const btnConfig = document.getElementById("btnConfig");
     const btnAceptarConfig = document.getElementById("aceptarConfig");
@@ -66,8 +91,27 @@ document.addEventListener("DOMContentLoaded", () => {
     btnConfig.addEventListener("click", () => abrirModal(modalConfigPaginas));
 
     btnAceptarConfig.addEventListener("click", () => {
-        // Leer valores de los select y guardarlos en tu objeto de configuración
+        const orientacion = document.getElementById("orientacionPagina").value;
+        const hoja = document.getElementById("hojaPagina").value;
+        const margSupIzq = parseFloat(document.getElementById("margenSupIzq").value);
+        const margSupDer = parseFloat(document.getElementById("margenSupDer").value);
+        const margInfIzq = parseFloat(document.getElementById("margenInfIzq").value);
+        const margInfDer = parseFloat(document.getElementById("margenInfDer").value);
+
+        const configPaginasData = {
+            orientacion,
+            hoja,
+            margenes: {
+                supIzq: margSupIzq,
+                supDer: margSupDer,
+                infIzq: margInfIzq,
+                infDer: margInfDer
+            }
+        };
+
+        console.log("Configuración de páginas aplicada:", configPaginasData);
         cerrarModal(modalConfigPaginas);
+        // aplicarConfigPaginas(configPaginasData) → implementar en logica.js
     });
 
     btnCancelarConfig.addEventListener("click", () => cerrarModal(modalConfigPaginas));
@@ -82,8 +126,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btnNuevo.addEventListener("click", () => abrirModal(modalNuevo));
 
     btnNuevoSi.addEventListener("click", () => {
-        // Generar documento nuevo vacío
+        console.log("Documento nuevo generado");
         cerrarModal(modalNuevo);
+        // generarDocumentoNuevo() → implementar en logica.js
     });
 
     btnNuevoNo.addEventListener("click", () => cerrarModal(modalNuevo));
@@ -97,52 +142,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnAbrir.addEventListener("click", () => abrirModal(modalAbrir));
 
-    btnAbrirSi.addEventListener("click", () => {
-        // Abrir cuadro típico de selección de archivo
+    btnAbrirSi.addEventListener("click", async () => {
         cerrarModal(modalAbrir);
-    });
-
-    btnAbrirNo.addEventListener("click", () => cerrarModal(modalAbrir));
-
-    // =====================
-    // INICIALIZAR TODOS MODALES OCULTOS
-    // =====================
-    [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir].forEach(m => {
-        if (m) m.classList.add("oculto");
-    });
-    if (overlay) overlay.classList.add("oculto");
-
-// =====================
-// BOTÓN GUARDAR
-// =====================
-const btnGuardar = document.getElementById("btnGuardar");
-
-// Variable para saber si el documento ya está guardado
-let documentoGuardado = false; // false = nuevo documento sin guardar
-let nombreArchivo = ""; // ruta o nombre del archivo
-
-btnGuardar.addEventListener("click", async () => {
-    if (documentoGuardado && nombreArchivo) {
-        // Guardar directamente el documento actual
-        console.log("Guardando documento en:", nombreArchivo);
-        // aquí iría tu función de guardar desde logica.js
-    } else {
-        // Documento nuevo, abrir modal "Guardar Como" nativo
+        // Abrir cuadro de selección de archivo
         try {
-            // Uso de File System Access API (si el navegador lo soporta)
-            const handle = await window.showSaveFilePicker({
-                suggestedName: "documento.mpd",
+            const [fileHandle] = await window.showOpenFilePicker({
+                multiple: false,
                 types: [{
                     description: "Documentos My Personal Docs",
                     accept: { "application/mpd": [".mpd"] }
                 }]
             });
-            nombreArchivo = handle.name;
-            documentoGuardado = true;
-            console.log("Guardar Como:", nombreArchivo);
-            // guardar el contenido actual usando handle.createWritable() etc.
+            console.log("Archivo abierto:", fileHandle.name);
+            // abrirDocumento(fileHandle) → implementar en logica.js
         } catch (err) {
-            console.log("Guardar Como cancelado o error:", err);
+            console.log("Abrir cancelado o error:", err);
         }
-    }
+    });
+
+    btnAbrirNo.addEventListener("click", () => cerrarModal(modalAbrir));
+
+    // =====================
+    // BOTÓN GUARDAR
+    // =====================
+    const btnGuardar = document.getElementById("btnGuardar");
+    let documentoGuardado = false;
+    let nombreArchivo = "";
+
+    btnGuardar.addEventListener("click", async () => {
+        if (documentoGuardado && nombreArchivo) {
+            console.log("Guardando documento en:", nombreArchivo);
+            // guardarDocumento(nombreArchivo) → implementar en logica.js
+        } else {
+            try {
+                const handle = await window.showSaveFilePicker({
+                    suggestedName: "documento.mpd",
+                    types: [{
+                        description: "Documentos My Personal Docs",
+                        accept: { "application/mpd": [".mpd"] }
+                    }]
+                });
+                nombreArchivo = handle.name;
+                documentoGuardado = true;
+                console.log("Guardar Como:", nombreArchivo);
+                // guardarDocumentoNuevo(handle) → implementar en logica.js
+            } catch (err) {
+                console.log("Guardar Como cancelado o error:", err);
+            }
+        }
+    });
+
+    // =====================
+    // INICIALIZAR TODOS MODALES OCULTOS
+    // =====================
+    [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir].forEach(m => m.classList.add("oculto"));
+    overlay.classList.add("oculto");
+
 });
