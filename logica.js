@@ -224,42 +224,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 td.style.border = "1px solid #000";
                 td.style.overflow = "hidden";
                 td.contentEditable = true;
-
-                // Redimensionamiento simple por borde derecho
-                td.style.position = "relative";
-                td.addEventListener("mousedown", iniciarRedimension);
                 tr.appendChild(td);
             }
             table.appendChild(tr);
         }
 
-        document.execCommand("insertHTML", false, table.outerHTML + "<br>");
+        // Insertar tabla en el editor
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(table);
+
+        // Hacer tabla redimensionable
+        makeTableResizable(table);
     }
 
-    let celdaRedim = null;
-    let startX, startWidth;
+    function makeTableResizable(table) {
+        const cols = table.querySelectorAll("td");
+        cols.forEach(td => {
+            td.style.position = "relative";
+        });
 
-    function iniciarRedimension(e) {
-        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
-            celdaRedim = e.target;
-            startX = e.clientX;
-            startWidth = celdaRedim.offsetWidth;
-            document.addEventListener("mousemove", redimensionar);
-            document.addEventListener("mouseup", detenerRedimension);
-            e.preventDefault();
+        let resizer, startX, startWidth, currentTd;
+
+        table.addEventListener("mousedown", e => {
+            if (e.target.tagName === "TD") {
+                const td = e.target;
+                if (e.offsetX > td.offsetWidth - 8) {
+                    resizer = true;
+                    currentTd = td;
+                    startX = e.clientX;
+                    startWidth = td.offsetWidth;
+                    document.addEventListener("mousemove", resize);
+                    document.addEventListener("mouseup", stopResize);
+                    e.preventDefault();
+                }
+            }
+        });
+
+        function resize(e) {
+            if (!resizer) return;
+            const newWidth = startWidth + (e.clientX - startX);
+            if (newWidth > 30) currentTd.style.width = newWidth + "px";
         }
-    }
 
-    function redimensionar(e) {
-        if (!celdaRedim) return;
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
-
-    function detenerRedimension() {
-        celdaRedim = null;
-        document.removeEventListener("mousemove", redimensionar);
-        document.removeEventListener("mouseup", detenerRedimension);
+        function stopResize() {
+            resizer = false;
+            document.removeEventListener("mousemove", resize);
+            document.removeEventListener("mouseup", stopResize);
+        }
     }
 
     // =====================
@@ -273,7 +287,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // =====================
-    // INSERTAR IMAGEN
+    // INSERTAR IMAGEN CON REDIMENSIONAMIENTO
     // =====================
     btnInsertarImagen.onclick = () => {
         const input = document.createElement("input");
@@ -287,12 +301,98 @@ document.addEventListener("DOMContentLoaded", () => {
             const reader = new FileReader();
             reader.onload = e => {
                 restaurarCursor();
-                document.execCommand("insertHTML", false, `<img src="${e.target.result}" style="max-width:300px;">`);
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.maxWidth = "300px";
+                img.style.cursor = "move";
+                img.style.position = "relative";
+
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(img);
+
+                makeImageResizable(img);
+                makeImageDraggable(img);
             };
             reader.readAsDataURL(file);
         };
         input.click();
     };
+
+    function makeImageResizable(img) {
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "inline-block";
+        wrapper.style.position = "relative";
+        wrapper.style.width = img.width + "px";
+        wrapper.style.height = img.height + "px";
+        img.parentNode.insertBefore(wrapper, img);
+        wrapper.appendChild(img);
+
+        const handle = document.createElement("div");
+        handle.style.width = "10px";
+        handle.style.height = "10px";
+        handle.style.background = "#FF7600";
+        handle.style.position = "absolute";
+        handle.style.right = "0";
+        handle.style.bottom = "0";
+        handle.style.cursor = "nwse-resize";
+        wrapper.appendChild(handle);
+
+        let startX, startY, startWidth, startHeight;
+
+        handle.addEventListener("mousedown", e => {
+            e.preventDefault();
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = img.offsetWidth;
+            startHeight = img.offsetHeight;
+            document.addEventListener("mousemove", resizeImg);
+            document.addEventListener("mouseup", stopResizeImg);
+        });
+
+        function resizeImg(e) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            img.style.width = startWidth + dx + "px";
+            img.style.height = startHeight + dy + "px";
+            wrapper.style.width = img.style.width;
+            wrapper.style.height = img.style.height;
+        }
+
+        function stopResizeImg() {
+            document.removeEventListener("mousemove", resizeImg);
+            document.removeEventListener("mouseup", stopResizeImg);
+        }
+    }
+
+    function makeImageDraggable(img) {
+        let offsetX, offsetY, dragging = false;
+
+        img.addEventListener("mousedown", e => {
+            if (e.target.tagName === "IMG") {
+                dragging = true;
+                offsetX = e.offsetX;
+                offsetY = e.offsetY;
+                img.style.position = "relative";
+                document.addEventListener("mousemove", drag);
+                document.addEventListener("mouseup", stopDrag);
+            }
+        });
+
+        function drag(e) {
+            if (!dragging) return;
+            img.style.left = e.clientX - offsetX - img.parentNode.getBoundingClientRect().left + "px";
+            img.style.top = e.clientY - offsetY - img.parentNode.getBoundingClientRect().top + "px";
+        }
+
+        function stopDrag() {
+            dragging = false;
+            document.removeEventListener("mousemove", drag);
+            document.removeEventListener("mouseup", stopDrag);
+        }
+    }
 
     // =====================
     // ÍNDICES
