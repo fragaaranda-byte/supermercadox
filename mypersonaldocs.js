@@ -89,7 +89,7 @@ btnNumerar.onclick = () => {
     document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
     document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
 
-    // Función para aplicar numeración a todas las páginas
+    // Función para aplicar numeración por página y posición
     window.aplicarNumeracion = function(config) {
         if (!config) {
             // Cancelar: eliminar todas las numeraciones
@@ -102,14 +102,17 @@ btnNumerar.onclick = () => {
         const esIzquierda = config.posicion.includes("izquierda");
         const esDerecha = config.posicion.includes("derecha");
 
+        // Definir un identificador único por posición
+        const posicionKey = (esSuperior ? "sup" : "inf") + "-" + (esIzquierda ? "izq" : "der");
+
         document.querySelectorAll(".page").forEach((page, index) => {
-            // Target header o footer según posición
             let target = esSuperior ? page.querySelector(".page-header") : page.querySelector(".page-footer");
 
-            // Buscar numeración existente en este target
-            let numExistente = target.querySelector(".numero-pagina");
+            // Buscar numeración existente en la misma posición
+            let numExistente = target.querySelector(`.numero-pagina[data-posicion='${posicionKey}']`);
+
             if (numExistente) {
-                // Si ya existe, solo actualizamos estilos y contenido
+                // Actualizar estilos y contenido
                 numExistente.textContent = index + 1;
                 numExistente.style.fontWeight = config.negrita ? "bold" : "normal";
                 numExistente.style.fontStyle = config.cursiva ? "italic" : "normal";
@@ -120,9 +123,10 @@ btnNumerar.onclick = () => {
                 numExistente.style.left = esIzquierda ? "20px" : "";
                 numExistente.style.right = esDerecha ? "20px" : "";
             } else {
-                // Si no existe, creamos una nueva numeración
+                // Crear nueva numeración si no existe
                 const num = document.createElement("div");
                 num.className = "numero-pagina";
+                num.setAttribute("data-posicion", posicionKey);
                 num.textContent = index + 1;
 
                 num.style.fontWeight = config.negrita ? "bold" : "normal";
@@ -132,6 +136,7 @@ btnNumerar.onclick = () => {
                 num.style.color = config.colorTexto;
                 num.style.backgroundColor = config.colorFondo;
                 num.style.position = "absolute";
+
                 if (esIzquierda) num.style.left = "20px";
                 if (esDerecha) num.style.right = "20px";
 
@@ -159,14 +164,14 @@ btnNumerar.onclick = () => {
         cerrarModal("modalNumeracion");
     };
 
-    // Cancelar numeración: elimina todos los números y oculta headers/footers
+    // Cancelar numeración
     document.getElementById("cancelarNumeracion").onclick = () => {
         window.aplicarNumeracion(null);
         window.configNumeracion = null;
         cerrarModal("modalNumeracion");
     };
 
-    // Función para cerrar modal
+    // Cerrar modal
     function cerrarModal(idModal) {
         const modal = document.getElementById(idModal);
         const overlay = document.getElementById("overlay");
