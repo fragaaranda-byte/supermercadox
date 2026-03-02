@@ -62,24 +62,56 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // =====================
-    // MODAL NUMERACIÓN
-    // =====================
-    btnNumerar.onclick = () => {
-        abrirModal("modalNumeracion");
+// MODAL NUMERACIÓN
+// =====================
+btnNumerar.onclick = () => {
+    abrirModal("modalNumeracion");
 
-        let seleccion = null;
-        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+    let seleccion = null;
+    document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
 
-        document.getElementById("aceptarNumeracion").onclick = () => {
-            if (seleccion && window.aplicarNumeracion) {
-                window.configNumeracion = seleccion;
-                window.aplicarNumeracion(seleccion);
-            }
-            cerrarModal("modalNumeracion");
-        };
+    // Estilos iniciales
+    let negrita = false;
+    let cursiva = false;
+    let subrayado = false;
+    let tamanio = parseInt(document.getElementById("tamanioNumeracion").value);
+    let colorTexto = document.getElementById("colorNumeracionTexto").value;
+    let colorFondo = document.getElementById("colorNumeracionFondo").value;
 
-        document.getElementById("cancelarNumeracion").onclick = () => cerrarModal("modalNumeracion");
+    // Toggle estilos
+    document.getElementById("numNegrita").onclick = () => negrita = !negrita;
+    document.getElementById("numCursiva").onclick = () => cursiva = !cursiva;
+    document.getElementById("numSubrayado").onclick = () => subrayado = !subrayado;
+
+    // Cambios en tiempo real
+    document.getElementById("tamanioNumeracion").onchange = e => tamanio = parseInt(e.target.value);
+    document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
+    document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
+
+    // Aceptar numeración
+    document.getElementById("aceptarNumeracion").onclick = () => {
+        if (seleccion) {
+            window.configNumeracion = {
+                posicion: seleccion,
+                negrita,
+                cursiva,
+                subrayado,
+                tamanio,
+                colorTexto,
+                colorFondo
+            };
+            window.aplicarNumeracion(window.configNumeracion);
+        }
+        cerrarModal("modalNumeracion");
     };
+
+    // Cancelar numeración: cerrar modal y eliminar números existentes
+    document.getElementById("cancelarNumeracion").onclick = () => {
+        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+        window.configNumeracion = null; // resetea la configuración
+        cerrarModal("modalNumeracion");
+    };
+};
 
     // =====================
     // MODAL NUEVO DOCUMENTO
