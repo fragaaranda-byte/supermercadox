@@ -1,3 +1,5 @@
+NUNCA TE PEDI UN CSS IMBECIL, LO QUE ROMPISTE FUE EL ULTIMO JS QUE ME MANDASTE HIJO DE PUTA... ESTE JS ES FUNCIONAL PERO TIENE DETALLES QUE LA CAGAS... PRESTA ATENCION MALDITA IA HOMOSEXUAL, NO TOQUES LOS PUTOS COLORES, NO TOQUES LOS PINCHES COLORES, NO TOQUES LOS MALDITOS COLORES DE MIERDA, NOSE SI TE LO DIJE ANTES... AH SI! SOLO MIL VECES YA: NO TOQUES LOS PUTOS COLORES... HIJO DE PUTA. LA ZONA DEL INPUT ESTÁ MAL, NO ES COMO WORD QUE APARECE LA HOJA ACTUAL CON SU TAMAÑO SELECCIONADO (EN ESTE CASO A4) Y LAS TABLAS NO SE PUEDEN REDIMENSIONAR, ADEMÁS, AL POSICIONAR EL CURSOR SOBRE UN TEXTO ESPECIFICO EL SELECT DEL TAMAÑO DE FUENTE NO CAMBIA, DEBERIA CAMBIAR EL SELECT, HIJO DE PUTA...
+
 document.addEventListener("DOMContentLoaded", () => {
 
 const editor = document.getElementById("editor");
@@ -31,7 +33,6 @@ document.addEventListener("selectionchange", () => {
         const range = sel.getRangeAt(0);
         if (editor.contains(range.startContainer)) {
             rangoGuardado = range.cloneRange();
-            actualizarSelectsDesdeCursor(range);
         }
     }
 });
@@ -53,27 +54,18 @@ document.querySelectorAll("button, select, input, img").forEach(el => {
 function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
-    page.style.width = PAGE_WIDTH + "px";
-    page.style.height = PAGE_HEIGHT + "px";
 
     const header = document.createElement("div");
     header.className = "page-header";
     header.contentEditable = false;
-    header.style.height = MARGEN + "px";
 
     const content = document.createElement("div");
     content.className = "page-content";
     content.contentEditable = true;
-    content.style.flex = "1";
-    content.style.padding = MARGEN + "px";
-    content.style.minHeight = (PAGE_HEIGHT - 2 * MARGEN) + "px";
-    content.style.overflow = "hidden";
-    content.style.wordWrap = "break-word";
 
     const footer = document.createElement("div");
     footer.className = "page-footer";
     footer.contentEditable = false;
-    footer.style.height = MARGEN + "px";
 
     page.appendChild(header);
     page.appendChild(content);
@@ -110,43 +102,20 @@ function verificarOverflow() {
 }
 
 // =====================
-// ACTUALIZAR SELECTS SEGUN CURSOR
-// =====================
-function actualizarSelectsDesdeCursor(range) {
-    let node = range.startContainer;
-    if (node.nodeType === 3) node = node.parentElement;
-
-    const styles = window.getComputedStyle(node);
-
-    // Tamaño
-    const size = parseInt(styles.fontSize);
-    sizeSelect.value = size;
-    formatoActual.fontSize = size;
-
-    // Fuente
-    const font = styles.fontFamily.replace(/["']/g, "").split(",")[0];
-    fuenteSelect.value = font;
-    formatoActual.fontName = font;
-
-    // Color texto
-    const color = rgbToHex(styles.color);
-    colorTexto.value = color;
-    formatoActual.colorTexto = color;
-
-    // Fondo
-    const bg = styles.backgroundColor !== "rgba(0, 0, 0, 0)" ? rgbToHex(styles.backgroundColor) : "#ffffff";
-    colorFondo.value = bg;
-    formatoActual.colorFondo = bg;
-}
-
-function rgbToHex(rgb) {
-    const result = rgb.match(/\d+/g);
-    if (!result) return "#000000";
-    return "#" + result.map(x => parseInt(x).toString(16).padStart(2, "0")).join("");
-}
-
-// =====================
 // FORMATO
+// =====================
+editor.addEventListener("keyup", aplicarFormatoActual);
+editor.addEventListener("click", aplicarFormatoActual);
+
+function aplicarFormatoActual() {
+    restaurarCursor();
+    document.execCommand("fontName", false, formatoActual.fontName);
+    document.execCommand("foreColor", false, formatoActual.colorTexto);
+    document.execCommand("hiliteColor", false, formatoActual.colorFondo);
+}
+
+// =====================
+// BOTONES
 // =====================
 btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
 btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
@@ -218,11 +187,11 @@ document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
 function insertarTabla(filas, columnas) {
     restaurarCursor();
 
-    let table = `<table border="1" style="border-collapse:collapse;width:auto;">`;
+    let table = `<table border="1" style="border-collapse:collapse;">`;
     for (let i = 0; i < filas; i++) {
         table += "<tr>";
         for (let j = 0; j < columnas; j++) {
-            table += `<td style="min-width:50px;min-height:30px;">&nbsp;</td>`;
+            table += `<td style="min-width:50px;height:30px;">&nbsp;</td>`;
         }
         table += "</tr>";
     }
