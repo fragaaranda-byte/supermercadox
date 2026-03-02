@@ -20,13 +20,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 20, bottom: 20, left: 20, right: 20 }
+        margen: { top: 20, bottom: 20, left: 20, right: 20 },
+        orientacion: "Vertical"
     };
 
     const tamañosPredefinidos = {
+        A3: { width: 1123, height: 1587 },
         A4: { width: 794, height: 1123 },
         A5: { width: 559, height: 794 },
-        Carta: { width: 816, height: 1056 }
+        Carta: { width: 816, height: 1056 },
+        Legal: { width: 816, height: 1344 }
     };
 
     // =====================
@@ -38,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
-                // Actualizar select de tamaño en tiempo real
                 const parent = range.startContainer.parentElement;
                 if (parent) {
                     const size = parseInt(window.getComputedStyle(parent).fontSize);
@@ -55,7 +57,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
-    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -67,7 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const page = document.createElement("div");
         page.className = "page";
 
-        const tamaño = tamañosPredefinidos[configPagina.tamaño];
+        let tamaño = tamañosPredefinidos[configPagina.tamaño];
+        if (configPagina.orientacion === "Horizontal") {
+            tamaño = { width: tamaño.height, height: tamaño.width };
+        }
+
         page.style.width = tamaño.width + "px";
         page.style.height = tamaño.height + "px";
         page.style.paddingTop = configPagina.margen.top + "px";
@@ -91,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
-        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px";
 
         const footer = document.createElement("div");
         footer.className = "page-footer";
@@ -107,7 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return page;
     }
 
-    // Inicializar editor con una página
     editor.innerHTML = "";
     editor.appendChild(crearPagina());
 
@@ -127,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
             }
         });
-        aplicarNumeracion();
+        if (configNumeracion) aplicarNumeracion(configNumeracion);
     }
 
     // =====================
@@ -143,7 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.execCommand("hiliteColor", false, formatoActual.colorFondo);
     }
 
+    // =====================
     // BOTONES DE FORMATO
+    // =====================
     btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
     btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
     btnSubrayado.onclick = () => { restaurarCursor(); document.execCommand("underline"); };
@@ -197,209 +203,65 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
     // =====================
-    // TABLAS REDIMENSIONABLES
+    // APLICAR NUMERACIÓN
     // =====================
-    document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
-        cell.onclick = () => {
-            const cols = (index % 10) + 1;
-            const rows = Math.floor(index / 10) + 1;
-            insertarTabla(rows, cols);
-        };
-    });
-
-    function insertarTabla(filas, columnas) {
-        restaurarCursor();
-        const table = document.createElement("table");
-        table.style.borderCollapse = "collapse";
-        table.style.tableLayout = "fixed";
-        table.style.width = "100%";
-
-        for (let i = 0; i < filas; i++) {
-            const tr = document.createElement("tr");
-            for (let j = 0; j < columnas; j++) {
-                const td = document.createElement("td");
-                td.style.minWidth = "50px";
-                td.style.height = "30px";
-                td.style.padding = "2px";
-                td.style.border = "1px solid #000";
-                td.style.overflow = "hidden";
-                td.contentEditable = true;
-
-                // Redimensionamiento simple por borde derecho
-                td.style.position = "relative";
-                td.addEventListener("mousedown", iniciarRedimension);
-                tr.appendChild(td);
-            }
-            table.appendChild(tr);
-        }
-
-        document.execCommand("insertHTML", false, table.outerHTML + "<br>");
-    }
-
-    let celdaRedim = null;
-    let startX, startWidth;
-
-    function iniciarRedimension(e) {
-        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
-            celdaRedim = e.target;
-            startX = e.clientX;
-            startWidth = celdaRedim.offsetWidth;
-            document.addEventListener("mousemove", redimensionar);
-            document.addEventListener("mouseup", detenerRedimension);
-            e.preventDefault();
-        }
-    }
-
-    function redimensionar(e) {
-        if (!celdaRedim) return;
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
-
-    function detenerRedimension() {
-        celdaRedim = null;
-        document.removeEventListener("mousemove", redimensionar);
-        document.removeEventListener("mouseup", detenerRedimension);
-    }
-
-    // =====================
-    // SÍMBOLOS
-    // =====================
-    document.querySelectorAll(".simbolos button").forEach(btn => {
-        btn.onclick = () => {
-            restaurarCursor();
-            document.execCommand("insertText", false, btn.innerText);
-        };
-    });
-
-    // =====================
-    // INSERTAR IMAGEN
-    // =====================
-    btnInsertarImagen.onclick = () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-
-        input.onchange = () => {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                restaurarCursor();
-                document.execCommand("insertHTML", false, `<img src="${e.target.result}" style="max-width:300px;">`);
-            };
-            reader.readAsDataURL(file);
-        };
-        input.click();
-    };
-
-    // =====================
-    // ÍNDICES
-    // =====================
-    document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
-        btn.onclick = () => {
-            indiceActivo = btn.id;
-            contadorIndice = 1;
-        };
-    });
-
-    editor.addEventListener("keydown", e => {
-        if (!indiceActivo) return;
-        if (e.key === "Enter") {
-            e.preventDefault();
-            restaurarCursor();
-            let formato = "";
-            if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
-            if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
-            if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
-            if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
-            if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
-            if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
-            document.execCommand("insertHTML", false, `<br>${formato}`);
-            contadorIndice++;
-        }
-    });
-
-    // =====================
-    // DESHACER / REHACER
-    // =====================
-    btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
-    btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
-
-    // =====================
-    // NUMERACIÓN
-    // =====================
-    btnNumerar.onclick = abrirModalNumeracion;
-
-    function abrirModalNumeracion() {
-        const modal = document.getElementById("modalNumeracion");
-        const overlay = document.getElementById("overlay");
-
-        modal.classList.remove("oculto");
-        overlay.classList.remove("oculto");
-
-        let seleccion = null;
-
-        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
-
-        document.getElementById("aceptarNumeracion").onclick = () => {
-            if (seleccion) {
-                configNumeracion = seleccion;
-                aplicarNumeracion();
-            }
-            cerrarModal();
-        };
-        document.getElementById("cancelarNumeracion").onclick = cerrarModal;
-
-        function cerrarModal() {
-            modal.classList.add("oculto");
-            overlay.classList.add("oculto");
-        }
-    }
-
-    function aplicarNumeracion() {
+    function aplicarNumeracion(config) {
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        if (!configNumeracion) return;
+        if (!config) return;
 
         document.querySelectorAll(".page").forEach((page, index) => {
             const num = document.createElement("div");
             num.className = "numero-pagina";
             num.textContent = index + 1;
+
             num.style.position = "absolute";
-            num.style.fontSize = "20px";
+            num.style.fontSize = config.tamano + "px";
+            if (config.estilo.negrita) num.style.fontWeight = "bold";
+            if (config.estilo.cursiva) num.style.fontStyle = "italic";
+            if (config.estilo.subrayado) num.style.textDecoration = "underline";
 
-            let target;
-            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
+            let target = page.querySelector(".page-footer");
+            if (config.posicion.includes("superior")) target = page.querySelector(".page-header");
 
-            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
-            if (configNumeracion.includes("derecha")) num.style.right = "20px";
+            if (config.posicion.includes("izquierda")) num.style.left = "20px";
+            if (config.posicion.includes("derecha")) num.style.right = "20px";
 
             target.appendChild(num);
         });
     }
 
     // =====================
-    // NUEVO DOCUMENTO
+    // APLICAR CONFIGURACIÓN DE PÁGINAS
     // =====================
-    btnNuevo.onclick = () => {
-        const modal = document.getElementById("modalNuevo");
-        const overlay = document.getElementById("overlay");
-        modal.classList.remove("oculto");
-        overlay.classList.remove("oculto");
+    function aplicarConfigPaginas(configPaginasData) {
+        if (!configPaginasData) return;
 
-        document.getElementById("nuevoSi").onclick = () => {
-            editor.innerHTML = "";
-            editor.appendChild(crearPagina());
-            configNumeracion = null;
-            modal.classList.add("oculto");
-            overlay.classList.add("oculto");
-        };
-        document.getElementById("nuevoNo").onclick = () => {
-            modal.classList.add("oculto");
-            overlay.classList.add("oculto");
-        };
-    };
+        configPagina.tamaño = configPaginasData.hoja;
+        configPagina.orientacion = configPaginasData.orientacion;
+        configPagina.margen.top = configPaginasData.margenes.supIzq * 10;
+        configPagina.margen.left = configPaginasData.margenes.supIzq * 10;
+        configPagina.margen.right = configPaginasData.margenes.supDer * 10;
+        configPagina.margen.bottom = configPaginasData.margenes.infDer * 10;
+
+        document.querySelectorAll(".page").forEach(page => {
+            let tamaño = tamañosPredefinidos[configPagina.tamaño];
+            if (configPagina.orientacion === "Horizontal") tamaño = { width: tamaño.height, height: tamaño.width };
+
+            page.style.width = tamaño.width + "px";
+            page.style.height = tamaño.height + "px";
+            page.style.paddingTop = configPagina.margen.top + "px";
+            page.style.paddingBottom = configPagina.margen.bottom + "px";
+            page.style.paddingLeft = configPagina.margen.left + "px";
+            page.style.paddingRight = configPagina.margen.right + "px";
+
+            const content = page.querySelector(".page-content");
+            content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px";
+        });
+
+        verificarOverflow();
+    }
+
+    window.aplicarNumeracion = aplicarNumeracion;
+    window.aplicarConfigPaginas = aplicarConfigPaginas;
 
 });
