@@ -367,58 +367,97 @@ function detenerRedimensionWord() {
     btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
 
     // =====================
-    // NUMERACIÓN
-    // =====================
-    btnNumerar.onclick = abrirModalNumeracion;
+// NUMERACIÓN COMPLETA
+// =====================
+btnNumerar.onclick = abrirModalNumeracion;
 
-    function abrirModalNumeracion() {
-        const modal = document.getElementById("modalNumeracion");
-        const overlay = document.getElementById("overlay");
+function abrirModalNumeracion() {
+    const modal = document.getElementById("modalNumeracion");
+    const overlay = document.getElementById("overlay");
 
-        modal.classList.remove("oculto");
-        overlay.classList.remove("oculto");
+    modal.classList.remove("oculto");
+    overlay.classList.remove("oculto");
 
-        let seleccion = null;
+    // Configuración inicial del modal
+    let seleccion = null;
+    let negrita = false;
+    let cursiva = false;
+    let subrayado = false;
+    let tamanio = parseInt(document.getElementById("tamanioNumeracion").value);
+    let colorTexto = document.getElementById("colorNumeracionTexto").value;
+    let colorFondo = document.getElementById("colorNumeracionFondo").value;
 
-        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+    document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+    document.getElementById("numNegrita").onclick = () => negrita = !negrita;
+    document.getElementById("numCursiva").onclick = () => cursiva = !cursiva;
+    document.getElementById("numSubrayado").onclick = () => subrayado = !subrayado;
+    document.getElementById("tamanioNumeracion").onchange = e => tamanio = parseInt(e.target.value);
+    document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
+    document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
 
-        document.getElementById("aceptarNumeracion").onclick = () => {
-            if (seleccion) {
-                configNumeracion = seleccion;
-                aplicarNumeracion();
-            }
-            cerrarModal();
+    // Aceptar numeración
+    document.getElementById("aceptarNumeracion").onclick = () => {
+        if (!seleccion) return;
+
+        configNumeracion = {
+            posicion: seleccion,
+            negrita,
+            cursiva,
+            subrayado,
+            tamanio,
+            colorTexto,
+            colorFondo
         };
-        document.getElementById("cancelarNumeracion").onclick = cerrarModal;
 
-        function cerrarModal() {
-            modal.classList.add("oculto");
-            overlay.classList.add("oculto");
-        }
-    }
+        aplicarNumeracion();
+        cerrarModal();
+    };
 
-    function aplicarNumeracion() {
+    // Cancelar numeración
+    document.getElementById("cancelarNumeracion").onclick = () => {
+        // Borra cualquier numeración existente
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        if (!configNumeracion) return;
+        configNumeracion = null;
+        cerrarModal();
+    };
 
-        document.querySelectorAll(".page").forEach((page, index) => {
-            const num = document.createElement("div");
-            num.className = "numero-pagina";
-            num.textContent = index + 1;
-            num.style.position = "absolute";
-            num.style.fontSize = "20px";
-
-            let target;
-            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
-
-            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
-            if (configNumeracion.includes("derecha")) num.style.right = "20px";
-
-            target.appendChild(num);
-        });
+    function cerrarModal() {
+        modal.classList.add("oculto");
+        overlay.classList.add("oculto");
     }
+}
 
+// Función que aplica numeración con todos los estilos
+function aplicarNumeracion() {
+    document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+    if (!configNumeracion) return;
+
+    document.querySelectorAll(".page").forEach((page, index) => {
+        const num = document.createElement("div");
+        num.className = "numero-pagina";
+        num.textContent = index + 1;
+
+        // Aplicar estilos completos
+        num.style.fontWeight = configNumeracion.negrita ? "bold" : "normal";
+        num.style.fontStyle = configNumeracion.cursiva ? "italic" : "normal";
+        num.style.textDecoration = configNumeracion.subrayado ? "underline" : "none";
+        num.style.fontSize = configNumeracion.tamanio + "px";
+        num.style.color = configNumeracion.colorTexto;
+        num.style.backgroundColor = configNumeracion.colorFondo;
+
+        num.style.position = "absolute";
+
+        // Posición
+        let target;
+        if (configNumeracion.posicion.includes("superior")) target = page.querySelector(".page-header");
+        else target = page.querySelector(".page-footer");
+
+        if (configNumeracion.posicion.includes("izquierda")) num.style.left = "20px";
+        if (configNumeracion.posicion.includes("derecha")) num.style.right = "20px";
+
+        target.appendChild(num);
+    });
+}
     // =====================
     // NUEVO DOCUMENTO
     // =====================
