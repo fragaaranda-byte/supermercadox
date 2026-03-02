@@ -39,13 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAceptarNumeracion = document.getElementById("aceptarNumeracion");
     const btnCancelarNumeracion = document.getElementById("cancelarNumeracion");
     const selectPosicion = document.getElementById("posicionNumeracion");
-    const selectTamanoNumeracion = document.getElementById("tamanoNumeracion");
-    const btnNegritaNumeracion = document.getElementById("negritaNumeracion");
-    const btnCursivaNumeracion = document.getElementById("cursivaNumeracion");
-    const btnSubrayadoNumeracion = document.getElementById("subrayadoNumeracion");
+    const selectTamanoNumeracion = document.getElementById("tamanioNumeracion");
+    const btnNegrita = document.getElementById("numNegrita");
+    const btnCursiva = document.getElementById("numCursiva");
+    const btnSubrayado = document.getElementById("numSubrayado");
 
     let configNumeracion = {
-        posicion: "esq-sup-izq",
+        posicion: "Esquina superior izquierda",
         estilo: { negrita: false, cursiva: false, subrayado: false },
         tamano: 12
     };
@@ -63,13 +63,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Cambios en estilo
-    btnNegritaNumeracion.addEventListener("click", () => {
+    btnNegrita.addEventListener("click", () => {
         configNumeracion.estilo.negrita = !configNumeracion.estilo.negrita;
     });
-    btnCursivaNumeracion.addEventListener("click", () => {
+    btnCursiva.addEventListener("click", () => {
         configNumeracion.estilo.cursiva = !configNumeracion.estilo.cursiva;
     });
-    btnSubrayadoNumeracion.addEventListener("click", () => {
+    btnSubrayado.addEventListener("click", () => {
         configNumeracion.estilo.subrayado = !configNumeracion.estilo.subrayado;
     });
 
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnAceptarConfig.addEventListener("click", () => {
         const orientacion = document.getElementById("orientacionPagina").value;
-        const hoja = document.getElementById("hojaPagina").value;
+        const hoja = document.getElementById("tipoHoja").value;
         const margSupIzq = parseFloat(document.getElementById("margenSupIzq").value);
         const margSupDer = parseFloat(document.getElementById("margenSupDer").value);
         const margInfIzq = parseFloat(document.getElementById("margenInfIzq").value);
@@ -144,7 +144,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnAbrirSi.addEventListener("click", async () => {
         cerrarModal(modalAbrir);
-        // Abrir cuadro de selección de archivo
         try {
             const [fileHandle] = await window.showOpenFilePicker({
                 multiple: false,
