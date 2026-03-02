@@ -1,116 +1,173 @@
-/* =======================
-   EDITOR Y PÁGINAS
-   ======================= */
-#editor {
-    width: 100%;
-    min-height: 100vh;
-    background: #e0e0e0;
-    padding: 20px;
-    box-sizing: border-box;
+/* =====================
+   ESTILO GENERAL
+===================== */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111; /* fondo oscuro */
+    color: #ff8800;   /* color principal naranja */
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* Páginas */
+button {
+    background: #222;
+    color: #ff8800;
+    border: 1px solid #ff8800;
+    padding: 5px 10px;
+    margin: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    background: #ff8800;
+    color: #111;
+}
+
+/* =====================
+   PANEL LATERAL
+===================== */
+#panelLateral {
+    width: 250px;
+    background: #1a1a1a;
+    padding: 10px;
+    overflow-y: auto;
+    border-right: 2px solid #ff8800;
+}
+
+#panelLateral h3 {
+    margin-top: 0;
+    color: #ff8800;
+}
+
+.grid-tabla {
+    display: grid;
+    grid-template-columns: repeat(10, 20px);
+    grid-gap: 2px;
+    margin-bottom: 10px;
+}
+
+.grid-tabla div {
+    width: 20px;
+    height: 20px;
+    background: #222;
+    border: 1px solid #ff8800;
+    cursor: pointer;
+}
+
+/* =====================
+   EDITOR Y HOJAS
+===================== */
+#editor {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .page {
     background: #fff;
-    margin: 20px auto;
+    margin: 20px 0;
     position: relative;
-    box-sizing: border-box;
     box-shadow: 0 0 5px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
-}
-
-/* Header y Footer */
-.page-header,
-.page-footer {
-    height: 40px;
-    padding: 5px 10px;
     box-sizing: border-box;
-    background: #f7f7f7;
-    border-bottom: 1px solid #ccc;
 }
 
-.page-footer {
-    border-top: 1px solid #ccc;
-    border-bottom: none;
+.page-header, .page-footer {
+    height: 40px;
+    background: #f0f0f0;
+    text-align: center;
+    line-height: 40px;
+    color: #000;
 }
 
-/* Contenido editable */
 .page-content {
     flex: 1;
-    padding: 10px;
     outline: none;
-    overflow: hidden;
-    min-height: 200px; /* valor mínimo para evitar colapso en A3/Legal */
+    padding: 5px;
+    min-height: 400px;
 }
 
-/* Numeración de páginas */
-.numero-pagina {
-    font-size: 20px;
-    font-family: Arial, sans-serif;
-}
-
-/* =======================
-   MODALES
-   ======================= */
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #fff;
-    padding: 20px;
-    z-index: 1001;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.4);
-}
-
-.modal.oculto {
-    display: none;
-}
-
+/* =====================
+   MODALES Y OVERLAY
+===================== */
 #overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.7);
+    display: none;
     z-index: 1000;
+}
+
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #222;
+    color: #ff8800;
+    padding: 20px;
+    border: 2px solid #ff8800;
+    z-index: 1001;
+    min-width: 300px;
     display: none;
 }
 
-#overlay.oculto {
+.modal.oculto {
     display: none;
 }
 
-/* =======================
-   TABLAS
-   ======================= */
+.modal button {
+    margin-top: 10px;
+}
+
+/* =====================
+   SELECTS E INPUTS
+===================== */
+select, input[type="number"] {
+    background: #111;
+    color: #ff8800;
+    border: 1px solid #ff8800;
+    padding: 3px 5px;
+    margin: 2px 0;
+}
+
+/* =====================
+   TABLAS DENTRO DEL EDITOR
+===================== */
 table {
     border-collapse: collapse;
-    table-layout: fixed;
     width: 100%;
 }
 
 td {
     border: 1px solid #000;
     min-width: 50px;
-    height: 30px;
+    min-height: 30px;
     padding: 2px;
-    overflow: hidden;
-    position: relative;
 }
 
-/* =======================
-   OTROS ELEMENTOS
-   ======================= */
-.simbolos button {
-    margin: 2px;
-    padding: 4px 6px;
-    cursor: pointer;
+/* =====================
+   IMÁGENES
+===================== */
+.page-content img {
+    max-width: 300px;
 }
 
-button:hover {
-    background: #ffeb3b;
+/* =====================
+   NÚMEROS DE PÁGINA
+===================== */
+.numero-pagina {
+    font-weight: bold;
+    color: #000;
 }
