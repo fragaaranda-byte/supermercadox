@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalConfigPaginas = document.getElementById("modalConfigPaginas");
     const modalNuevo = document.getElementById("modalNuevo");
     const modalAbrir = document.getElementById("modalAbrir");
-    const modalGuardarComo = document.getElementById("modalGuardarComo");
 
     // =====================
     // FUNCIONES GENERALES
@@ -28,10 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Hacer click sobre overlay cierra cualquier modal activo
     overlay.addEventListener("click", () => {
-        [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir, modalGuardarComo].forEach(m => {
-            if (m && !m.classList.contains("oculto")) {
-                cerrarModal(m);
-            }
+        [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir].forEach(m => {
+            if (m && !m.classList.contains("oculto")) cerrarModal(m);
         });
     });
 
@@ -39,78 +36,78 @@ document.addEventListener("DOMContentLoaded", () => {
     // MODAL NUMERACIÓN
     // =====================
     const btnNumerar = document.getElementById("btnNumerar");
-    const btnAceptarNumeracion = document.getElementById("btnAceptarNumeracion");
-    const btnCancelarNumeracion = document.getElementById("btnCancelarNumeracion");
+    const btnAceptarNumeracion = document.getElementById("aceptarNumeracion");
+    const btnCancelarNumeracion = document.getElementById("cancelarNumeracion");
 
-    let configNumeracion = null;
     let seleccionNumeracion = null;
 
     btnNumerar.addEventListener("click", () => abrirModal(modalNumeracion));
 
-    modalNumeracion.querySelectorAll("button[data-pos]").forEach(btn => {
-        btn.onclick = () => seleccionNumeracion = btn.dataset.pos;
+    // Selección de posición
+    const selectPosicion = document.getElementById("posicionNumeracion");
+    selectPosicion.addEventListener("change", () => {
+        seleccionNumeracion = selectPosicion.value;
     });
 
     btnAceptarNumeracion.addEventListener("click", () => {
-        if (seleccionNumeracion) configNumeracion = seleccionNumeracion;
+        // Aquí se puede guardar la configuración en logica.js
         cerrarModal(modalNumeracion);
-        // aplicarNumeracion() → se llama desde logica.js
     });
 
     btnCancelarNumeracion.addEventListener("click", () => cerrarModal(modalNumeracion));
 
     // =====================
-    // MODAL CONFIG PÁGINAS
+    // MODAL CONFIGURACIÓN PÁGINA
     // =====================
-    const btnConfig = document.querySelectorAll("#barra-superior .btn-icono")[2]; // asumiendo icono config
-    const btnAceptarConfig = document.getElementById("btnAceptarConfig");
-    const btnCancelarConfig = document.getElementById("btnCancelarConfig");
-
-    let configPaginas = {
-        tamaño: "A4",
-        margen: {top: 20, bottom: 20, left: 20, right: 20} // default
-    };
+    const btnConfig = document.getElementById("btnConfig");
+    const btnAceptarConfig = document.getElementById("aceptarConfig");
+    const btnCancelarConfig = document.getElementById("cancelarConfig");
 
     btnConfig.addEventListener("click", () => abrirModal(modalConfigPaginas));
 
-    btnAceptarConfig?.addEventListener("click", () => {
-        // Aquí se leerían los inputs de tamaño/márgenes y actualizar configPaginas
+    btnAceptarConfig.addEventListener("click", () => {
+        // Leer valores de los select y guardarlos en tu objeto de configuración
         cerrarModal(modalConfigPaginas);
-        // Luego se aplicaría a las páginas en logica.js
     });
 
-    btnCancelarConfig?.addEventListener("click", () => cerrarModal(modalConfigPaginas));
+    btnCancelarConfig.addEventListener("click", () => cerrarModal(modalConfigPaginas));
 
     // =====================
-    // MODALES ARCHIVO
+    // MODAL NUEVO DOCUMENTO
     // =====================
     const btnNuevo = document.getElementById("btnNuevo");
+    const btnNuevoSi = document.getElementById("nuevoSi");
+    const btnNuevoNo = document.getElementById("nuevoNo");
+
+    btnNuevo.addEventListener("click", () => abrirModal(modalNuevo));
+
+    btnNuevoSi.addEventListener("click", () => {
+        // Generar documento nuevo vacío
+        cerrarModal(modalNuevo);
+    });
+
+    btnNuevoNo.addEventListener("click", () => cerrarModal(modalNuevo));
+
+    // =====================
+    // MODAL ABRIR DOCUMENTO
+    // =====================
     const btnAbrir = document.getElementById("btnAbrir");
-    const btnGuardarComo = document.getElementById("btnGuardarComo");
+    const btnAbrirSi = document.getElementById("abrirSi");
+    const btnAbrirNo = document.getElementById("abrirNo");
 
-    const modalMap = {
-        "btnNuevo": modalNuevo,
-        "btnAbrir": modalAbrir,
-        "btnGuardarComo": modalGuardarComo
-    };
+    btnAbrir.addEventListener("click", () => abrirModal(modalAbrir));
 
-    Object.keys(modalMap).forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        btn?.addEventListener("click", () => abrirModal(modalMap[btnId]));
+    btnAbrirSi.addEventListener("click", () => {
+        // Abrir cuadro típico de selección de archivo
+        cerrarModal(modalAbrir);
     });
 
-    // Para cerrar, se pueden agregar botones de cancelar dentro de cada modal de archivo
-    document.querySelectorAll(".modal-cancel").forEach(btn => {
-        btn.addEventListener("click", () => {
-            const modal = btn.closest(".modal");
-            cerrarModal(modal);
-        });
-    });
+    btnAbrirNo.addEventListener("click", () => cerrarModal(modalAbrir));
 
     // =====================
     // INICIALIZAR TODOS MODALES OCULTOS
     // =====================
-    [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir, modalGuardarComo].forEach(m => {
+    [modalNumeracion, modalConfigPaginas, modalNuevo, modalAbrir].forEach(m => {
         if (m) m.classList.add("oculto");
     });
     if (overlay) overlay.classList.add("oculto");
