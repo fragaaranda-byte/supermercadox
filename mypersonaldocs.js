@@ -61,92 +61,41 @@ document.addEventListener("DOMContentLoaded", () => {
         cerrarModal("modalConfigPaginas");
     };
 
- // =====================
-// MODAL NUMERACIÓN
 // =====================
-btnNumerar.onclick = () => {
-    abrirModal("modalNumeracion");
+// APLICAR NUMERACION
+// =====================
+window.aplicarNumeracion = function(config) {
+    // Elimina numeraciones previas
+    document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
 
-    let seleccion = null;
-    document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
+    if (!config) return; // si no hay configuración, solo borrar
 
-    // Estilos iniciales
-    let negrita = false;
-    let cursiva = false;
-    let subrayado = false;
-    let tamanio = parseInt(document.getElementById("tamanioNumeracion").value);
-    let colorTexto = document.getElementById("colorNumeracionTexto").value;
-    let colorFondo = document.getElementById("colorNumeracionFondo").value;
-
-    // Toggle estilos
-    document.getElementById("numNegrita").onclick = () => negrita = !negrita;
-    document.getElementById("numCursiva").onclick = () => cursiva = !cursiva;
-    document.getElementById("numSubrayado").onclick = () => subrayado = !subrayado;
-
-    // Cambios en tiempo real
-    document.getElementById("tamanioNumeracion").onchange = e => tamanio = parseInt(e.target.value);
-    document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
-    document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
-
-    // Función interna para aplicar estilos
-    function crearNumeroPagina(texto) {
+    document.querySelectorAll(".page").forEach((page, index) => {
         const num = document.createElement("div");
         num.className = "numero-pagina";
-        num.textContent = texto;
+        num.textContent = index + 1;
 
-        // Aplicar estilos desde modal
-        num.style.fontWeight = negrita ? "bold" : "normal";
-        num.style.fontStyle = cursiva ? "italic" : "normal";
-        num.style.textDecoration = subrayado ? "underline" : "none";
-        num.style.fontSize = tamanio + "px";
-        num.style.color = colorTexto;
-        num.style.backgroundColor = colorFondo;
+        // Aplicar estilos desde config
+        num.style.fontWeight = config.negrita ? "bold" : "normal";
+        num.style.fontStyle = config.cursiva ? "italic" : "normal";
+        num.style.textDecoration = config.subrayado ? "underline" : "none";
+        num.style.fontSize = config.tamanio + "px";
+        num.style.color = config.colorTexto;
+        num.style.backgroundColor = config.colorFondo;
 
         num.style.position = "absolute";
-        return num;
-    }
 
-    // Aceptar numeración
-    document.getElementById("aceptarNumeracion").onclick = () => {
-        if (!seleccion) return;
+        // Colocación según esquina seleccionada
+        let target;
+        if (config.posicion.includes("superior")) target = page.querySelector(".page-header");
+        else target = page.querySelector(".page-footer");
 
-        // Primero eliminar numeraciones previas
-        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+        if (config.posicion.includes("izquierda")) num.style.left = "20px";
+        if (config.posicion.includes("derecha")) num.style.right = "20px";
 
-        window.configNumeracion = {
-            posicion: seleccion,
-            negrita,
-            cursiva,
-            subrayado,
-            tamanio,
-            colorTexto,
-            colorFondo
-        };
-
-        document.querySelectorAll(".page").forEach((page, index) => {
-            const num = crearNumeroPagina(index + 1);
-
-            let target;
-            if (seleccion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
-
-            if (seleccion.includes("izquierda")) num.style.left = "20px";
-            if (seleccion.includes("derecha")) num.style.right = "20px";
-
-            target.appendChild(num);
-        });
-
-        cerrarModal("modalNumeracion");
-    };
-
-    // Cancelar numeración: borrar todo y cerrar
-    document.getElementById("cancelarNumeracion").onclick = () => {
-        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        window.configNumeracion = null;
-        cerrarModal("modalNumeracion");
-    };
+        target.appendChild(num);
+    });
 };
-
     // =====================
     // MODAL NUEVO DOCUMENTO
     // =====================
