@@ -9,7 +9,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let configNumeracion = null;
     let rangoGuardado = null;
     let indiceActivo = null;
-    let contadorIndice = 1;
+    let contadorIndiceGlobal = 1; // Numeración global
+    let indicesActivos = []; // Lista de todos los indices en el documento
 
     let formatoActual = {
         colorTexto: "#000000",
@@ -20,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 0, bottom: 0, left: 20, right: 20 } // márgenes superiores e inferiores eliminados
+        margen: { top: 0, bottom: 0, left: 20, right: 20 } // eliminamos margenes top/bottom
     };
 
     const tamañosPredefinidos = {
@@ -38,11 +39,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
-                const parent = range.startContainer.parentElement;
-                if (parent) {
-                    const size = parseInt(window.getComputedStyle(parent).fontSize);
-                    if (!isNaN(size) && typeof sizeSelect !== "undefined") sizeSelect.value = size;
-                }
             }
         }
     });
@@ -54,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
+    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -78,11 +75,8 @@ document.addEventListener("DOMContentLoaded", () => {
         page.style.boxSizing = "border-box";
         page.style.margin = "20px auto";
         page.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
-
-        const header = document.createElement("div");
-        header.className = "page-header";
-        header.contentEditable = false;
-        header.style.height = "0px"; // eliminado margen extra
+        page.style.display = "flex";
+        page.style.flexDirection = "column";
 
         const content = document.createElement("div");
         content.className = "page-content";
@@ -90,21 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
         content.style.flex = "1";
         content.style.outline = "none";
         content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom + "px";
-
-        const footer = document.createElement("div");
-        footer.className = "page-footer";
-        footer.contentEditable = false;
-        footer.style.height = "0px"; // eliminado margen extra
-
-        page.appendChild(header);
-        page.appendChild(content);
-        page.appendChild(footer);
-
         content.addEventListener("input", verificarOverflow);
 
+        page.appendChild(content);
         return page;
     }
 
+    // Inicializar editor con una página
     editor.innerHTML = "";
     editor.appendChild(crearPagina());
 
@@ -124,7 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
             }
         });
-        aplicarNumeracion();
     }
 
     // =====================
@@ -140,6 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.execCommand("hiliteColor", false, formatoActual.colorFondo);
     }
 
+    // BOTONES DE FORMATO
     btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
     btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
     btnSubrayado.onclick = () => { restaurarCursor(); document.execCommand("underline"); };
@@ -205,9 +191,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function insertarTabla(filas, columnas) {
         restaurarCursor();
-        const sel = window.getSelection();
-        if (!sel.rangeCount) return;
-
         const table = document.createElement("table");
         table.style.borderCollapse = "collapse";
         table.style.tableLayout = "fixed";
@@ -223,43 +206,82 @@ document.addEventListener("DOMContentLoaded", () => {
                 td.style.border = "1px solid #000";
                 td.style.overflow = "hidden";
                 td.contentEditable = true;
-                td.style.position = "relative";
-
-                // Redimension simple por borde derecho
-                td.addEventListener("mousedown", iniciarRedimension);
-
                 tr.appendChild(td);
             }
             table.appendChild(tr);
         }
 
-        sel.getRangeAt(0).insertNode(table);
+        restaurarCursor();
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        range.insertNode(table);
+        agregarRedimensionTabla(table);
     }
 
-    let celdaRedim = null;
-    let startX, startWidth;
+    function agregarRedimensionTabla(table) {
+        const tds = table.querySelectorAll("td");
+        tds.forEach(td => {
+            td.style.position = "relative";
+            // Right handle
+            const handle = document.createElement("div");
+            handle.style.width = "6px";
+            handle.style.height = "100%";
+            handle.style.position = "absolute";
+            handle.style.top = 0;
+            handle.style.right = 0;
+            handle.style.cursor = "col-resize";
+            td.appendChild(handle);
+            handle.addEventListener("mousedown", e => {
+                e.preventDefault();
+                startResize(e, td, "col");
+            });
+            // Bottom handle
+            const handleB = document.createElement("div");
+            handleB.style.height = "6px";
+            handleB.style.width = "100%";
+            handleB.style.position = "absolute";
+            handleB.style.bottom = 0;
+            handleB.style.left = 0;
+            handleB.style.cursor = "row-resize";
+            td.appendChild(handleB);
+            handleB.addEventListener("mousedown", e => {
+                e.preventDefault();
+                startResize(e, td, "row");
+            });
+        });
+    }
 
-    function iniciarRedimension(e) {
-        if (e.offsetX > e.target.offsetWidth - 8) {
-            celdaRedim = e.target;
-            startX = e.clientX;
-            startWidth = celdaRedim.offsetWidth;
-            document.addEventListener("mousemove", redimensionar);
-            document.addEventListener("mouseup", detenerRedimension);
-            e.preventDefault();
+    let resizing = false, resizeTd, resizeType, startX, startY, startWidth, startHeight;
+
+    function startResize(e, td, type) {
+        resizing = true;
+        resizeTd = td;
+        resizeType = type;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = td.offsetWidth;
+        startHeight = td.offsetHeight;
+        document.addEventListener("mousemove", doResize);
+        document.addEventListener("mouseup", stopResize);
+    }
+
+    function doResize(e) {
+        if (!resizing) return;
+        if (resizeType === "col") {
+            let nuevaWidth = startWidth + (e.clientX - startX);
+            if (nuevaWidth > 30) resizeTd.style.width = nuevaWidth + "px";
+        } else if (resizeType === "row") {
+            let nuevaHeight = startHeight + (e.clientY - startY);
+            if (nuevaHeight > 20) resizeTd.style.height = nuevaHeight + "px";
         }
     }
 
-    function redimensionar(e) {
-        if (!celdaRedim) return;
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
-
-    function detenerRedimension() {
-        celdaRedim = null;
-        document.removeEventListener("mousemove", redimensionar);
-        document.removeEventListener("mouseup", detenerRedimension);
+    function stopResize() {
+        resizing = false;
+        resizeTd = null;
+        document.removeEventListener("mousemove", doResize);
+        document.removeEventListener("mouseup", stopResize);
     }
 
     // =====================
@@ -269,198 +291,120 @@ document.addEventListener("DOMContentLoaded", () => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = "image/*";
-
         input.onchange = () => {
             const file = input.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = e => {
                 restaurarCursor();
-                const sel = window.getSelection();
-                if (!sel.rangeCount) return;
-                const range = sel.getRangeAt(0);
-
-                const wrapper = document.createElement("div");
-                wrapper.style.display = "inline-block";
-                wrapper.style.position = "relative";
-                wrapper.style.width = "300px";
-                wrapper.style.height = "auto";
-                wrapper.style.cursor = "move";
-
                 const img = document.createElement("img");
                 img.src = e.target.result;
-                img.style.width = "100%";
+                img.style.maxWidth = "300px";
                 img.style.height = "auto";
-                img.style.display = "block";
-                wrapper.appendChild(img);
-
-                // Resizers
-                const resizer = document.createElement("div");
-                resizer.style.width = "10px";
-                resizer.style.height = "10px";
-                resizer.style.background = "#FF7600";
-                resizer.style.position = "absolute";
-                resizer.style.right = "0";
-                resizer.style.bottom = "0";
-                resizer.style.cursor = "se-resize";
-                wrapper.appendChild(resizer);
-
-                // Drag
-                let isDragging = false;
-                let dragStartX, dragStartY;
-                resizer.addEventListener("mousedown", eRes => {
-                    eRes.stopPropagation();
-                    const startWidth = wrapper.offsetWidth;
-                    const startHeight = wrapper.offsetHeight;
-                    const startX = eRes.clientX;
-                    const startY = eRes.clientY;
-
-                    function doResize(ev) {
-                        wrapper.style.width = (startWidth + (ev.clientX - startX)) + "px";
-                        wrapper.style.height = (startHeight + (ev.clientY - startY)) + "px";
-                    }
-
-                    function stopResize() {
-                        document.removeEventListener("mousemove", doResize);
-                        document.removeEventListener("mouseup", stopResize);
-                    }
-
-                    document.addEventListener("mousemove", doResize);
-                    document.addEventListener("mouseup", stopResize);
-                });
-
-                wrapper.addEventListener("mousedown", eDrag => {
-                    isDragging = true;
-                    dragStartX = eDrag.clientX - wrapper.offsetLeft;
-                    dragStartY = eDrag.clientY - wrapper.offsetTop;
-
-                    function doDrag(ev) {
-                        if (!isDragging) return;
-                        wrapper.style.position = "absolute";
-                        wrapper.style.left = (ev.clientX - dragStartX) + "px";
-                        wrapper.style.top = (ev.clientY - dragStartY) + "px";
-                    }
-
-                    function stopDrag() {
-                        isDragging = false;
-                        document.removeEventListener("mousemove", doDrag);
-                        document.removeEventListener("mouseup", stopDrag);
-                    }
-
-                    document.addEventListener("mousemove", doDrag);
-                    document.addEventListener("mouseup", stopDrag);
-                });
-
-                range.insertNode(wrapper);
+                img.style.cursor = "move";
+                img.style.position = "relative";
+                makeImageDraggable(img);
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return;
+                sel.getRangeAt(0).insertNode(img);
             };
             reader.readAsDataURL(file);
         };
         input.click();
     };
 
+    function makeImageDraggable(img) {
+        let offsetX, offsetY, dragging = false;
+        img.addEventListener("mousedown", e => {
+            dragging = true;
+            offsetX = e.offsetX;
+            offsetY = e.offsetY;
+            img.style.zIndex = 1000;
+        });
+        document.addEventListener("mousemove", e => {
+            if (!dragging) return;
+            img.style.position = "absolute";
+            img.style.left = e.pageX - offsetX + "px";
+            img.style.top = e.pageY - offsetY + "px";
+        });
+        document.addEventListener("mouseup", e => dragging = false);
+    }
+
     // =====================
-    // ÍNDICES AUTOMÁTICOS
+    // INDICES GLOBALES
     // =====================
-    const botonesIndices = document.querySelectorAll("[id^='btnIndice']");
-    botonesIndices.forEach(btn => {
+    document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
         btn.onclick = () => {
             indiceActivo = btn.id;
-            contadorIndice = 1;
-            botonesIndices.forEach(b => b.style.backgroundColor = "#F78719");
-            btn.style.backgroundColor = "#FA932D"; // botón activo
+            btn.style.backgroundColor = "#FA932D"; // resaltar botón activo
         };
     });
 
     editor.addEventListener("keydown", e => {
         if (!indiceActivo) return;
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter") {
             e.preventDefault();
+            if (e.shiftKey) {
+                // Shift+Enter: salto de página real y desactivar índice
+                insertarSaltoPagina();
+                indiceActivo = null;
+                resetBtnIndice();
+                return;
+            }
             restaurarCursor();
-            const formato = calcularIndice();
-            document.execCommand("insertHTML", false, `<span class="indice-activo">${formato}</span>`);
-            contadorIndice++;
+            insertarIndice(indiceActivo);
         }
     });
 
-    function calcularIndice() {
-        if (!indiceActivo) return "";
+    function insertarIndice(tipo) {
         let formato = "";
-        if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
-        if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
-        if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
-        if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
-        if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
-        if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
-        return formato;
+        if (tipo.includes("1)")) formato = `${contadorIndiceGlobal}) `;
+        if (tipo.includes("1.")) formato = `${contadorIndiceGlobal}. `;
+        if (tipo.includes("A)")) formato = String.fromCharCode(64 + contadorIndiceGlobal) + ") ";
+        if (tipo.includes("a)")) formato = String.fromCharCode(96 + contadorIndiceGlobal) + ") ";
+        if (tipo.includes("A.")) formato = String.fromCharCode(64 + contadorIndiceGlobal) + ". ";
+        if (tipo.includes("a.")) formato = String.fromCharCode(96 + contadorIndiceGlobal) + ". ";
+
+        const span = document.createElement("span");
+        span.className = "indice";
+        span.textContent = formato;
+        span.contentEditable = false;
+        span.style.userSelect = "none";
+        span.style.cursor = "default";
+        span.oncontextmenu = e => {
+            e.preventDefault();
+            contadorIndiceGlobal = 1;
+            span.textContent = formato; // reinicia el indice
+        };
+
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        range.insertNode(span);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        contadorIndiceGlobal++;
     }
 
-    // Reiniciar numeración clic derecho
-    editor.addEventListener("contextmenu", e => {
-        if (e.target.classList.contains("indice-activo")) {
-            e.preventDefault();
-            contadorIndice = 1;
-        }
-    });
+    function resetBtnIndice() {
+        document.querySelectorAll("[id^='btnIndice']").forEach(btn => btn.style.backgroundColor = "#F78719");
+    }
+
+    // =====================
+    // SALTO DE PÁGINA
+    // =====================
+    function insertarSaltoPagina() {
+        const page = crearPagina();
+        editor.appendChild(page);
+    }
 
     // =====================
     // DESHACER / REHACER
     // =====================
     btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
     btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
-
-    // =====================
-    // NUMERACIÓN
-    // =====================
-    btnNumerar.onclick = abrirModalNumeracion;
-
-    function abrirModalNumeracion() {
-        const modal = document.getElementById("modalNumeracion");
-        const overlay = document.getElementById("overlay");
-
-        modal.classList.remove("oculto");
-        overlay.classList.remove("oculto");
-
-        let seleccion = null;
-
-        document.getElementById("posicionNumeracion").onchange = e => seleccion = e.target.value;
-
-        document.getElementById("aceptarNumeracion").onclick = () => {
-            if (seleccion) {
-                configNumeracion = seleccion;
-                aplicarNumeracion();
-            }
-            cerrarModal();
-        };
-        document.getElementById("cancelarNumeracion").onclick = cerrarModal;
-
-        function cerrarModal() {
-            modal.classList.add("oculto");
-            overlay.classList.add("oculto");
-        }
-    }
-
-    function aplicarNumeracion() {
-        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        if (!configNumeracion) return;
-
-        document.querySelectorAll(".page").forEach((page, index) => {
-            const num = document.createElement("div");
-            num.className = "numero-pagina";
-            num.textContent = index + 1;
-            num.style.position = "absolute";
-            num.style.fontSize = "20px";
-
-            let target;
-            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
-
-            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
-            if (configNumeracion.includes("derecha")) num.style.right = "20px";
-
-            target.appendChild(num);
-        });
-    }
 
     // =====================
     // NUEVO DOCUMENTO
@@ -474,7 +418,9 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("nuevoSi").onclick = () => {
             editor.innerHTML = "";
             editor.appendChild(crearPagina());
-            configNumeracion = null;
+            contadorIndiceGlobal = 1;
+            indiceActivo = null;
+            resetBtnIndice();
             modal.classList.add("oculto");
             overlay.classList.add("oculto");
         };
