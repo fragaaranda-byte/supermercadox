@@ -12,13 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let contadorIndice = 1;
 
     let formatoActual = {
-        colorTexto: "#000000",
+        colorTexto: "#ff8800", // naranja por defecto
         colorFondo: "#ffffff",
         fontSize: 8,
         fontName: "Arial"
     };
 
-    // Configuración de página recibida desde mypersonaldocs.js
     let configPagina = {
         tamaño: "A4",
         margen: { top: 20, bottom: 20, left: 20, right: 20 }
@@ -28,8 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         A4: { width: 794, height: 1123 },
         A5: { width: 559, height: 794 },
         Carta: { width: 816, height: 1056 },
-        A3: { width: 1123, height: 1587 },
-        Legal: { width: 816, height: 1344 }
+        A3: { width: 1123, height: 1587 }
     };
 
     // =====================
@@ -41,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
+                // Actualizar select de tamaño en tiempo real
                 const parent = range.startContainer.parentElement;
                 if (parent) {
                     const size = parseInt(window.getComputedStyle(parent).fontSize);
@@ -57,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
+    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -64,11 +64,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // =====================
     // CREAR PÁGINA
     // =====================
-    function crearPagina() {
+    window.crearPagina = function() {
         const page = document.createElement("div");
         page.className = "page";
 
-        const tamaño = tamañosPredefinidos[configPagina.tamaño] || tamañosPredefinidos["A4"];
+        const tamaño = tamañosPredefinidos[configPagina.tamaño];
         page.style.width = tamaño.width + "px";
         page.style.height = tamaño.height + "px";
         page.style.paddingTop = configPagina.margen.top + "px";
@@ -92,7 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
-        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px";
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
 
         const footer = document.createElement("div");
         footer.className = "page-footer";
@@ -106,10 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
         content.addEventListener("input", verificarOverflow);
 
         return page;
-    }
+    };
 
+    // Inicializar editor con una página
     editor.innerHTML = "";
-    editor.appendChild(crearPagina());
+    editor.appendChild(window.crearPagina());
 
     // =====================
     // OVERFLOW
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
             while (content.scrollHeight > content.clientHeight) {
                 let nuevaPagina = pages[index + 1];
                 if (!nuevaPagina) {
-                    nuevaPagina = crearPagina();
+                    nuevaPagina = window.crearPagina();
                     editor.appendChild(nuevaPagina);
                 }
                 nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
@@ -161,16 +162,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const sel = window.getSelection();
         if (!sel.rangeCount) return;
         const range = sel.getRangeAt(0);
+
         if (!range.collapsed) {
+            const fragment = range.cloneContents();
             const span = document.createElement("span");
             span.style.fontSize = formatoActual.fontSize + "px";
-            span.appendChild(range.extractContents());
+
+            // Aplicar tamaño a todos los nodos hijos
+            span.appendChild(fragment);
+            range.deleteContents();
             range.insertNode(span);
         } else {
             const span = document.createElement("span");
             span.style.fontSize = formatoActual.fontSize + "px";
             span.appendChild(document.createTextNode("\u200B"));
             range.insertNode(span);
+
             const newRange = document.createRange();
             newRange.setStart(span.firstChild, 1);
             newRange.collapse(true);
@@ -329,14 +336,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // =====================
     // NUMERACIÓN
     // =====================
-    btnNumerar.onclick = () => {
-        // Lógica de modales queda en mypersonaldocs.js
-        if (typeof abrirModalNumeracion === "function") abrirModalNumeracion();
-    };
-
-    function aplicarNumeracion() {
+    window.aplicarNumeracion = function(seleccion = configNumeracion) {
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        if (!configNumeracion) return;
+        if (!seleccion) return;
 
         document.querySelectorAll(".page").forEach((page, index) => {
             const num = document.createElement("div");
@@ -346,22 +348,14 @@ document.addEventListener("DOMContentLoaded", () => {
             num.style.fontSize = "20px";
 
             let target;
-            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
+            if (seleccion.includes("superior")) target = page.querySelector(".page-header");
             else target = page.querySelector(".page-footer");
 
-            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
-            if (configNumeracion.includes("derecha")) num.style.right = "20px";
+            if (seleccion.includes("izquierda")) num.style.left = "20px";
+            if (seleccion.includes("derecha")) num.style.right = "20px";
 
             target.appendChild(num);
         });
-    }
-
-    // =====================
-    // NUEVO DOCUMENTO
-    // =====================
-    btnNuevo.onclick = () => {
-        // Lógica de modales queda en mypersonaldocs.js
-        if (typeof abrirModalNuevo === "function") abrirModalNuevo();
     };
 
 });
