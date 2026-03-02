@@ -112,4 +112,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     if (overlay) overlay.classList.add("oculto");
 
+// =====================
+// BOTÓN GUARDAR
+// =====================
+const btnGuardar = document.getElementById("btnGuardar");
+
+// Variable para saber si el documento ya está guardado
+let documentoGuardado = false; // false = nuevo documento sin guardar
+let nombreArchivo = ""; // ruta o nombre del archivo
+
+btnGuardar.addEventListener("click", async () => {
+    if (documentoGuardado && nombreArchivo) {
+        // Guardar directamente el documento actual
+        console.log("Guardando documento en:", nombreArchivo);
+        // aquí iría tu función de guardar desde logica.js
+    } else {
+        // Documento nuevo, abrir modal "Guardar Como" nativo
+        try {
+            // Uso de File System Access API (si el navegador lo soporta)
+            const handle = await window.showSaveFilePicker({
+                suggestedName: "documento.mpd",
+                types: [{
+                    description: "Documentos My Personal Docs",
+                    accept: { "application/mpd": [".mpd"] }
+                }]
+            });
+            nombreArchivo = handle.name;
+            documentoGuardado = true;
+            console.log("Guardar Como:", nombreArchivo);
+            // guardar el contenido actual usando handle.createWritable() etc.
+        } catch (err) {
+            console.log("Guardar Como cancelado o error:", err);
+        }
+    }
 });
