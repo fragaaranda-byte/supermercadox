@@ -3,26 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
 const editor = document.getElementById("editor");
 editor.innerHTML = "";
 
+let archivoActual = null;
 let configNumeracion = null;
 let rangoGuardado = null;
-let indiceActivo = false;
-let contadorIndice = 1;
-let cambiandoSize = false;
 
 // =====================
-// PANEL INSERTAR TOGGLE (ANIMADO)
-// =====================
-const panelInsertar = document.getElementById("panel-insertar");
-const togglePanel = document.getElementById("toggle-panel");
-const flechaIcon = togglePanel.querySelector('img');
-
-togglePanel.onclick = () => {
-    panelInsertar.classList.toggle("contraido");
-    flechaIcon.style.transform = panelInsertar.classList.contains("contraido") ? "rotate(-180deg)" : "rotate(0deg)";
-};
-
-// =====================
-// FORMATO ACTUAL
+// FORMATO ACTUAL (persistente)
 // =====================
 let formatoActual = {
     colorTexto: "#000000",
@@ -31,28 +17,20 @@ let formatoActual = {
     fontName: "Arial"
 };
 
+// Medidas A4
 const PAGE_WIDTH = 794;
 const PAGE_HEIGHT = 1123;
 const MARGEN = 56;
 
 // =====================
-// DESHACER / REHACER
-// =====================
-btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
-btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
-
-// =====================
-// CURSOR
+// GUARDAR / RESTAURAR CURSOR (real)
 // =====================
 document.addEventListener("selectionchange", () => {
-    if (cambiandoSize) return;
-
     const sel = window.getSelection();
     if (sel.rangeCount > 0) {
         const range = sel.getRangeAt(0);
         if (editor.contains(range.startContainer)) {
             rangoGuardado = range.cloneRange();
-            actualizarSelectsDesdeCursor();
         }
     }
 });
@@ -64,8 +42,11 @@ function restaurarCursor() {
     sel.addRange(rangoGuardado);
 }
 
+// Guardar cursor al interactuar con la UI SIN bloquear selects ni flechas
 document.querySelectorAll("button, select, input, img").forEach(el => {
-    el.addEventListener("mousedown", restaurarCursor);
+    el.addEventListener("mousedown", () => {
+        restaurarCursor();
+    });
 });
 
 // =====================
@@ -74,30 +55,34 @@ document.querySelectorAll("button, select, input, img").forEach(el => {
 function crearPagina() {
     const page = document.createElement("div");
     page.className = "page";
-    page.style.width = PAGE_WIDTH+"px";
-    page.style.height = PAGE_HEIGHT+"px";
+    page.style.width = PAGE_WIDTH + "px";
+    page.style.height = PAGE_HEIGHT + "px";
     page.style.margin = "20px auto";
     page.style.border = "1px solid #444";
     page.style.background = "white";
+    page.style.position = "relative";
     page.style.display = "flex";
     page.style.flexDirection = "column";
-    page.style.position = "relative";
+    page.style.overflow = "hidden";
 
     const header = document.createElement("div");
-    header.style.height = MARGEN+"px";
+    header.className = "header";
+    header.style.height = MARGEN + "px";
+    header.style.pointerEvents = "none";
 
     const content = document.createElement("div");
     content.className = "content";
     content.contentEditable = true;
     content.style.flex = "1";
-    content.style.padding = MARGEN+"px";
+    content.style.padding = MARGEN + "px";
     content.style.outline = "none";
-    content.style.wordWrap = "break-word";
-    content.style.whiteSpace = "normal";
     content.style.overflow = "hidden";
+    content.style.wordWrap = "break-word";
 
     const footer = document.createElement("div");
-    footer.style.height = MARGEN+"px";
+    footer.className = "footer";
+    footer.style.height = MARGEN + "px";
+    footer.style.pointerEvents = "none";
 
     page.appendChild(header);
     page.appendChild(content);
@@ -125,6 +110,7 @@ function verificarOverflow() {
                 nuevaPagina = crearPagina();
                 editor.appendChild(nuevaPagina);
             }
+
             nuevaPagina.querySelector(".content").prepend(content.lastChild);
         }
     });
@@ -133,38 +119,20 @@ function verificarOverflow() {
 }
 
 // =====================
-// ACTUALIZAR SELECTS DESDE CURSOR (WORD REAL)
+// APLICAR FORMATO ACTUAL AL ESCRIBIR
 // =====================
-function actualizarSelectsDesdeCursor() {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+editor.addEventListener("keyup", aplicarFormatoActual);
+editor.addEventListener("click", aplicarFormatoActual);
 
-    let node = sel.anchorNode;
-    if (node.nodeType === 3) node = node.parentElement;
-
-    const styles = window.getComputedStyle(node);
-
-    const size = parseInt(styles.fontSize);
-    sizeSelect.value = size;
-    formatoActual.fontSize = size;
-
-    const color = rgbToHex(styles.color);
-    colorTexto.value = color;
-    formatoActual.colorTexto = color;
-
-    const bg = styles.backgroundColor !== "rgba(0, 0, 0, 0)" ? rgbToHex(styles.backgroundColor) : "#ffffff";
-    colorFondo.value = bg;
-    formatoActual.colorFondo = bg;
-}
-
-function rgbToHex(rgb) {
-    const result = rgb.match(/\d+/g);
-    if (!result) return "#000000";
-    return "#" + result.map(x => parseInt(x).toString(16).padStart(2,"0")).join("");
+function aplicarFormatoActual() {
+    restaurarCursor();
+    document.execCommand("fontName", false, formatoActual.fontName);
+    document.execCommand("foreColor", false, formatoActual.colorTexto);
+    document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 }
 
 // =====================
-// FORMATO
+// FORMATO TEXTO
 // =====================
 btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
 btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
@@ -176,24 +144,39 @@ fuenteSelect.onchange = e => {
     document.execCommand("fontName", false, formatoActual.fontName);
 };
 
-sizeSelect.value = "8";
-
+// =====================
+// FIX DEFINITIVO TAMAÑO FUENTE
+// =====================
 sizeSelect.onchange = e => {
-    cambiandoSize = true;
     formatoActual.fontSize = e.target.value;
     restaurarCursor();
-    document.execCommand("fontSize", false, 7);
-    const spans = editor.querySelectorAll("font[size='7']");
-    spans.forEach(span=>{
-        span.removeAttribute("size");
-        span.style.fontSize = formatoActual.fontSize+"px";
-    });
-    setTimeout(()=>cambiandoSize=false,100);
+
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+
+    if (!range.collapsed) {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize + "px";
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+    } else {
+        const span = document.createElement("span");
+        span.style.fontSize = formatoActual.fontSize + "px";
+        span.appendChild(document.createTextNode("\u200B"));
+        range.insertNode(span);
+
+        const newRange = document.createRange();
+        newRange.setStart(span.firstChild, 1);
+        newRange.collapse(true);
+
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+        rangoGuardado = newRange.cloneRange();
+    }
 };
 
-// =====================
-// COLORES CORREGIDOS (PERSISTENTES)
-// =====================
 colorTexto.onchange = e => {
     formatoActual.colorTexto = e.target.value;
     restaurarCursor();
@@ -206,81 +189,55 @@ colorFondo.onchange = e => {
     document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 };
 
-// =====================
-// ESCRITURA NORMAL (LETTERS + BACKSPACE)
-// =====================
-editor.addEventListener("keydown", e => {
-
-    if (e.key === "Backspace" || e.key === "Delete") {
-        setTimeout(actualizarSelectsDesdeCursor, 0);
-        return;
-    }
-
-    if (e.key.length === 1) {
-        restaurarCursor();
-
-        document.execCommand("fontName", false, formatoActual.fontName);
-        document.execCommand("foreColor", false, formatoActual.colorTexto);
-        document.execCommand("hiliteColor", false, formatoActual.colorFondo);
-        document.execCommand("fontSize", false, 7);
-
-        const spans = editor.querySelectorAll("font[size='7']");
-        spans.forEach(span=>{
-            span.removeAttribute("size");
-            span.style.fontSize = formatoActual.fontSize+"px";
-        });
-    }
-});
-
 btnIzq.onclick = () => { restaurarCursor(); document.execCommand("justifyLeft"); };
 btnCentro.onclick = () => { restaurarCursor(); document.execCommand("justifyCenter"); };
 btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
 // =====================
-// SIMBOLOS
+// INSERTAR TABLA
 // =====================
-document.querySelectorAll(".simbolos button").forEach(btn=>{
-    btn.onclick=()=>{
+document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
+    cell.onclick = () => {
+        const cols = (index % 10) + 1;
+        const rows = Math.floor(index / 10) + 1;
+        insertarTabla(rows, cols);
+    };
+});
+
+function insertarTabla(filas, columnas) {
+    restaurarCursor();
+
+    let table = "<table border='1' style='border-collapse:collapse;width:100%'>";
+    for (let i = 0; i < filas; i++) {
+        table += "<tr>";
+        for (let j = 0; j < columnas; j++) {
+            table += "<td>&nbsp;</td>";
+        }
+        table += "</tr>";
+    }
+    table += "</table><br>";
+
+    document.execCommand("insertHTML", false, table);
+}
+
+// =====================
+// INSERTAR SÍMBOLOS
+// =====================
+document.querySelectorAll(".simbolos button").forEach(btn => {
+    btn.onclick = () => {
         restaurarCursor();
         document.execCommand("insertText", false, btn.textContent);
     };
 });
 
 // =====================
-// IMAGEN
+// INSERTAR EMOJIS
 // =====================
-btnInsertarImagen.onclick=()=>{
-    const input=document.createElement("input");
-    input.type="file";
-    input.accept="image/*";
-
-    input.onchange=()=>{
-        const file=input.files[0];
-        const reader=new FileReader();
-        reader.onload=e=>{
-            restaurarCursor();
-            document.execCommand("insertHTML",false,`<img src="${e.target.result}" style="max-width:300px;">`);
-        };
-        reader.readAsDataURL(file);
-    };
-    input.click();
-};
-
-// =====================
-// INDICE
-// =====================
-btnIndice.onclick=()=>{
-    indiceActivo=!indiceActivo;
-    contadorIndice=1;
-};
-
-editor.addEventListener("keydown",e=>{
-    if(indiceActivo && e.key==="Enter"){
-        e.preventDefault();
+document.querySelectorAll(".emojis img").forEach(img => {
+    img.onclick = () => {
         restaurarCursor();
-        document.execCommand("insertHTML",false,`<br>${contadorIndice}) `);
-        contadorIndice++;
-    }
+        document.execCommand("insertHTML", false, `<img src="${img.src}" width="32">`);
+    };
 });
 
 // =====================
@@ -289,62 +246,95 @@ editor.addEventListener("keydown",e=>{
 btnNumerar.onclick = abrirModalNumeracion;
 
 function abrirModalNumeracion() {
-    modalNumeracion.classList.remove("oculto");
-    overlay.classList.remove("oculto");
+    const overlay = document.createElement("div");
+    overlay.style.position="fixed";
+    overlay.style.top=0;
+    overlay.style.left=0;
+    overlay.style.width="100%";
+    overlay.style.height="100%";
+    overlay.style.background="rgba(0,0,0,0.6)";
+    overlay.style.display="flex";
+    overlay.style.justifyContent="center";
+    overlay.style.alignItems="center";
+    overlay.style.zIndex=9999;
+
+    const modal=document.createElement("div");
+    modal.style.background="#222";
+    modal.style.color="white";
+    modal.style.padding="20px";
+    modal.style.borderRadius="10px";
+
+    modal.innerHTML=`
+        <h3>Numeración</h3>
+        <button class="pos sup-izq">↖</button>
+        <button class="pos sup-der">↗</button>
+        <button class="pos inf-izq">↙</button>
+        <button class="pos inf-der">↘</button><br><br>
+        <button id="aceptarNum">Aceptar</button>
+        <button id="cancelarNum">Cancelar</button>
+    `;
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
 
     let seleccion=null;
 
-    modalNumeracion.querySelectorAll("button[data-pos]").forEach(btn=>{
-        btn.onclick=()=>seleccion=btn.dataset.pos;
+    modal.querySelectorAll(".pos").forEach(btn=>{
+        btn.onclick=()=>{
+            seleccion=btn.classList[1];
+            modal.querySelectorAll(".pos").forEach(b=>b.style.background="");
+            btn.style.background="yellow";
+        };
     });
 
-    btnAceptarNumeracion.onclick=()=>{
+    aceptarNum.onclick=()=>{
         if(seleccion){
             configNumeracion=seleccion;
             aplicarNumeracion();
         }
-        cerrarModal();
+        overlay.remove();
     };
 
-    btnCancelarNumeracion.onclick=cerrarModal;
+    cancelarNum.onclick=()=>overlay.remove();
 }
 
-function cerrarModal(){
-    modalNumeracion.classList.add("oculto");
-    overlay.classList.add("oculto");
-}
-
-function aplicarNumeracion(){
+function aplicarNumeracion() {
     document.querySelectorAll(".numero-pagina").forEach(n=>n.remove());
-    if(!configNumeracion)return;
+    if(!configNumeracion) return;
 
     document.querySelectorAll(".page").forEach((page,index)=>{
         const num=document.createElement("div");
         num.className="numero-pagina";
         num.textContent=index+1;
         num.style.position="absolute";
+        num.style.fontSize="20px";
+        num.style.pointerEvents="none";
 
         let target;
-        if(configNumeracion.includes("top")){
-            target=page.querySelector("div:first-child");
-            num.style.top="10px";
-        }else{
-            target=page.querySelector("div:last-child");
-            num.style.bottom="10px";
+        if(configNumeracion.startsWith("sup")){
+            target=page.querySelector(".header");
+            num.style.top="30px";
+        } else {
+            target=page.querySelector(".footer");
+            num.style.bottom="30px";
         }
 
-        if(configNumeracion.includes("left")) num.style.left="20px";
-        if(configNumeracion.includes("right")) num.style.right="20px";
+        if(configNumeracion.endsWith("izq")) num.style.left="30px";
+        if(configNumeracion.endsWith("der")) num.style.right="30px";
 
         target.appendChild(num);
     });
 }
 
 // =====================
-// NUEVO
+// NUEVO DOCUMENTO
 // =====================
 btnNuevo.onclick=()=>{
     if(confirm("Nuevo documento?")){
         editor.innerHTML="";
         editor.appendChild(crearPagina());
         configNumeracion=null;
+    }
+};
+
+});
