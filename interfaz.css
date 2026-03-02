@@ -1,173 +1,310 @@
-/* =====================
-   ESTILO GENERAL
-===================== */
-body {
+/* =========================
+   RESET Y BODY
+========================= */
+* {
+    box-sizing: border-box;
     margin: 0;
+    padding: 0;
+}
+
+body {
     font-family: Arial, sans-serif;
-    background: #111; /* fondo oscuro */
-    color: #ff8800;   /* color principal naranja */
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
+    background-color: #C2C2C2; /* fondo detrás de la hoja */
     overflow: hidden;
 }
 
-button {
-    background: #222;
-    color: #ff8800;
-    border: 1px solid #ff8800;
-    padding: 5px 10px;
+/* =========================
+   BARRA SUPERIOR
+========================= */
+#barra-superior {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45px;
+    background-color: #FF7600;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    z-index: 1000;
+}
+
+/* =========================
+   BOTONES BARRA SUPERIOR
+========================= */
+.btn-icono,
+.btn-menu {
+    background-color: #F78719;
+    border: none;
+    margin: 0 5px;
+    cursor: pointer;
+    color: white;
+    transition: background 0.2s;
+}
+
+.btn-icono:hover,
+.btn-menu:hover {
+    background-color: #FA932D;
+}
+
+.btn-icono img {
+    width: 32px;
+    height: 32px;
+}
+
+/* =========================
+   SUBMENÚ
+========================= */
+.submenu-archivo {
+    display: none;
+    position: absolute;
+    background-color: #FA932D;
+    border: 1px solid #FA9F46;
+    top: 40px;
+    left: 0;
+    z-index: 1005;
+}
+
+.menu-archivo:hover .submenu-archivo {
+    display: block;
+}
+
+.submenu-archivo button {
+    display: block;
+    width: 150px;
+    padding: 5px;
+    border: none;
+    background: #FA932D;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submenu-archivo button:hover {
+    background: #FA9F46;
+}
+
+/* =========================
+   BARRA DE FORMATO
+========================= */
+#barra-formato {
+    position: fixed;
+    top: 55px;
+    left: 0;
+    width: 100%;
+    height: 45px;
+    background-color: #FF7600;
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    z-index: 999;
+}
+
+/* BOTONES Y SELECTS */
+.btn-texto,
+#barra-formato select,
+#barra-formato input[type=color] {
+    background-color: #F78719;
+    color: white;
+    border: none;
+    margin: 0 3px;
+    height: 32px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-texto:hover,
+#barra-formato select:hover,
+#barra-formato input[type=color]:hover {
+    background-color: #FA932D;
+}
+
+/* =========================
+   CONTENEDOR GENERAL
+========================= */
+#contenedor {
+    display: flex;
+    position: fixed;
+    top: 110px; /* debajo de barras */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+/* =========================
+   PANEL INSERTAR
+========================= */
+#panel-insertar {
+    width: 220px;
+    background-color: #FF7600;
+    padding: 5px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.3s ease, padding 0.3s ease;
+    z-index: 1001;
+}
+
+/* BOTONES PANEL INSERTAR */
+#panel-insertar .btn-icono {
+    background-color: #F78719;
+    border: none;
     margin: 2px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.2s;
 }
 
-button:hover {
-    background: #ff8800;
-    color: #111;
+#panel-insertar .btn-icono:hover {
+    background-color: #FA932D;
 }
 
-/* =====================
-   PANEL LATERAL
-===================== */
-#panelLateral {
-    width: 250px;
-    background: #1a1a1a;
-    padding: 10px;
-    overflow-y: auto;
-    border-right: 2px solid #ff8800;
+/* BLOQUES INTERNOS */
+.bloque-insertar,
+.bloque-tabla,
+.bloque-simbolos {
+    margin-bottom: 10px;
 }
 
-#panelLateral h3 {
-    margin-top: 0;
-    color: #ff8800;
-}
-
+/* =========================
+   TABLA GRID
+========================= */
 .grid-tabla {
     display: grid;
-    grid-template-columns: repeat(10, 20px);
-    grid-gap: 2px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
 }
 
 .grid-tabla div {
     width: 20px;
     height: 20px;
-    background: #222;
-    border: 1px solid #ff8800;
-    cursor: pointer;
+    background-color: white;
+    border: 1px solid #aaa;
 }
 
-/* =====================
-   EDITOR Y HOJAS
-===================== */
+/* =========================
+   SIMBOLOS
+========================= */
+.simbolos button {
+    width: 30px;
+    height: 30px;
+    margin: 2px;
+    background-color: #F78719;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.simbolos button:hover {
+    background-color: #FA932D;
+}
+
+/* =========================
+   EDITOR
+========================= */
 #editor {
     flex: 1;
-    padding: 10px;
+    background-color: #C2C2C2; /* fondo detrás de hoja */
+    padding: 20px;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
+/* =========================
+   PAGINAS (A4)
+========================= */
 .page {
-    background: #fff;
-    margin: 20px 0;
-    position: relative;
-    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    background-color: #E0E0E0; /* blanco apagado */
     display: flex;
     flex-direction: column;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); /* sombra más remarcada */
     box-sizing: border-box;
 }
 
-.page-header, .page-footer {
-    height: 40px;
-    background: #f0f0f0;
-    text-align: center;
-    line-height: 40px;
-    color: #000;
+/* =========================
+   HEADER, CONTENT, FOOTER
+========================= */
+.page-header,
+.page-footer {
+    height: 56px;
+    background-color: #E0E0E0;
+    height: 0px;
+    flex-shrink: 0;
 }
 
 .page-content {
     flex: 1;
-    outline: none;
-    padding: 5px;
-    min-height: 400px;
-}
-
-/* =====================
-   MODALES Y OVERLAY
-===================== */
-#overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    z-index: 1000;
+    overflow: hidden;
+    word-wrap: break-word;
 }
 
+/* =========================
+   IMÁGENES EN PÁGINA
+========================= */
+.page-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* =========================
+   MODAL NUMERACIÓN
+========================= */
 .modal {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #222;
-    color: #ff8800;
+    background: #fff;
+    border: 1px solid #aaa;
+    z-index: 2000;
     padding: 20px;
-    border: 2px solid #ff8800;
-    z-index: 1001;
-    min-width: 300px;
-    display: none;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 .modal.oculto {
     display: none;
 }
 
-.modal button {
-    margin-top: 10px;
-}
-
-/* =====================
-   SELECTS E INPUTS
-===================== */
-select, input[type="number"] {
-    background: #111;
-    color: #ff8800;
-    border: 1px solid #ff8800;
-    padding: 3px 5px;
-    margin: 2px 0;
-}
-
-/* =====================
-   TABLAS DENTRO DEL EDITOR
-===================== */
-table {
-    border-collapse: collapse;
+/* =========================
+   OVERLAY
+========================= */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 1500;
 }
 
-td {
-    border: 1px solid #000;
-    min-width: 50px;
-    min-height: 30px;
-    padding: 2px;
+#overlay.oculto {
+    display: none;
 }
 
-/* =====================
-   IMÁGENES
-===================== */
-.page-content img {
-    max-width: 300px;
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1000px) {
+    #panel-insertar {
+        width: 180px;
+    }
+
+    .page {
+        width: 90%;
+        height: auto;
+    }
 }
 
-/* =====================
-   NÚMEROS DE PÁGINA
-===================== */
-.numero-pagina {
-    font-weight: bold;
-    color: #000;
+@media (max-width: 600px) {
+    #panel-insertar {
+        position: absolute;
+        height: 100%;
+        z-index: 2000;
+    }
 }
