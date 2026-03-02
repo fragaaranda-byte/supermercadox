@@ -9,14 +9,12 @@
 
 <!-- BARRA SUPERIOR -->
 <div id="barra-superior">
-
     <div class="menu-archivo">
         <button class="btn-menu">Archivo</button>
         <div class="submenu-archivo">
             <button id="btnNuevo">Nuevo</button>
             <button id="btnAbrir">Abrir</button>
             <button id="btnGuardar">Guardar</button>
-            <button id="btnGuardarComo">Guardar Como</button>
         </div>
     </div>
 
@@ -25,7 +23,6 @@
     <button class="btn-icono" id="btnNumerar"><img src="iconos/numeracion.png"></button>
     <button class="btn-icono" id="btnImprimir"><img src="iconos/imprimir.png"></button>
     <button class="btn-icono" id="btnConfig"><img src="iconos/config.png"></button>
-
 </div>
 
 <!-- BARRA DE FORMATO -->
@@ -59,7 +56,6 @@
 
 <!-- CONTENEDOR PRINCIPAL -->
 <div id="contenedor">
-
     <!-- PANEL INSERTAR -->
     <div id="panel-insertar">
         <div class="bloque-insertar">
@@ -75,9 +71,7 @@
         <div class="bloque-tabla">
             <p>Tabla (máx 10x10)</p>
             <div class="grid-tabla">
-                <!-- 10x10 divs -->
-                <!-- repetidos 50 veces para ejemplo -->
-                <div></div><div></div><div></div><div></div><div></div>
+                <!-- 50 divs de ejemplo -->
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
@@ -114,75 +108,118 @@
             <div class="page-footer" contenteditable="false"></div>
         </div>
     </div>
-
 </div>
 
-<!-- MODAL NUMERACIÓN -->
+<!-- MODALES -->
+
+<!-- Modal Numeración -->
 <div id="modalNumeracion" class="modal oculto">
     <div class="modal-contenido">
         <div class="modal-titulo">Numeración de Páginas</div>
-        <div class="modal-botones-esquinas">
-            <button data-pos="top-left">↖</button>
-            <button data-pos="top-right">↗</button>
-            <button data-pos="bottom-left">↙</button>
-            <button data-pos="bottom-right">↘</button>
-        </div>
-        <div class="modal-acciones">
-            <button id="btnAceptarNumeracion">Aceptar</button>
-            <button id="btnCancelarNumeracion">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL CONFIGURACIÓN DE PÁGINA -->
-<div id="modalConfigPagina" class="modal oculto">
-    <div class="modal-contenido">
-        <div class="modal-titulo">Configuración de Página</div>
         <div class="modal-campos">
-            <label for="selectTamano">Tamaño:</label>
-            <select id="selectTamano">
-                <option value="A4">A4</option>
-                <option value="A5">A5</option>
-                <option value="Carta">Carta</option>
+            <p>¿Cómo desea la numeración?</p>
+            <label>Posición:</label>
+            <select id="posicionNumeracion">
+                <option>Esquina superior izquierda</option>
+                <option>Esquina superior derecha</option>
+                <option>Esquina inferior izquierda</option>
+                <option>Esquina inferior derecha</option>
+            </select><br><br>
+            <label>Estilo:</label>
+            <button id="numNegrita">N</button>
+            <button id="numCursiva">K</button>
+            <button id="numSubrayado">S</button><br><br>
+            <label>Tamaño:</label>
+            <select id="tamanioNumeracion">
+                <option>8</option><option>9</option><option>10</option><option>11</option>
+                <option>12</option><option>13</option><option>14</option><option>15</option>
+                <option>16</option><option>17</option><option>18</option><option>19</option>
+                <option>20</option><option>21</option><option>22</option><option>23</option>
+                <option>24</option><option>25</option>
             </select>
-
-            <label for="margenTop">Margen superior (px):</label>
-            <input type="number" id="margenTop" min="0" value="0">
-
-            <label for="margenBottom">Margen inferior (px):</label>
-            <input type="number" id="margenBottom" min="0" value="0">
-
-            <label for="margenLeft">Margen izquierdo (px):</label>
-            <input type="number" id="margenLeft" min="0" value="0">
-
-            <label for="margenRight">Margen derecho (px):</label>
-            <input type="number" id="margenRight" min="0" value="0">
         </div>
         <div class="modal-acciones">
-            <button id="btnAceptarConfigPagina">Aceptar</button>
-            <button id="btnCancelarConfigPagina">Cancelar</button>
+            <button id="aceptarNumeracion">Aceptar</button>
+            <button id="cancelarNumeracion">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL ARCHIVO (Nuevo / Abrir / Guardar / Guardar Como) -->
-<div id="modalArchivo" class="modal oculto">
+<!-- Modal Configuración de Página -->
+<div id="modalConfigPaginas" class="modal oculto">
     <div class="modal-contenido">
-        <div class="modal-titulo">Archivo</div>
+        <div class="modal-titulo">Configuración de Páginas</div>
         <div class="modal-campos">
-            <!-- Contenido dinámico según acción (Nuevo, Abrir, Guardar, Guardar Como) -->
+            <label>Orientación:</label>
+            <select id="orientacionPagina">
+                <option>Vertical</option>
+                <option>Horizontal</option>
+            </select><br><br>
+            <label>Hoja:</label>
+            <select id="tipoHoja">
+                <option>A4</option>
+                <option>A3</option>
+                <option>A5</option>
+                <option>Carta</option>
+                <option>Legal</option>
+            </select><br><br>
+            <p>Márgenes:</p>
+            <label>Sup Izq:</label>
+            <select id="margenSupIzq">
+                <option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
+            <label>Sup Der:</label>
+            <select id="margenSupDer">
+                <option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select><br>
+            <label>Inf Izq:</label>
+            <select id="margenInfIzq">
+                <option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
+            <label>Inf Der:</label>
+            <select id="margenInfDer">
+                <option>1.5</option><option>2</option><option>3</option><option>4</option><option>5</option>
+            </select>
         </div>
         <div class="modal-acciones">
-            <button id="btnAceptarArchivo">Aceptar</button>
-            <button id="btnCancelarArchivo">Cancelar</button>
+            <button id="aceptarConfig">Aceptar</button>
+            <button id="cancelarConfig">Cancelar</button>
         </div>
     </div>
 </div>
 
-<!-- OVERLAY -->
+<!-- Modal Nuevo -->
+<div id="modalNuevo" class="modal oculto">
+    <div class="modal-contenido">
+        <div class="modal-titulo">Nuevo Documento</div>
+        <div class="modal-campos">
+            <p>¿Desea descartar el documento actual y generar uno nuevo en blanco?</p>
+        </div>
+        <div class="modal-acciones">
+            <button id="nuevoSi">Sí</button>
+            <button id="nuevoNo">No</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Abrir -->
+<div id="modalAbrir" class="modal oculto">
+    <div class="modal-contenido">
+        <div class="modal-titulo">Abrir Documento</div>
+        <div class="modal-campos">
+            <p>¿Desea descartar el documento actual y abrir otro?</p>
+        </div>
+        <div class="modal-acciones">
+            <button id="abrirSi">Sí</button>
+            <button id="abrirNo">No</button>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay -->
 <div id="overlay" class="oculto"></div>
 
-<!-- SCRIPTS -->
+<!-- Scripts -->
 <script src="logica.js"></script>
 <script src="mypersonaldocs.js"></script>
 
