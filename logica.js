@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 15, bottom: 15, left: 15, right: 15 }
+        margen: { top: 20, bottom: 20, left: 20, right: 20 }
     };
 
     const tamañosPredefinidos = {
@@ -197,136 +197,70 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
     // =====================
-// TABLAS REDIMENSIONABLES (HORIZONTAL + VERTICAL)
-// =====================
-let celdaRedim = null;
-let startX, startY, startWidth, startHeight;
-let redimDirection = null; // 'h' o 'v' o 'hv'
+    // TABLAS REDIMENSIONABLES
+    // =====================
+    document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
+        cell.onclick = () => {
+            const cols = (index % 10) + 1;
+            const rows = Math.floor(index / 10) + 1;
+            insertarTabla(rows, cols);
+        };
+    });
 
-function iniciarRedimension(e) {
-    const td = e.target;
-    const rect = td.getBoundingClientRect();
-    const margen = 8; // área de resizer
+    function insertarTabla(filas, columnas) {
+        restaurarCursor();
+        const table = document.createElement("table");
+        table.style.borderCollapse = "collapse";
+        table.style.tableLayout = "fixed";
+        table.style.width = "100%";
 
-    const sobreDerecha = e.clientX > rect.right - margen;
-    const sobreInferior = e.clientY > rect.bottom - margen;
+        for (let i = 0; i < filas; i++) {
+            const tr = document.createElement("tr");
+            for (let j = 0; j < columnas; j++) {
+                const td = document.createElement("td");
+                td.style.minWidth = "50px";
+                td.style.height = "30px";
+                td.style.padding = "2px";
+                td.style.border = "1px solid #000";
+                td.style.overflow = "hidden";
+                td.contentEditable = true;
 
-    if (sobreDerecha && sobreInferior) redimDirection = 'hv';
-    else if (sobreDerecha) redimDirection = 'h';
-    else if (sobreInferior) redimDirection = 'v';
-    else return;
+                // Redimensionamiento simple por borde derecho
+                td.style.position = "relative";
+                td.addEventListener("mousedown", iniciarRedimension);
+                tr.appendChild(td);
+            }
+            table.appendChild(tr);
+        }
 
-    celdaRedim = td;
-    startX = e.clientX;
-    startY = e.clientY;
-    startWidth = td.offsetWidth;
-    startHeight = td.offsetHeight;
+        document.execCommand("insertHTML", false, table.outerHTML + "<br>");
+    }
 
-    document.addEventListener("mousemove", redimensionar);
-    document.addEventListener("mouseup", detenerRedimension);
-    e.preventDefault();
-}
+    let celdaRedim = null;
+    let startX, startWidth;
 
-function redimensionar(e) {
-    if (!celdaRedim) return;
-    if (redimDirection.includes('h')) {
+    function iniciarRedimension(e) {
+        if (e.offsetX > e.target.offsetWidth - 8) { // borde derecho
+            celdaRedim = e.target;
+            startX = e.clientX;
+            startWidth = celdaRedim.offsetWidth;
+            document.addEventListener("mousemove", redimensionar);
+            document.addEventListener("mouseup", detenerRedimension);
+            e.preventDefault();
+        }
+    }
+
+    function redimensionar(e) {
+        if (!celdaRedim) return;
         let nuevaAncho = startWidth + (e.clientX - startX);
         if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
     }
-    if (redimDirection.includes('v')) {
-        let nuevaAltura = startHeight + (e.clientY - startY);
-        if (nuevaAltura > 20) celdaRedim.style.height = nuevaAltura + "px";
+
+    function detenerRedimension() {
+        celdaRedim = null;
+        document.removeEventListener("mousemove", redimensionar);
+        document.removeEventListener("mouseup", detenerRedimension);
     }
-}
-
-function detenerRedimension() {
-    celdaRedim = null;
-    redimDirection = null;
-    document.removeEventListener("mousemove", redimensionar);
-    document.removeEventListener("mouseup", detenerRedimension);
-}
-
-// Asignar evento a celdas nuevas
-function asignarResizer(td) {
-    td.style.position = "relative";
-    td.addEventListener("mousedown", iniciarRedimension);
-}
-
-// Modificar función de inserción de tabla para usar asignarResizer
-function insertarTabla(filas, columnas) {
-    restaurarCursor();
-    const table = document.createElement("table");
-    table.style.borderCollapse = "collapse";
-    table.style.tableLayout = "fixed";
-    table.style.width = "100%";
-
-    for (let i = 0; i < filas; i++) {
-        const tr = document.createElement("tr");
-        for (let j = 0; j < columnas; j++) {
-            const td = document.createElement("td");
-            td.style.minWidth = "50px";
-            td.style.height = "30px";
-            td.style.padding = "2px";
-            td.style.border = "1px solid #000";
-            td.style.overflow = "hidden";
-            td.contentEditable = true;
-            asignarResizer(td);
-            tr.appendChild(td);
-        }
-        table.appendChild(tr);
-    }
-
-    document.execCommand("insertHTML", false, table.outerHTML + "<br>");
-}
-
-// =====================
-// ÍNDICES CORRECTOS
-// =====================
-document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
-    btn.onclick = () => {
-        indiceActivo = btn.id;
-        contadorIndice = 1;
-    };
-});
-
-editor.addEventListener("keydown", e => {
-    if (!indiceActivo) return;
-    if (e.key === "Enter") {
-        e.preventDefault();
-        restaurarCursor();
-
-        let formato = "";
-        if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
-        else if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
-        else if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
-        else if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
-        else if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
-        else if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
-
-        const sel = window.getSelection();
-        if (!sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
-
-        const br = document.createElement("br");
-        const span = document.createElement("span");
-        span.textContent = formato;
-
-        range.deleteContents();
-        range.insertNode(br);
-        range.collapse(false);
-        range.insertNode(span);
-
-        // Mover cursor al final del índice
-        const newRange = document.createRange();
-        newRange.setStartAfter(span);
-        newRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-        rangoGuardado = newRange.cloneRange();
-
-        contadorIndice++;
-    }
-});
 
     // =====================
     // SÍMBOLOS
@@ -361,87 +295,31 @@ editor.addEventListener("keydown", e => {
     };
 
     // =====================
-// TABLAS REDIMENSIONABLES (HORIZONTAL + VERTICAL)
-// =====================
-let celdaRedim = null;
-let startX, startY, startWidth, startHeight;
-let redimDirection = null; // 'h' o 'v' o 'hv'
+    // ÍNDICES
+    // =====================
+    document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
+        btn.onclick = () => {
+            indiceActivo = btn.id;
+            contadorIndice = 1;
+        };
+    });
 
-function iniciarRedimension(e) {
-    const td = e.target;
-    const rect = td.getBoundingClientRect();
-    const margen = 8; // área de resizer
-
-    const sobreDerecha = e.clientX > rect.right - margen;
-    const sobreInferior = e.clientY > rect.bottom - margen;
-
-    if (sobreDerecha && sobreInferior) redimDirection = 'hv';
-    else if (sobreDerecha) redimDirection = 'h';
-    else if (sobreInferior) redimDirection = 'v';
-    else return;
-
-    celdaRedim = td;
-    startX = e.clientX;
-    startY = e.clientY;
-    startWidth = td.offsetWidth;
-    startHeight = td.offsetHeight;
-
-    document.addEventListener("mousemove", redimensionar);
-    document.addEventListener("mouseup", detenerRedimension);
-    e.preventDefault();
-}
-
-function redimensionar(e) {
-    if (!celdaRedim) return;
-    if (redimDirection.includes('h')) {
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
-    if (redimDirection.includes('v')) {
-        let nuevaAltura = startHeight + (e.clientY - startY);
-        if (nuevaAltura > 20) celdaRedim.style.height = nuevaAltura + "px";
-    }
-}
-
-function detenerRedimension() {
-    celdaRedim = null;
-    redimDirection = null;
-    document.removeEventListener("mousemove", redimensionar);
-    document.removeEventListener("mouseup", detenerRedimension);
-}
-
-// Asignar evento a celdas nuevas
-function asignarResizer(td) {
-    td.style.position = "relative";
-    td.addEventListener("mousedown", iniciarRedimension);
-}
-
-// Modificar función de inserción de tabla para usar asignarResizer
-function insertarTabla(filas, columnas) {
-    restaurarCursor();
-    const table = document.createElement("table");
-    table.style.borderCollapse = "collapse";
-    table.style.tableLayout = "fixed";
-    table.style.width = "100%";
-
-    for (let i = 0; i < filas; i++) {
-        const tr = document.createElement("tr");
-        for (let j = 0; j < columnas; j++) {
-            const td = document.createElement("td");
-            td.style.minWidth = "50px";
-            td.style.height = "30px";
-            td.style.padding = "2px";
-            td.style.border = "1px solid #000";
-            td.style.overflow = "hidden";
-            td.contentEditable = true;
-            asignarResizer(td);
-            tr.appendChild(td);
+    editor.addEventListener("keydown", e => {
+        if (!indiceActivo) return;
+        if (e.key === "Enter") {
+            e.preventDefault();
+            restaurarCursor();
+            let formato = "";
+            if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
+            if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
+            if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
+            if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
+            if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
+            if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
+            document.execCommand("insertHTML", false, `<br>${formato}`);
+            contadorIndice++;
         }
-        table.appendChild(tr);
-    }
-
-    document.execCommand("insertHTML", false, table.outerHTML + "<br>");
-}
+    });
 
     // =====================
     // DESHACER / REHACER
