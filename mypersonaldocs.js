@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
 // =====================
-// MODAL NUMERACIÓN COMPLETO
+// MODAL NUMERACIÓN COMPLETO CORREGIDO
 // =====================
 btnNumerar.onclick = () => {
     abrirModal("modalNumeracion");
@@ -91,42 +91,55 @@ btnNumerar.onclick = () => {
 
     // Función para aplicar numeración a todas las páginas
     window.aplicarNumeracion = function(config) {
-        // Eliminar numeraciones existentes
-        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+        if (!config) {
+            // Cancelar: eliminar todas las numeraciones
+            document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+            document.querySelectorAll(".page-header, .page-footer").forEach(hf => hf.style.height = "0px");
+            return;
+        }
 
-        // Resetear altura de headers y footers a 0 si no hay numeración
-        document.querySelectorAll(".page-header, .page-footer").forEach(hf => hf.style.height = "0px");
-
-        if (!config) return; // si es null, solo borramos
+        const esSuperior = config.posicion.includes("superior");
+        const esIzquierda = config.posicion.includes("izquierda");
+        const esDerecha = config.posicion.includes("derecha");
 
         document.querySelectorAll(".page").forEach((page, index) => {
-            const num = document.createElement("div");
-            num.className = "numero-pagina";
-            num.textContent = index + 1;
+            // Target header o footer según posición
+            let target = esSuperior ? page.querySelector(".page-header") : page.querySelector(".page-footer");
 
-            // Estilos
-            num.style.fontWeight = config.negrita ? "bold" : "normal";
-            num.style.fontStyle = config.cursiva ? "italic" : "normal";
-            num.style.textDecoration = config.subrayado ? "underline" : "none";
-            num.style.fontSize = config.tamanio + "px";
-            num.style.color = config.colorTexto;
-            num.style.backgroundColor = config.colorFondo;
-            num.style.position = "absolute";
-
-            // Posición
-            let target;
-            if (config.posicion.includes("superior")) {
-                target = page.querySelector(".page-header");
-                target.style.height = "56px"; // Solo ocupar espacio si hay numeración
+            // Buscar numeración existente en este target
+            let numExistente = target.querySelector(".numero-pagina");
+            if (numExistente) {
+                // Si ya existe, solo actualizamos estilos y contenido
+                numExistente.textContent = index + 1;
+                numExistente.style.fontWeight = config.negrita ? "bold" : "normal";
+                numExistente.style.fontStyle = config.cursiva ? "italic" : "normal";
+                numExistente.style.textDecoration = config.subrayado ? "underline" : "none";
+                numExistente.style.fontSize = config.tamanio + "px";
+                numExistente.style.color = config.colorTexto;
+                numExistente.style.backgroundColor = config.colorFondo;
+                numExistente.style.left = esIzquierda ? "20px" : "";
+                numExistente.style.right = esDerecha ? "20px" : "";
             } else {
-                target = page.querySelector(".page-footer");
-                target.style.height = "56px"; // Solo ocupar espacio si hay numeración
+                // Si no existe, creamos una nueva numeración
+                const num = document.createElement("div");
+                num.className = "numero-pagina";
+                num.textContent = index + 1;
+
+                num.style.fontWeight = config.negrita ? "bold" : "normal";
+                num.style.fontStyle = config.cursiva ? "italic" : "normal";
+                num.style.textDecoration = config.subrayado ? "underline" : "none";
+                num.style.fontSize = config.tamanio + "px";
+                num.style.color = config.colorTexto;
+                num.style.backgroundColor = config.colorFondo;
+                num.style.position = "absolute";
+                if (esIzquierda) num.style.left = "20px";
+                if (esDerecha) num.style.right = "20px";
+
+                target.appendChild(num);
             }
 
-            if (config.posicion.includes("izquierda")) num.style.left = "20px";
-            if (config.posicion.includes("derecha")) num.style.right = "20px";
-
-            target.appendChild(num);
+            // Ajustar altura solo si hay numeración
+            target.style.height = "56px";
         });
     };
 
