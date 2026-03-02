@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         cerrarModal("modalConfigPaginas");
     };
 
-    // =====================
+ // =====================
 // MODAL NUMERACIÓN
 // =====================
 btnNumerar.onclick = () => {
@@ -88,27 +88,61 @@ btnNumerar.onclick = () => {
     document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
     document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
 
+    // Función interna para aplicar estilos
+    function crearNumeroPagina(texto) {
+        const num = document.createElement("div");
+        num.className = "numero-pagina";
+        num.textContent = texto;
+
+        // Aplicar estilos desde modal
+        num.style.fontWeight = negrita ? "bold" : "normal";
+        num.style.fontStyle = cursiva ? "italic" : "normal";
+        num.style.textDecoration = subrayado ? "underline" : "none";
+        num.style.fontSize = tamanio + "px";
+        num.style.color = colorTexto;
+        num.style.backgroundColor = colorFondo;
+
+        num.style.position = "absolute";
+        return num;
+    }
+
     // Aceptar numeración
     document.getElementById("aceptarNumeracion").onclick = () => {
-        if (seleccion) {
-            window.configNumeracion = {
-                posicion: seleccion,
-                negrita,
-                cursiva,
-                subrayado,
-                tamanio,
-                colorTexto,
-                colorFondo
-            };
-            window.aplicarNumeracion(window.configNumeracion);
-        }
+        if (!seleccion) return;
+
+        // Primero eliminar numeraciones previas
+        document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+
+        window.configNumeracion = {
+            posicion: seleccion,
+            negrita,
+            cursiva,
+            subrayado,
+            tamanio,
+            colorTexto,
+            colorFondo
+        };
+
+        document.querySelectorAll(".page").forEach((page, index) => {
+            const num = crearNumeroPagina(index + 1);
+
+            let target;
+            if (seleccion.includes("superior")) target = page.querySelector(".page-header");
+            else target = page.querySelector(".page-footer");
+
+            if (seleccion.includes("izquierda")) num.style.left = "20px";
+            if (seleccion.includes("derecha")) num.style.right = "20px";
+
+            target.appendChild(num);
+        });
+
         cerrarModal("modalNumeracion");
     };
 
-    // Cancelar numeración: cerrar modal y eliminar números existentes
+    // Cancelar numeración: borrar todo y cerrar
     document.getElementById("cancelarNumeracion").onclick = () => {
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        window.configNumeracion = null; // resetea la configuración
+        window.configNumeracion = null;
         cerrarModal("modalNumeracion");
     };
 };
