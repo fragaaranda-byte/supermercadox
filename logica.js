@@ -212,7 +212,7 @@ function insertarTabla(filas, columnas) {
     const table = document.createElement("table");
     table.style.borderCollapse = "collapse";
     table.style.tableLayout = "fixed";
-    table.style.width = "100%";
+    table.style.width = "auto";
 
     for (let i = 0; i < filas; i++) {
         const tr = document.createElement("tr");
