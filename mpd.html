@@ -23,14 +23,13 @@
     <button class="btn-icono" id="btnDeshacer"><img src="iconos/deshacer.png"></button>
     <button class="btn-icono" id="btnRehacer"><img src="iconos/rehacer.png"></button>
     <button class="btn-icono" id="btnNumerar"><img src="iconos/numeracion.png"></button>
-    <button class="btn-icono" id="btnNumerar"><img src="iconos/imprimir.png"></button>
-    <button class="btn-icono" id="btnNumerar"><img src="iconos/config.png"></button>
+    <button class="btn-icono" id="btnImprimir"><img src="iconos/imprimir.png"></button>
+    <button class="btn-icono" id="btnConfig"><img src="iconos/config.png"></button>
 
 </div>
 
 <!-- BARRA DE FORMATO -->
 <div id="barra-formato">
-
     <select id="fuenteSelect">
         <option>Arial</option>
         <option>Times New Roman</option>
@@ -40,21 +39,10 @@
     </select>
 
     <select id="sizeSelect">
-        <option>8</option>
-        <option>10</option>
-        <option>12</option>
-        <option>14</option>
-        <option>16</option>
-        <option>18</option>
-        <option>20</option>
-        <option>24</option>
-        <option>32</option>
-        <option>48</option>
-        <option>72</option>
-        <option>100</option>
-        <option>150</option>
-        <option>200</option>
-        <option>250</option>
+        <option>8</option><option>10</option><option>12</option><option>14</option>
+        <option>16</option><option>18</option><option>20</option><option>24</option>
+        <option>32</option><option>48</option><option>72</option><option>100</option>
+        <option>150</option><option>200</option><option>250</option>
     </select>
 
     <button class="btn-texto" id="btnNegrita">N</button>
@@ -67,7 +55,6 @@
     <button class="btn-icono" id="btnIzq"><img src="iconos/izq.png"></button>
     <button class="btn-icono" id="btnCentro"><img src="iconos/centrado.png"></button>
     <button class="btn-icono" id="btnDer"><img src="iconos/der.png"></button>
-
 </div>
 
 <!-- CONTENEDOR PRINCIPAL -->
@@ -88,7 +75,8 @@
         <div class="bloque-tabla">
             <p>Tabla (máx 10x10)</p>
             <div class="grid-tabla">
-                <!-- 10 x 10 -->
+                <!-- 10x10 divs -->
+                <!-- repetidos 50 veces para ejemplo -->
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
                 <div></div><div></div><div></div><div></div><div></div>
@@ -120,20 +108,11 @@
 
     <!-- EDITOR DE PÁGINAS -->
     <div id="editor">
-
-        <!-- PÁGINA 1 -->
         <div class="page">
-
             <div class="page-header" contenteditable="false"></div>
-
-            <div class="page-content" contenteditable="true">
-                <p></p>
-            </div>
-
+            <div class="page-content" contenteditable="true"><p></p></div>
             <div class="page-footer" contenteditable="false"></div>
-
         </div>
-
     </div>
 
 </div>
@@ -141,21 +120,62 @@
 <!-- MODAL NUMERACIÓN -->
 <div id="modalNumeracion" class="modal oculto">
     <div class="modal-contenido">
-
         <div class="modal-titulo">Numeración de Páginas</div>
-
         <div class="modal-botones-esquinas">
             <button data-pos="top-left">↖</button>
             <button data-pos="top-right">↗</button>
             <button data-pos="bottom-left">↙</button>
             <button data-pos="bottom-right">↘</button>
         </div>
-
         <div class="modal-acciones">
             <button id="btnAceptarNumeracion">Aceptar</button>
             <button id="btnCancelarNumeracion">Cancelar</button>
         </div>
+    </div>
+</div>
 
+<!-- MODAL CONFIGURACIÓN DE PÁGINA -->
+<div id="modalConfigPagina" class="modal oculto">
+    <div class="modal-contenido">
+        <div class="modal-titulo">Configuración de Página</div>
+        <div class="modal-campos">
+            <label for="selectTamano">Tamaño:</label>
+            <select id="selectTamano">
+                <option value="A4">A4</option>
+                <option value="A5">A5</option>
+                <option value="Carta">Carta</option>
+            </select>
+
+            <label for="margenTop">Margen superior (px):</label>
+            <input type="number" id="margenTop" min="0" value="0">
+
+            <label for="margenBottom">Margen inferior (px):</label>
+            <input type="number" id="margenBottom" min="0" value="0">
+
+            <label for="margenLeft">Margen izquierdo (px):</label>
+            <input type="number" id="margenLeft" min="0" value="0">
+
+            <label for="margenRight">Margen derecho (px):</label>
+            <input type="number" id="margenRight" min="0" value="0">
+        </div>
+        <div class="modal-acciones">
+            <button id="btnAceptarConfigPagina">Aceptar</button>
+            <button id="btnCancelarConfigPagina">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ARCHIVO (Nuevo / Abrir / Guardar / Guardar Como) -->
+<div id="modalArchivo" class="modal oculto">
+    <div class="modal-contenido">
+        <div class="modal-titulo">Archivo</div>
+        <div class="modal-campos">
+            <!-- Contenido dinámico según acción (Nuevo, Abrir, Guardar, Guardar Como) -->
+        </div>
+        <div class="modal-acciones">
+            <button id="btnAceptarArchivo">Aceptar</button>
+            <button id="btnCancelarArchivo">Cancelar</button>
+        </div>
     </div>
 </div>
 
@@ -168,6 +188,3 @@
 
 </body>
 </html>
-
-
-
