@@ -9,8 +9,8 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f3f3f3;
-    overflow: hidden; /* scroll solo en editor */
+    background-color: #C2C2C2; /* fondo detrás de la hoja */
+    overflow: hidden;
 }
 
 /* =========================
@@ -22,11 +22,29 @@ body {
     left: 0;
     width: 100%;
     height: 45px;
-    background-color: #e6e6e6;
+    background-color: #FF7600;
     display: flex;
     align-items: center;
     padding: 5px;
     z-index: 1000;
+}
+
+/* =========================
+   BOTONES BARRA SUPERIOR
+========================= */
+.btn-icono,
+.btn-menu {
+    background-color: #F78719;
+    border: none;
+    margin: 0 5px;
+    cursor: pointer;
+    color: white;
+    transition: background 0.2s;
+}
+
+.btn-icono:hover,
+.btn-menu:hover {
+    background-color: #FA932D;
 }
 
 .btn-icono img {
@@ -34,22 +52,14 @@ body {
     height: 32px;
 }
 
-.btn-icono {
-    background: none;
-    border: none;
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.menu-archivo {
-    position: relative;
-}
-
+/* =========================
+   SUBMENÚ
+========================= */
 .submenu-archivo {
     display: none;
     position: absolute;
-    background-color: white;
-    border: 1px solid #ccc;
+    background-color: #FA932D;
+    border: 1px solid #FA9F46;
     top: 40px;
     left: 0;
     z-index: 1005;
@@ -64,9 +74,15 @@ body {
     width: 150px;
     padding: 5px;
     border: none;
-    background: white;
+    background: #FA932D;
+    color: white;
     text-align: left;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.submenu-archivo button:hover {
+    background: #FA9F46;
 }
 
 /* =========================
@@ -78,27 +94,30 @@ body {
     left: 0;
     width: 100%;
     height: 45px;
-    background-color: #f0f0f0;
+    background-color: #FF7600;
     display: flex;
     align-items: center;
     padding: 5px;
     z-index: 999;
 }
 
-.btn-texto {
-    font-weight: bold;
-    width: 32px;
-    height: 32px;
-    margin: 0 3px;
-    cursor: pointer;
-}
-
-/* SELECTS Y INPUTS COLOR */
+/* BOTONES Y SELECTS */
+.btn-texto,
 #barra-formato select,
 #barra-formato input[type=color] {
+    background-color: #F78719;
+    color: white;
+    border: none;
     margin: 0 3px;
     height: 32px;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-texto:hover,
+#barra-formato select:hover,
+#barra-formato input[type=color]:hover {
+    background-color: #FA932D;
 }
 
 /* =========================
@@ -119,7 +138,7 @@ body {
 ========================= */
 #panel-insertar {
     width: 220px;
-    background-color: #dddddd;
+    background-color: #FF7600;
     padding: 5px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -127,16 +146,24 @@ body {
     z-index: 1001;
 }
 
+/* BOTONES PANEL INSERTAR */
+#panel-insertar .btn-icono {
+    background-color: #F78719;
+    border: none;
+    margin: 2px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#panel-insertar .btn-icono:hover {
+    background-color: #FA932D;
+}
+
+/* BLOQUES INTERNOS */
 .bloque-insertar,
 .bloque-tabla,
 .bloque-simbolos {
     margin-bottom: 10px;
-}
-
-.bloque-insertar button,
-.bloque-tabla div,
-.bloque-simbolos button {
-    cursor: pointer;
 }
 
 /* =========================
@@ -162,6 +189,15 @@ body {
     width: 30px;
     height: 30px;
     margin: 2px;
+    background-color: #F78719;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.simbolos button:hover {
+    background-color: #FA932D;
 }
 
 /* =========================
@@ -169,7 +205,7 @@ body {
 ========================= */
 #editor {
     flex: 1;
-    background-color: #f3f3f3;
+    background-color: #C2C2C2; /* fondo detrás de hoja */
     padding: 20px;
     overflow-y: auto;
     overflow-x: hidden;
@@ -182,28 +218,31 @@ body {
    PAGINAS (A4)
 ========================= */
 .page {
-    background-color: white;
-    width: 794px;  /* A4 en px 96dpi */
-    height: 1123px; 
+    background-color: #E0E0E0; /* blanco apagado */
+    width: 794px;  /* A4 96dpi */
+    height: 1123px;
     margin: 20px 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    box-shadow: 0 0 15px rgba(0,0,0,0.5); /* sombra más remarcada */
+    padding: 1.5cm; /* márgenes internos 1.5 cm */
+    box-sizing: border-box;
 }
 
+/* =========================
+   HEADER, CONTENT, FOOTER
+========================= */
 .page-header,
 .page-footer {
     height: 56px;
-    padding: 5px;
-    background-color: #fefefe;
+    background-color: #E0E0E0;
     flex-shrink: 0;
 }
 
 .page-content {
     flex: 1;
-    padding: 20px;
+    width: 100%;
     overflow: hidden;
-    min-height: calc(1123px - 112px); /* altura total - header/footer */
     word-wrap: break-word;
 }
 
@@ -232,24 +271,6 @@ body {
 
 .modal.oculto {
     display: none;
-}
-
-.modal-titulo {
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.modal-botones-esquinas {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 15px;
-}
-
-.modal-acciones {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
 }
 
 /* =========================
@@ -290,4 +311,3 @@ body {
         z-index: 2000;
     }
 }
-
