@@ -1,288 +1,116 @@
-/* =========================
-   RESET Y BODY
-========================= */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    background-color: #C2C2C2; /* fondo detrás de la hoja */
-    overflow: hidden;
-}
-
-/* =========================
-   BARRA SUPERIOR
-========================= */
-#barra-superior {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 45px;
-    background-color: #FF7600;
-    display: flex;
-    align-items: center;
-    padding: 5px;
-    z-index: 1000;
-}
-
-/* =========================
-   BOTONES BARRA SUPERIOR
-========================= */
-.btn-icono,
-.btn-menu {
-    background-color: #F78719;
-    border: none;
-    margin: 0 5px;
-    cursor: pointer;
-    color: white;
-    transition: background 0.2s;
-}
-
-.btn-icono:hover,
-.btn-menu:hover {
-    background-color: #FA932D;
-}
-
-.btn-icono img {
-    width: 32px;
-    height: 32px;
-}
-
-/* =========================
-   SUBMENÚ
-========================= */
-.submenu-archivo {
-    display: none;
-    position: absolute;
-    background-color: #FA932D;
-    border: 1px solid #FA9F46;
-    top: 40px;
-    left: 0;
-    z-index: 1005;
-}
-
-.menu-archivo:hover .submenu-archivo {
-    display: block;
-}
-
-.submenu-archivo button {
-    display: block;
-    width: 150px;
-    padding: 5px;
-    border: none;
-    background: #FA932D;
-    color: white;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.submenu-archivo button:hover {
-    background: #FA9F46;
-}
-
-/* =========================
-   BARRA DE FORMATO
-========================= */
-#barra-formato {
-    position: fixed;
-    top: 55px;
-    left: 0;
-    width: 100%;
-    height: 45px;
-    background-color: #FF7600;
-    display: flex;
-    align-items: center;
-    padding: 5px;
-    z-index: 999;
-}
-
-/* BOTONES Y SELECTS */
-.btn-texto,
-#barra-formato select,
-#barra-formato input[type=color] {
-    background-color: #F78719;
-    color: white;
-    border: none;
-    margin: 0 3px;
-    height: 32px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-texto:hover,
-#barra-formato select:hover,
-#barra-formato input[type=color]:hover {
-    background-color: #FA932D;
-}
-
-/* =========================
-   CONTENEDOR GENERAL
-========================= */
-#contenedor {
-    display: flex;
-    position: fixed;
-    top: 110px; /* debajo de barras */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-}
-
-/* =========================
-   PANEL INSERTAR
-========================= */
-#panel-insertar {
-    width: 220px;
-    background-color: #FF7600;
-    padding: 5px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: width 0.3s ease, padding 0.3s ease;
-    z-index: 1001;
-}
-
-/* BOTONES PANEL INSERTAR */
-#panel-insertar .btn-icono {
-    background-color: #F78719;
-    border: none;
-    margin: 2px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-#panel-insertar .btn-icono:hover {
-    background-color: #FA932D;
-}
-
-/* BLOQUES INTERNOS */
-.bloque-insertar,
-.bloque-tabla,
-.bloque-simbolos {
-    margin-bottom: 10px;
-}
-
-/* =========================
-   TABLA GRID
-========================= */
-.grid-tabla {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 2px;
-}
-
-.grid-tabla div {
-    width: 20px;
-    height: 20px;
-    background-color: white;
-    border: 1px solid #aaa;
-}
-
-/* =========================
-   SIMBOLOS
-========================= */
-.simbolos button {
-    width: 30px;
-    height: 30px;
-    margin: 2px;
-    background-color: #F78719;
-    color: white;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.simbolos button:hover {
-    background-color: #FA932D;
-}
-
-/* =========================
-   EDITOR
-========================= */
+/* =======================
+   EDITOR Y PÁGINAS
+   ======================= */
 #editor {
-    flex: 1;
-    background-color: #C2C2C2; /* fondo detrás de hoja */
+    width: 100%;
+    min-height: 100vh;
+    background: #e0e0e0;
     padding: 20px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* =========================
-   PAGINAS (A4)
-========================= */
-.page {
-    background-color: #E0E0E0; /* blanco apagado */
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5); /* sombra más remarcada */
     box-sizing: border-box;
 }
 
-/* =========================
-   HEADER, CONTENT, FOOTER
-========================= */
+/* Páginas */
+.page {
+    background: #fff;
+    margin: 20px auto;
+    position: relative;
+    box-sizing: border-box;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header y Footer */
 .page-header,
 .page-footer {
-    height: 0px;
-    flex-shrink: 0;
+    height: 40px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    background: #f7f7f7;
+    border-bottom: 1px solid #ccc;
 }
 
+.page-footer {
+    border-top: 1px solid #ccc;
+    border-bottom: none;
+}
+
+/* Contenido editable */
 .page-content {
     flex: 1;
-    width: 100%;
+    padding: 10px;
+    outline: none;
     overflow: hidden;
-    word-wrap: break-word;
+    min-height: 200px; /* valor mínimo para evitar colapso en A3/Legal */
 }
 
-/* =========================
-   IMÁGENES EN PÁGINA
-========================= */
-.page-content img {
-    max-width: 100%;
-    height: auto;
+/* Numeración de páginas */
+.numero-pagina {
+    font-size: 20px;
+    font-family: Arial, sans-serif;
 }
-/* =========================
-   OVERLAY
-========================= */
+
+/* =======================
+   MODALES
+   ======================= */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    z-index: 1001;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+.modal.oculto {
+    display: none;
+}
+
 #overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.3);
-    z-index: 1500;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: none;
 }
 
 #overlay.oculto {
     display: none;
 }
 
-/* =========================
-   RESPONSIVE
-========================= */
-@media (max-width: 1000px) {
-    #panel-insertar {
-        width: 180px;
-    }
-
-    .page {
-        width: 90%;
-        height: auto;
-    }
+/* =======================
+   TABLAS
+   ======================= */
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
 }
 
-@media (max-width: 600px) {
-    #panel-insertar {
-        position: absolute;
-        height: 100%;
-        z-index: 2000;
-    }
+td {
+    border: 1px solid #000;
+    min-width: 50px;
+    height: 30px;
+    padding: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* =======================
+   OTROS ELEMENTOS
+   ======================= */
+.simbolos button {
+    margin: 2px;
+    padding: 4px 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ffeb3b;
 }
