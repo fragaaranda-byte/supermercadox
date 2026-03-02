@@ -10,17 +10,13 @@ let contadorIndice = 1;
 let cambiandoSize = false;
 
 // =====================
-// PANEL INSERTAR TOGGLE (FUNCIONAL)
+// PANEL INSERTAR TOGGLE (ANIMADO)
 // =====================
 const panelInsertar = document.getElementById("panel-insertar");
 const togglePanel = document.getElementById("toggle-panel");
 
 togglePanel.onclick = () => {
-    if (panelInsertar.style.display === "none") {
-        panelInsertar.style.display = "block";
-    } else {
-        panelInsertar.style.display = "none";
-    }
+    panelInsertar.classList.toggle("contraido");
 };
 
 // =====================
@@ -93,7 +89,6 @@ function crearPagina() {
     page.style.position = "relative";
 
     const header = document.createElement("div");
-    header.className = "header";
     header.style.height = MARGEN+"px";
 
     const content = document.createElement("div");
@@ -107,7 +102,6 @@ function crearPagina() {
     content.style.overflow = "hidden";
 
     const footer = document.createElement("div");
-    footer.className = "footer";
     footer.style.height = MARGEN+"px";
 
     page.appendChild(header);
@@ -144,7 +138,7 @@ function verificarOverflow() {
 }
 
 // =====================
-// SELECT SIZE DESDE CURSOR
+// ACTUALIZAR SELECTS DESDE CURSOR (WORD REAL)
 // =====================
 function actualizarSelectsDesdeCursor() {
     const sel = window.getSelection();
@@ -153,8 +147,25 @@ function actualizarSelectsDesdeCursor() {
     let node = sel.anchorNode;
     if (node.nodeType === 3) node = node.parentElement;
 
-    const size = window.getComputedStyle(node).fontSize;
-    sizeSelect.value = parseInt(size);
+    const styles = window.getComputedStyle(node);
+
+    const size = parseInt(styles.fontSize);
+    sizeSelect.value = size;
+    formatoActual.fontSize = size;
+
+    const color = rgbToHex(styles.color);
+    colorTexto.value = color;
+    formatoActual.colorTexto = color;
+
+    const bg = styles.backgroundColor !== "rgba(0, 0, 0, 0)" ? rgbToHex(styles.backgroundColor) : "#ffffff";
+    colorFondo.value = bg;
+    formatoActual.colorFondo = bg;
+}
+
+function rgbToHex(rgb) {
+    const result = rgb.match(/\d+/g);
+    if (!result) return "#000000";
+    return "#" + result.map(x => parseInt(x).toString(16).padStart(2,"0")).join("");
 }
 
 // =====================
@@ -183,14 +194,13 @@ sizeSelect.onchange = e => {
     spans.forEach(span=>{
         span.removeAttribute("size");
         span.style.fontSize = formatoActual.fontSize+"px";
-        span.style.lineHeight = "normal";
     });
 
     setTimeout(()=>cambiandoSize=false,100);
 };
 
 // =====================
-// COLORES PERSISTENTES (COMO WORD)
+// COLORES CORREGIDOS (PERSISTENTES)
 // =====================
 colorTexto.onchange = e => {
     formatoActual.colorTexto = e.target.value;
@@ -204,19 +214,28 @@ colorFondo.onchange = e => {
     document.execCommand("hiliteColor", false, formatoActual.colorFondo);
 };
 
+// =====================
+// ESCRITURA NORMAL
+// =====================
 editor.addEventListener("keydown", e => {
+
+    if (e.key === "Backspace" || e.key === "Delete") {
+        setTimeout(actualizarSelectsDesdeCursor, 0);
+        return;
+    }
+
     if (e.key.length === 1) {
         restaurarCursor();
+
+        document.execCommand("fontName", false, formatoActual.fontName);
         document.execCommand("foreColor", false, formatoActual.colorTexto);
         document.execCommand("hiliteColor", false, formatoActual.colorFondo);
-        document.execCommand("fontName", false, formatoActual.fontName);
         document.execCommand("fontSize", false, 7);
 
         const spans = editor.querySelectorAll("font[size='7']");
         spans.forEach(span=>{
             span.removeAttribute("size");
             span.style.fontSize = formatoActual.fontSize+"px";
-            span.style.lineHeight = "normal";
         });
     }
 });
@@ -315,10 +334,10 @@ function aplicarNumeracion(){
 
         let target;
         if(configNumeracion.includes("top")){
-            target=page.querySelector(".header");
+            target=page.querySelector("div:first-child");
             num.style.top="10px";
         }else{
-            target=page.querySelector(".footer");
+            target=page.querySelector("div:last-child");
             num.style.bottom="10px";
         }
 
