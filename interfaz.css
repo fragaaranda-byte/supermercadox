@@ -219,13 +219,9 @@ body {
 ========================= */
 .page {
     background-color: #E0E0E0; /* blanco apagado */
-    width: 794px;  /* A4 96dpi */
-    height: 1123px;
-    margin: 20px 0;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 15px rgba(0,0,0,0.5); /* sombra más remarcada */
-    padding: 1.5cm; /* márgenes internos 1.5 cm */
     box-sizing: border-box;
 }
 
@@ -311,3 +307,4 @@ body {
         z-index: 2000;
     }
 }
+
