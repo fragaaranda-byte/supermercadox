@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
-        margen: { top: 20, bottom: 20, left: 20, right: 20 }
+        margen: { top: 0, bottom: 0, left: 20, right: 20 } // márgenes superiores e inferiores eliminados
     };
 
     const tamañosPredefinidos = {
@@ -38,7 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
-                // Actualizar select de tamaño en tiempo real
                 const parent = range.startContainer.parentElement;
                 if (parent) {
                     const size = parseInt(window.getComputedStyle(parent).fontSize);
@@ -55,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
-    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -84,19 +82,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const header = document.createElement("div");
         header.className = "page-header";
         header.contentEditable = false;
-        header.style.height = "40px";
+        header.style.height = "0px"; // eliminado margen extra
 
         const content = document.createElement("div");
         content.className = "page-content";
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
-        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom + "px";
 
         const footer = document.createElement("div");
         footer.className = "page-footer";
         footer.contentEditable = false;
-        footer.style.height = "40px";
+        footer.style.height = "0px"; // eliminado margen extra
 
         page.appendChild(header);
         page.appendChild(content);
@@ -107,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return page;
     }
 
-    // Inicializar editor con una página
     editor.innerHTML = "";
     editor.appendChild(crearPagina());
 
@@ -143,7 +140,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.execCommand("hiliteColor", false, formatoActual.colorFondo);
     }
 
-    // BOTONES DE FORMATO
     btnNegrita.onclick = () => { restaurarCursor(); document.execCommand("bold"); };
     btnCursiva.onclick = () => { restaurarCursor(); document.execCommand("italic"); };
     btnSubrayado.onclick = () => { restaurarCursor(); document.execCommand("underline"); };
@@ -209,6 +205,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function insertarTabla(filas, columnas) {
         restaurarCursor();
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+
         const table = document.createElement("table");
         table.style.borderCollapse = "collapse";
         table.style.tableLayout = "fixed";
@@ -224,70 +223,47 @@ document.addEventListener("DOMContentLoaded", () => {
                 td.style.border = "1px solid #000";
                 td.style.overflow = "hidden";
                 td.contentEditable = true;
+                td.style.position = "relative";
+
+                // Redimension simple por borde derecho
+                td.addEventListener("mousedown", iniciarRedimension);
+
                 tr.appendChild(td);
             }
             table.appendChild(tr);
         }
 
-        // Insertar tabla en el editor
-        const sel = window.getSelection();
-        if (!sel.rangeCount) return;
-        const range = sel.getRangeAt(0);
-        range.deleteContents();
-        range.insertNode(table);
-
-        // Hacer tabla redimensionable
-        makeTableResizable(table);
+        sel.getRangeAt(0).insertNode(table);
     }
 
-    function makeTableResizable(table) {
-        const cols = table.querySelectorAll("td");
-        cols.forEach(td => {
-            td.style.position = "relative";
-        });
+    let celdaRedim = null;
+    let startX, startWidth;
 
-        let resizer, startX, startWidth, currentTd;
-
-        table.addEventListener("mousedown", e => {
-            if (e.target.tagName === "TD") {
-                const td = e.target;
-                if (e.offsetX > td.offsetWidth - 8) {
-                    resizer = true;
-                    currentTd = td;
-                    startX = e.clientX;
-                    startWidth = td.offsetWidth;
-                    document.addEventListener("mousemove", resize);
-                    document.addEventListener("mouseup", stopResize);
-                    e.preventDefault();
-                }
-            }
-        });
-
-        function resize(e) {
-            if (!resizer) return;
-            const newWidth = startWidth + (e.clientX - startX);
-            if (newWidth > 30) currentTd.style.width = newWidth + "px";
-        }
-
-        function stopResize() {
-            resizer = false;
-            document.removeEventListener("mousemove", resize);
-            document.removeEventListener("mouseup", stopResize);
+    function iniciarRedimension(e) {
+        if (e.offsetX > e.target.offsetWidth - 8) {
+            celdaRedim = e.target;
+            startX = e.clientX;
+            startWidth = celdaRedim.offsetWidth;
+            document.addEventListener("mousemove", redimensionar);
+            document.addEventListener("mouseup", detenerRedimension);
+            e.preventDefault();
         }
     }
 
-    // =====================
-    // SÍMBOLOS
-    // =====================
-    document.querySelectorAll(".simbolos button").forEach(btn => {
-        btn.onclick = () => {
-            restaurarCursor();
-            document.execCommand("insertText", false, btn.innerText);
-        };
-    });
+    function redimensionar(e) {
+        if (!celdaRedim) return;
+        let nuevaAncho = startWidth + (e.clientX - startX);
+        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
+    }
+
+    function detenerRedimension() {
+        celdaRedim = null;
+        document.removeEventListener("mousemove", redimensionar);
+        document.removeEventListener("mouseup", detenerRedimension);
+    }
 
     // =====================
-    // INSERTAR IMAGEN CON REDIMENSIONAMIENTO
+    // INSERTAR IMAGEN REDIMENSIONABLE
     // =====================
     btnInsertarImagen.onclick = () => {
         const input = document.createElement("input");
@@ -301,123 +277,129 @@ document.addEventListener("DOMContentLoaded", () => {
             const reader = new FileReader();
             reader.onload = e => {
                 restaurarCursor();
-                const img = document.createElement("img");
-                img.src = e.target.result;
-                img.style.maxWidth = "300px";
-                img.style.cursor = "move";
-                img.style.position = "relative";
-
                 const sel = window.getSelection();
                 if (!sel.rangeCount) return;
                 const range = sel.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(img);
 
-                makeImageResizable(img);
-                makeImageDraggable(img);
+                const wrapper = document.createElement("div");
+                wrapper.style.display = "inline-block";
+                wrapper.style.position = "relative";
+                wrapper.style.width = "300px";
+                wrapper.style.height = "auto";
+                wrapper.style.cursor = "move";
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.width = "100%";
+                img.style.height = "auto";
+                img.style.display = "block";
+                wrapper.appendChild(img);
+
+                // Resizers
+                const resizer = document.createElement("div");
+                resizer.style.width = "10px";
+                resizer.style.height = "10px";
+                resizer.style.background = "#FF7600";
+                resizer.style.position = "absolute";
+                resizer.style.right = "0";
+                resizer.style.bottom = "0";
+                resizer.style.cursor = "se-resize";
+                wrapper.appendChild(resizer);
+
+                // Drag
+                let isDragging = false;
+                let dragStartX, dragStartY;
+                resizer.addEventListener("mousedown", eRes => {
+                    eRes.stopPropagation();
+                    const startWidth = wrapper.offsetWidth;
+                    const startHeight = wrapper.offsetHeight;
+                    const startX = eRes.clientX;
+                    const startY = eRes.clientY;
+
+                    function doResize(ev) {
+                        wrapper.style.width = (startWidth + (ev.clientX - startX)) + "px";
+                        wrapper.style.height = (startHeight + (ev.clientY - startY)) + "px";
+                    }
+
+                    function stopResize() {
+                        document.removeEventListener("mousemove", doResize);
+                        document.removeEventListener("mouseup", stopResize);
+                    }
+
+                    document.addEventListener("mousemove", doResize);
+                    document.addEventListener("mouseup", stopResize);
+                });
+
+                wrapper.addEventListener("mousedown", eDrag => {
+                    isDragging = true;
+                    dragStartX = eDrag.clientX - wrapper.offsetLeft;
+                    dragStartY = eDrag.clientY - wrapper.offsetTop;
+
+                    function doDrag(ev) {
+                        if (!isDragging) return;
+                        wrapper.style.position = "absolute";
+                        wrapper.style.left = (ev.clientX - dragStartX) + "px";
+                        wrapper.style.top = (ev.clientY - dragStartY) + "px";
+                    }
+
+                    function stopDrag() {
+                        isDragging = false;
+                        document.removeEventListener("mousemove", doDrag);
+                        document.removeEventListener("mouseup", stopDrag);
+                    }
+
+                    document.addEventListener("mousemove", doDrag);
+                    document.addEventListener("mouseup", stopDrag);
+                });
+
+                range.insertNode(wrapper);
             };
             reader.readAsDataURL(file);
         };
         input.click();
     };
 
-    function makeImageResizable(img) {
-        const wrapper = document.createElement("div");
-        wrapper.style.display = "inline-block";
-        wrapper.style.position = "relative";
-        wrapper.style.width = img.width + "px";
-        wrapper.style.height = img.height + "px";
-        img.parentNode.insertBefore(wrapper, img);
-        wrapper.appendChild(img);
-
-        const handle = document.createElement("div");
-        handle.style.width = "10px";
-        handle.style.height = "10px";
-        handle.style.background = "#FF7600";
-        handle.style.position = "absolute";
-        handle.style.right = "0";
-        handle.style.bottom = "0";
-        handle.style.cursor = "nwse-resize";
-        wrapper.appendChild(handle);
-
-        let startX, startY, startWidth, startHeight;
-
-        handle.addEventListener("mousedown", e => {
-            e.preventDefault();
-            startX = e.clientX;
-            startY = e.clientY;
-            startWidth = img.offsetWidth;
-            startHeight = img.offsetHeight;
-            document.addEventListener("mousemove", resizeImg);
-            document.addEventListener("mouseup", stopResizeImg);
-        });
-
-        function resizeImg(e) {
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            img.style.width = startWidth + dx + "px";
-            img.style.height = startHeight + dy + "px";
-            wrapper.style.width = img.style.width;
-            wrapper.style.height = img.style.height;
-        }
-
-        function stopResizeImg() {
-            document.removeEventListener("mousemove", resizeImg);
-            document.removeEventListener("mouseup", stopResizeImg);
-        }
-    }
-
-    function makeImageDraggable(img) {
-        let offsetX, offsetY, dragging = false;
-
-        img.addEventListener("mousedown", e => {
-            if (e.target.tagName === "IMG") {
-                dragging = true;
-                offsetX = e.offsetX;
-                offsetY = e.offsetY;
-                img.style.position = "relative";
-                document.addEventListener("mousemove", drag);
-                document.addEventListener("mouseup", stopDrag);
-            }
-        });
-
-        function drag(e) {
-            if (!dragging) return;
-            img.style.left = e.clientX - offsetX - img.parentNode.getBoundingClientRect().left + "px";
-            img.style.top = e.clientY - offsetY - img.parentNode.getBoundingClientRect().top + "px";
-        }
-
-        function stopDrag() {
-            dragging = false;
-            document.removeEventListener("mousemove", drag);
-            document.removeEventListener("mouseup", stopDrag);
-        }
-    }
-
     // =====================
-    // ÍNDICES
+    // ÍNDICES AUTOMÁTICOS
     // =====================
-    document.querySelectorAll("[id^='btnIndice']").forEach(btn => {
+    const botonesIndices = document.querySelectorAll("[id^='btnIndice']");
+    botonesIndices.forEach(btn => {
         btn.onclick = () => {
             indiceActivo = btn.id;
             contadorIndice = 1;
+            botonesIndices.forEach(b => b.style.backgroundColor = "#F78719");
+            btn.style.backgroundColor = "#FA932D"; // botón activo
         };
     });
 
     editor.addEventListener("keydown", e => {
         if (!indiceActivo) return;
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             restaurarCursor();
-            let formato = "";
-            if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
-            if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
-            if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
-            if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
-            if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
-            if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
-            document.execCommand("insertHTML", false, `<br>${formato}`);
+            const formato = calcularIndice();
+            document.execCommand("insertHTML", false, `<span class="indice-activo">${formato}</span>`);
             contadorIndice++;
+        }
+    });
+
+    function calcularIndice() {
+        if (!indiceActivo) return "";
+        let formato = "";
+        if (indiceActivo.includes("1)")) formato = `${contadorIndice}) `;
+        if (indiceActivo.includes("1.")) formato = `${contadorIndice}. `;
+        if (indiceActivo.includes("A)")) formato = String.fromCharCode(64 + contadorIndice) + ") ";
+        if (indiceActivo.includes("a)")) formato = String.fromCharCode(96 + contadorIndice) + ") ";
+        if (indiceActivo.includes("A.")) formato = String.fromCharCode(64 + contadorIndice) + ". ";
+        if (indiceActivo.includes("a.")) formato = String.fromCharCode(96 + contadorIndice) + ". ";
+        return formato;
+    }
+
+    // Reiniciar numeración clic derecho
+    editor.addEventListener("contextmenu", e => {
+        if (e.target.classList.contains("indice-activo")) {
+            e.preventDefault();
+            contadorIndice = 1;
         }
     });
 
