@@ -366,8 +366,8 @@ function detenerRedimensionWord() {
     btnDeshacer.onclick = () => { restaurarCursor(); document.execCommand("undo"); };
     btnRehacer.onclick = () => { restaurarCursor(); document.execCommand("redo"); };
 
-    // =====================
-// NUMERACIÓN COMPLETA
+// =====================
+// NUMERACIÓN COMPLETA CORREGIDA
 // =====================
 btnNumerar.onclick = abrirModalNumeracion;
 
@@ -378,7 +378,6 @@ function abrirModalNumeracion() {
     modal.classList.remove("oculto");
     overlay.classList.remove("oculto");
 
-    // Configuración inicial del modal
     let seleccion = null;
     let negrita = false;
     let cursiva = false;
@@ -395,7 +394,6 @@ function abrirModalNumeracion() {
     document.getElementById("colorNumeracionTexto").onchange = e => colorTexto = e.target.value;
     document.getElementById("colorNumeracionFondo").onchange = e => colorFondo = e.target.value;
 
-    // Aceptar numeración
     document.getElementById("aceptarNumeracion").onclick = () => {
         if (!seleccion) return;
 
@@ -413,10 +411,10 @@ function abrirModalNumeracion() {
         cerrarModal();
     };
 
-    // Cancelar numeración
     document.getElementById("cancelarNumeracion").onclick = () => {
-        // Borra cualquier numeración existente
+        // Borra todas las numeraciones
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
+        document.querySelectorAll(".page-header, .page-footer").forEach(hf => hf.style.height = "0px");
         configNumeracion = null;
         cerrarModal();
     };
@@ -427,35 +425,49 @@ function abrirModalNumeracion() {
     }
 }
 
-// Función que aplica numeración con todos los estilos
 function aplicarNumeracion() {
-    document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
     if (!configNumeracion) return;
 
+    const esSuperior = configNumeracion.posicion.includes("superior");
+    const esIzquierda = configNumeracion.posicion.includes("izquierda");
+    const esDerecha = configNumeracion.posicion.includes("derecha");
+
     document.querySelectorAll(".page").forEach((page, index) => {
-        const num = document.createElement("div");
-        num.className = "numero-pagina";
-        num.textContent = index + 1;
+        let target = esSuperior ? page.querySelector(".page-header") : page.querySelector(".page-footer");
 
-        // Aplicar estilos completos
-        num.style.fontWeight = configNumeracion.negrita ? "bold" : "normal";
-        num.style.fontStyle = configNumeracion.cursiva ? "italic" : "normal";
-        num.style.textDecoration = configNumeracion.subrayado ? "underline" : "none";
-        num.style.fontSize = configNumeracion.tamanio + "px";
-        num.style.color = configNumeracion.colorTexto;
-        num.style.backgroundColor = configNumeracion.colorFondo;
+        // buscar numeración existente en este target
+        let numExistente = target.querySelector(".numero-pagina");
+        if (numExistente) {
+            // actualizar estilos y número
+            numExistente.textContent = index + 1;
+            numExistente.style.fontWeight = configNumeracion.negrita ? "bold" : "normal";
+            numExistente.style.fontStyle = configNumeracion.cursiva ? "italic" : "normal";
+            numExistente.style.textDecoration = configNumeracion.subrayado ? "underline" : "none";
+            numExistente.style.fontSize = configNumeracion.tamanio + "px";
+            numExistente.style.color = configNumeracion.colorTexto;
+            numExistente.style.backgroundColor = configNumeracion.colorFondo;
+            numExistente.style.left = esIzquierda ? "20px" : "";
+            numExistente.style.right = esDerecha ? "20px" : "";
+        } else {
+            // crear nueva numeración
+            const num = document.createElement("div");
+            num.className = "numero-pagina";
+            num.textContent = index + 1;
+            num.style.fontWeight = configNumeracion.negrita ? "bold" : "normal";
+            num.style.fontStyle = configNumeracion.cursiva ? "italic" : "normal";
+            num.style.textDecoration = configNumeracion.subrayado ? "underline" : "none";
+            num.style.fontSize = configNumeracion.tamanio + "px";
+            num.style.color = configNumeracion.colorTexto;
+            num.style.backgroundColor = configNumeracion.colorFondo;
+            num.style.position = "absolute";
+            if (esIzquierda) num.style.left = "20px";
+            if (esDerecha) num.style.right = "20px";
 
-        num.style.position = "absolute";
+            target.appendChild(num);
+        }
 
-        // Posición
-        let target;
-        if (configNumeracion.posicion.includes("superior")) target = page.querySelector(".page-header");
-        else target = page.querySelector(".page-footer");
-
-        if (configNumeracion.posicion.includes("izquierda")) num.style.left = "20px";
-        if (configNumeracion.posicion.includes("derecha")) num.style.right = "20px";
-
-        target.appendChild(num);
+        // altura solo si hay numeración
+        target.style.height = "56px";
     });
 }
     // =====================
