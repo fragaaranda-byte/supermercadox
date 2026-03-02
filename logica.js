@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let contadorIndice = 1;
 
     let formatoActual = {
-        colorTexto: "#ff8800", // naranja por defecto
+        colorTexto: "#ff8800",
         colorFondo: "#ffffff",
         fontSize: 8,
         fontName: "Arial"
@@ -20,14 +20,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let configPagina = {
         tamaño: "A4",
+        orientacion: "Vertical",
         margen: { top: 20, bottom: 20, left: 20, right: 20 }
     };
 
     const tamañosPredefinidos = {
+        A3: { width: 1123, height: 1587 },
         A4: { width: 794, height: 1123 },
         A5: { width: 559, height: 794 },
-        Carta: { width: 816, height: 1056 },
-        A3: { width: 1123, height: 1587 }
+        Carta: { width: 816, height: 1056 }
     };
 
     // =====================
@@ -39,7 +40,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const range = sel.getRangeAt(0);
             if (editor.contains(range.startContainer)) {
                 rangoGuardado = range.cloneRange();
-                // Actualizar select de tamaño en tiempo real
                 const parent = range.startContainer.parentElement;
                 if (parent) {
                     const size = parseInt(window.getComputedStyle(parent).fontSize);
@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
         sel.addRange(rangoGuardado);
     }
 
-    // Restaurar cursor al interactuar con controles
     document.querySelectorAll("button, select, input, img").forEach(el => {
         el.addEventListener("mousedown", restaurarCursor);
     });
@@ -68,7 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const page = document.createElement("div");
         page.className = "page";
 
-        const tamaño = tamañosPredefinidos[configPagina.tamaño];
+        let tamaño = tamañosPredefinidos[configPagina.tamaño];
+        if (configPagina.orientacion === "Horizontal") {
+            tamaño = { width: tamaño.height, height: tamaño.width };
+        }
+
         page.style.width = tamaño.width + "px";
         page.style.height = tamaño.height + "px";
         page.style.paddingTop = configPagina.margen.top + "px";
@@ -81,23 +84,23 @@ document.addEventListener("DOMContentLoaded", () => {
         page.style.boxSizing = "border-box";
         page.style.margin = "20px auto";
         page.style.boxShadow = "0 0 5px rgba(0,0,0,0.3)";
+        page.style.display = "flex";
+        page.style.flexDirection = "column";
 
         const header = document.createElement("div");
         header.className = "page-header";
         header.contentEditable = false;
-        header.style.height = "40px";
 
         const content = document.createElement("div");
         content.className = "page-content";
         content.contentEditable = true;
         content.style.flex = "1";
         content.style.outline = "none";
-        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px"; // header + footer
+        content.style.minHeight = tamaño.height - configPagina.margen.top - configPagina.margen.bottom - 80 + "px";
 
         const footer = document.createElement("div");
         footer.className = "page-footer";
         footer.contentEditable = false;
-        footer.style.height = "40px";
 
         page.appendChild(header);
         page.appendChild(content);
@@ -108,7 +111,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return page;
     };
 
-    // Inicializar editor con una página
     editor.innerHTML = "";
     editor.appendChild(window.crearPagina());
 
@@ -128,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 nuevaPagina.querySelector(".page-content").prepend(content.lastChild);
             }
         });
-        aplicarNumeracion();
+        if (window.aplicarNumeracion) window.aplicarNumeracion();
     }
 
     // =====================
@@ -162,22 +164,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const sel = window.getSelection();
         if (!sel.rangeCount) return;
         const range = sel.getRangeAt(0);
-
         if (!range.collapsed) {
-            const fragment = range.cloneContents();
             const span = document.createElement("span");
             span.style.fontSize = formatoActual.fontSize + "px";
-
-            // Aplicar tamaño a todos los nodos hijos
-            span.appendChild(fragment);
-            range.deleteContents();
+            span.appendChild(range.extractContents());
             range.insertNode(span);
         } else {
             const span = document.createElement("span");
             span.style.fontSize = formatoActual.fontSize + "px";
             span.appendChild(document.createTextNode("\u200B"));
             range.insertNode(span);
-
             const newRange = document.createRange();
             newRange.setStart(span.firstChild, 1);
             newRange.collapse(true);
@@ -204,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnDer.onclick = () => { restaurarCursor(); document.execCommand("justifyRight"); };
 
     // =====================
-    // TABLAS REDIMENSIONABLES
+    // TABLAS
     // =====================
     document.querySelectorAll(".grid-tabla div").forEach((cell, index) => {
         cell.onclick = () => {
@@ -231,9 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 td.style.border = "1px solid #000";
                 td.style.overflow = "hidden";
                 td.contentEditable = true;
-
-                td.style.position = "relative";
-                td.addEventListener("mousedown", iniciarRedimension);
                 tr.appendChild(td);
             }
             table.appendChild(tr);
@@ -241,64 +234,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.execCommand("insertHTML", false, table.outerHTML + "<br>");
     }
-
-    let celdaRedim = null;
-    let startX, startWidth;
-
-    function iniciarRedimension(e) {
-        if (e.offsetX > e.target.offsetWidth - 8) {
-            celdaRedim = e.target;
-            startX = e.clientX;
-            startWidth = celdaRedim.offsetWidth;
-            document.addEventListener("mousemove", redimensionar);
-            document.addEventListener("mouseup", detenerRedimension);
-            e.preventDefault();
-        }
-    }
-
-    function redimensionar(e) {
-        if (!celdaRedim) return;
-        let nuevaAncho = startWidth + (e.clientX - startX);
-        if (nuevaAncho > 30) celdaRedim.style.width = nuevaAncho + "px";
-    }
-
-    function detenerRedimension() {
-        celdaRedim = null;
-        document.removeEventListener("mousemove", redimensionar);
-        document.removeEventListener("mouseup", detenerRedimension);
-    }
-
-    // =====================
-    // SÍMBOLOS
-    // =====================
-    document.querySelectorAll(".simbolos button").forEach(btn => {
-        btn.onclick = () => {
-            restaurarCursor();
-            document.execCommand("insertText", false, btn.innerText);
-        };
-    });
-
-    // =====================
-    // INSERTAR IMAGEN
-    // =====================
-    btnInsertarImagen.onclick = () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-
-        input.onchange = () => {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                restaurarCursor();
-                document.execCommand("insertHTML", false, `<img src="${e.target.result}" style="max-width:300px;">`);
-            };
-            reader.readAsDataURL(file);
-        };
-        input.click();
-    };
 
     // =====================
     // ÍNDICES
@@ -336,9 +271,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // =====================
     // NUMERACIÓN
     // =====================
-    window.aplicarNumeracion = function(seleccion = configNumeracion) {
+    window.aplicarNumeracion = function() {
         document.querySelectorAll(".numero-pagina").forEach(n => n.remove());
-        if (!seleccion) return;
+        if (!configNumeracion) return;
 
         document.querySelectorAll(".page").forEach((page, index) => {
             const num = document.createElement("div");
@@ -347,12 +282,11 @@ document.addEventListener("DOMContentLoaded", () => {
             num.style.position = "absolute";
             num.style.fontSize = "20px";
 
-            let target;
-            if (seleccion.includes("superior")) target = page.querySelector(".page-header");
-            else target = page.querySelector(".page-footer");
+            let target = page.querySelector(".page-footer");
+            if (configNumeracion.includes("superior")) target = page.querySelector(".page-header");
 
-            if (seleccion.includes("izquierda")) num.style.left = "20px";
-            if (seleccion.includes("derecha")) num.style.right = "20px";
+            if (configNumeracion.includes("izquierda")) num.style.left = "20px";
+            if (configNumeracion.includes("derecha")) num.style.right = "20px";
 
             target.appendChild(num);
         });
